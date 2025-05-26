@@ -1,0 +1,30 @@
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+.container {
+  display: flex;
+  width: 916px;
+  height: 625px;
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.half {
+  width: 50%;
+  height: 100%;
+}
+
+.left-side {
+  background-color: #E7E7E7;
+}
+
+.right-side {
+  background-color: #D03C3F; /* or #FF0000 for pure red */
+}

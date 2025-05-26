@@ -1,0 +1,172 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.sidebar {
+    width: 68px;
+    height: 100vh;
+    background-color: #B03434;
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 75px;
+    gap: 115px;
+}
+
+.icon-container {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease, border-radius 0.3s ease, width 0.3s ease, height 0.3s ease;
+    cursor: pointer;
+}
+
+.sidebar img {
+    width: 30px;
+    height: 30px;
+}
+
+.icon-container:hover {
+    width: 48px;
+    height: 48px;
+    background-color: #9E1717;
+    border-radius: 15px;
+}
+
+.icon-container.active {
+    width: 48px;
+    height: 48px;
+    background-color: #9E1717;
+    border-radius: 15px;
+}
+
+.sidebar .icon-container:last-child {
+    margin-top: auto;
+    margin-bottom: 20px;
+}
+
+.sidebar-secondary {
+    width: 289px;
+    height: 100vh;
+    background-color: #C83E3E;
+    position: fixed;
+    left: 68px;
+    top: 0;
+    padding: 20px;
+    color: white;
+    font-family: sans-serif;
+}
+
+.sidebar-secondary h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    margin-top: 100px;
+    color: white;
+}
+
+/* Stil pentru al doilea h2 (ADD AN EMERGENCY) */
+.sidebar-secondary h2:nth-of-type(2) {
+    margin-top: 100px; /* Mărim spațiul deasupra secțiunii */
+}
+
+.filter-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.filter-label {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 5px;
+    font-weight: bold;
+    width: 174px;
+    justify-content: flex-start;
+    line-height: 15px;
+}
+
+.filter-bullet {
+    width: 15px;
+    height: 15px;
+    margin-right: 4px;
+    flex-shrink: 0;
+    appearance: none;
+    border-radius: 5px;
+    background-color: white;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    vertical-align: bottom;
+}
+
+.filter-bullet:checked {
+    background-color: #9E1717;
+    border: 1px solid #9E1717;
+    position: relative;
+}
+
+.filter-bullet:checked::after {
+    color: white;
+    font-size: 10px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.filter-input {
+    width: 174px;
+    height: 33px;
+    padding: 0 10px;
+    margin: 0 auto 10px auto;
+    border: none;
+    border-radius: 20px;
+    outline: none;
+    box-sizing: border-box;
+    display: block;
+    background-color: white;
+    color: #666;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    position: relative;
+    text-align: center;
+    line-height: normal;
+    display: flex;
+    align-items: center;
+}
+
+.filter-input::after {
+    font-size: 10px;
+    color: #666;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.filter-input option {
+    color: black;
+    text-align: center;
+    padding: 5px 0;
+}
+
+.main-content {
+    position: fixed;
+    left: 357px; /* 68px (sidebar) + 289px (sidebar-secondary) */
+    top: 0;
+    background-color: white;
+    width: calc(100% - 357px); /* Ocupă restul lățimii ecranului */
+    height: 100vh; /* Întinde div-ul pe toată înălțimea ecranului */
+    overflow-y: auto; /* Permite scroll vertical dacă conținutul depășește înălțimea */
+}

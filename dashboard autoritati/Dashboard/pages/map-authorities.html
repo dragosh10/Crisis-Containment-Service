@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Authorities</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+
+<body>
+    <div class="sidebar">
+        <a href="../dashboard.html">
+            <div class="icon-container">
+                <img src="../icons/home.png" alt="Home Icon">
+            </div>
+        </a>
+        <div class="icon-container">
+            <img src="../icons/info.png" alt="Info Icon">
+        </div>
+        <div class="icon-container active">
+            <img src="../icons/map.png" alt="Map Icon">
+        </div>
+        <div class="icon-container">
+            <img src="../icons/logout.png" alt="Logout Icon">
+        </div>
+    </div>
+    <!--<div class="sidebar-secondary">
+        <h2>FILTER</h2>
+        <div class="filter-group">
+            <div class="filter-label">
+                <span class="filter-bullet"></span>
+                Location
+            </div>
+            <input type="text" placeholder="County..." class="filter-input">
+            <input type="text" placeholder="Town..." class="filter-input">
+        </div>
+        <div class="filter-group">
+            <div class="filter-label">
+                <span class="filter-bullet"></span>
+                Disaster
+            </div>
+            <input type="text" placeholder="Type..." class="filter-input">
+        </div>
+        <div class="filter-group">
+            <div class="filter-label">
+                <span class="filter-bullet"></span>
+                Shelter
+            </div>
+            <input type="text" placeholder="Type..." class="filter-input">
+        </div>
+    </div> -->
+    <!---<div class="sidebar-secondary">
+        <h2>FILTER</h2>
+    
+        <div class="filter-group">
+            <label class="filter-label">
+                <input type="checkbox" class="filter-bullet">
+                Location
+            </label>
+            <input type="text" class="filter-input" placeholder="County...">
+            <input type="text" class="filter-input" placeholder="Town...">
+        </div>
+    
+        <div class="filter-group">
+            <label class="filter-label">
+                <input type="checkbox" class="filter-bullet">
+                Disaster
+            </label>
+            <input type="text" class="filter-input" placeholder="Type...">
+        </div>
+    
+        <div class="filter-group">
+            <label class="filter-label">
+                <input type="checkbox" class="filter-bullet">
+                Shelter
+            </label>
+            <input type="text" class="filter-input" placeholder="Type...">
+        </div>
+    </div> --->
+    <div class="sidebar-secondary">
+        <h2>FILTER</h2>
+
+        <div class="filter-group">
+            <label class="filter-label">
+                <input type="checkbox" class="filter-bullet">
+                Location
+            </label>
+            <input type="text" class="filter-input" placeholder="County...">
+            <input type="text" class="filter-input" placeholder="Town...">
+
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">
+                <input type="checkbox" class="filter-bullet">
+                Disaster
+            </label>
+            <select class="filter-input">
+                <option value="" disabled selected>Type...</option>
+                <option value="flood">Flood</option>
+                <option value="earthquake">Earthquake</option>
+                <option value="fire">Wildfire</option>
+                <option value="heatwave">Heatwave</option>
+                <option value="hurricane">Hurricane</option>
+                <option value="hailstorm">Hail Storm</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">
+                <input type="checkbox" class="filter-bullet">
+                Shelter
+            </label>
+            <select class="filter-input">
+                <option value="" disabled selected>Type...</option>
+                <option value="flood">Flood</option>
+                <option value="earthquake">Earthquake</option>
+                <option value="fire">Wildfire</option>
+                <option value="heatwave">Heatwave</option>
+                <option value="hurricane">Hurricane</option>
+                <option value="hailstorm">Hail Storm</option>
+            </select>
+        </div>
+
+        <h2>ADD AN EMERGENCY</h2>
+
+        <div class="filter-group">
+            <label class="filter-label">
+                <input type="checkbox" class="filter-bullet">
+                Disaster
+            </label>
+            <select class="filter-input">
+                <option value="" disabled selected>Type...</option>
+                <option value="flood">Flood</option>
+                <option value="earthquake">Earthquake</option>
+                <option value="fire">Wildfire</option>
+                <option value="heatwave">Heatwave</option>
+                <option value="hurricane">Hurricane</option>
+                <option value="hailstorm">Hail Storm</option>
+            </select>
+            <select class="filter-input">
+                <option value="" disabled selected>Pin...</option>
+                <option value="place-pin">Place Pin</option>
+                <option value="select-zone">Select by Zone</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">
+                <input type="checkbox" class="filter-bullet">
+                Add Shelter
+            </label>
+        </div>
+    </div>
+    <div class="main-content">
+        <!-- aici vine harta etc -->
+    </div>
+</body>
+
+</html>
