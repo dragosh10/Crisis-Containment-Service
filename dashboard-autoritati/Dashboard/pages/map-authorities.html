@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Authorities</title>
+    <link rel="stylesheet" href="../styles.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+        .custom-icon {
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .marker-cluster-custom {
+            background: rgba(255, 68, 68, 0.6);
+            border: 3px solid rgba(255, 68, 68, 0.4);
+            border-radius: 50%;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .legend {
+            padding: 6px 8px;
+            background: white;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            line-height: 24px;
+        }
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+            text-align: center;
+        }
+        .coordinates-display {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .section-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: rgba(158, 23, 23, 0.2);
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-content {
+            padding: 10px 0;
+        }
+        .filter-group {
+            margin-bottom: 10px;
+        }
+        .filter-input {
+            margin-bottom: 5px;
+        }
+        .section-header:hover {
+            background-color: rgba(158, 23, 23, 0.3);
+        }
+        .section-header.active {
+            background-color: rgba(158, 23, 23, 0.4);
+        }
+        .section-header.active i {
+            transform: rotate(180deg);
+        }
+        .coordinates-group {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        .submit-btn:hover {
+            background-color: #8B1414 !important;
+        }
+        #pinPlacementForm {
+            background-color: rgba(158, 23, 23, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .form-field {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-field label {
+            color: white;
+            margin-bottom: 4px;
+            font-size: 0.9em;
+        }
+        .form-field .filter-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .form-field .filter-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        .form-field .filter-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .form-field input[type="datetime-local"] {
+            margin-bottom: 5px;
+        }
+        .form-field input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .hamburger-toggle {
+            width: 100%;
+            height: 50px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .hamburger-toggle .line {
+            width: 24px;
+            height: 2px;
+            background-color: white;
+            margin: 2px 0;
+            transition: 0.3s;
+        }
+        .sidebar-collapsed .hamburger-toggle .line:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+        .sidebar-collapsed .hamburger-toggle .line:nth-child(2) {
+            opacity: 0;
+        }
+        .sidebar-collapsed .hamburger-toggle .line:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+        .sidebar {
+            transform: none !important;
+        }
+        .sidebar-collapsed .sidebar-secondary {
+            transform: translateX(-100%);
+        }
+        .sidebar-secondary {
+            transition: transform 0.3s ease;
+        }
+        .main-content {
+            transition: margin-left 0.3s ease;
+        }
+        .sidebar-collapsed .main-content {
+            margin-left: 70px !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <a href="../dashboard.html">
+            <div class="icon-container">
+                <img src="../icons/home.png" alt="Home Icon">
+            </div>
+        </a>
+        <div class="icon-container">
+            <img src="../icons/info.png" alt="Info Icon">
+        </div>
+        <div class="icon-container active">
+            <img src="../icons/map.png" alt="Map Icon">
+        </div>
+        <div class="icon-container">
+            <img src="../icons/logout.png" alt="Logout Icon">
+        </div>
+    </div>
+    <div class="sidebar-secondary">
+        <div class="section-header" data-section="filter">
+            <h2>FILTER <i class="fas fa-chevron-down"></i></h2>
+        </div>
+        <div class="section-content" id="filterSection">
+            <div class="filter-group">
+                <label class="filter-label">
+                    <input type="checkbox" class="filter-bullet" id="locationFilter">
+                    Location
+                </label>
+                <input type="text" class="filter-input" placeholder="County..." id="countyInput">
+                <input type="text" class="filter-input" placeholder="Town..." id="townInput">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <input type="checkbox" class="filter-bullet" id="disasterFilter">
+                    Disaster Type
+                </label>
+                <select class="filter-input" id="disasterTypeSelect">
+                    <option value="" disabled selected>Type...</option>
+                    <option value="flood">Flood</option>
+                    <option value="earthquake">Earthquake</option>
+                    <option value="fire">Wildfire</option>
+                    <option value="heatwave">Heatwave</option>
+                    <option value="hurricane">Hurricane</option>
+                    <option value="hailstorm">Hail Storm</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <input type="checkbox" class="filter-bullet">
+                    Shelter
+                </label>
+                <select class="filter-input">
+                    <option value="" disabled selected>Type...</option>
+                    <option value="flood">Flood</option>
+                    <option value="earthquake">Earthquake</option>
+                    <option value="fire">Wildfire</option>
+                    <option value="heatwave">Heatwave</option>
+                    <option value="hurricane">Hurricane</option>
+                    <option value="hailstorm">Hail Storm</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-header" data-section="emergency">
+            <h2>ADD AN EMERGENCY <i class="fas fa-chevron-down"></i></h2>
+        </div>
+        <div class="section-content" id="emergencySection" style="display: none;">
+            <div class="filter-group">
+                <label class="filter-label">
+                    <input type="checkbox" class="filter-bullet" id="addEmergencyCheck">
+                    Disaster Type
+                </label>
+                <select class="filter-input" id="emergencyType">
+                    <option value="" disabled selected>Select type...</option>
+                    <option value="flood">Flood</option>
+                    <option value="earthquake">Earthquake</option>
+                    <option value="fire">Wildfire</option>
+                    <option value="heatwave">Heatwave</option>
+                    <option value="hurricane">Hurricane</option>
+                    <option value="hailstorm">Hail Storm</option>
+                </select>
+                <select class="filter-input" id="pinMethod">
+                    <option value="" disabled selected>How to add...</option>
+                    <option value="place-pin">Place Pin</option>
+                    <option value="select-zone">Select Zone</option>
+                </select>
+            </div>
+
+            <div class="filter-group" id="pinPlacementForm" style="display: none;">
+                <!-- Pin placement fields -->
+                <div class="pin-fields">
+                    <div class="form-field">
+                        <label>Latitude</label>
+                        <input type="number" step="any" class="filter-input" id="lat" placeholder="Latitude" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label>Longitude</label>
+                        <input type="number" step="any" class="filter-input" id="lng" placeholder="Longitude" readonly>
+                    </div>
+                </div>
+
+                <!-- Zone selection fields -->
+                <div class="zone-fields" style="display: none;">
+                    <div class="form-field">
+                        <label>County</label>
+                        <input type="text" class="filter-input" id="zoneCounty" placeholder="County...">
+                    </div>
+                    <div class="form-field">
+                        <label>Town</label>
+                        <input type="text" class="filter-input" id="zoneTown" placeholder="Town...">
+                    </div>
+                </div>
+
+                <!-- Common fields for both methods -->
+                <div class="form-field">
+                    <label>Description</label>
+                    <input type="text" class="filter-input" id="description" placeholder="Description">
+                </div>
+                <div class="form-field">
+                    <label>Time Interval</label>
+                    <input type="datetime-local" class="filter-input" id="startTime" placeholder="Start Time">
+                    <input type="datetime-local" class="filter-input" id="endTime" placeholder="End Time">
+                </div>
+                <div class="form-field">
+                    <label>Gravity</label>
+                    <select class="filter-input" id="gravity">
+                        <option value="" disabled selected>Select gravity...</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <button class="filter-input submit-btn" id="addPinButton" style="background-color: #9E1717; color: white; cursor: pointer;">
+                    Add Emergency
+                </button>
+                <div id="form-message" style="color: white; text-align: center; margin-top: 10px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="main-content">
+        <div id="map"></div>
+        <div class="coordinates-display">
+            Click on map to set coordinates
+        </div>
+    </div>
+
+    <!-- Leaflet and plugins -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([0, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Create marker cluster groups
+        const earthquakeCluster = L.markerClusterGroup({
+            iconCreateFunction: function(cluster) {
+                const count = cluster.getChildCount();
+                return L.divIcon({
+                    html: count,
+                    className: 'marker-cluster-custom',
+                    iconSize: L.point(40, 40)
+                });
+            }
+        });
+        const calamityCluster = L.markerClusterGroup();
+        
+        // Add clusters to map
+        map.addLayer(earthquakeCluster);
+        map.addLayer(calamityCluster);
+
+        // Custom icon creation function
+        function createCustomIcon(iconClass, color) {
+            const iconSize = 48;
+            return L.divIcon({
+                html: `<i class="${iconClass} fa-2x" style="color: ${color};"></i>`,
+                className: 'custom-icon',
+                iconSize: [iconSize, iconSize],
+                iconAnchor: [iconSize/2, iconSize/2],
+                popupAnchor: [0, -iconSize/2]
+            });
+        }
+
+        // Create icons for different types
+        const icons = {
+            earthquake: createCustomIcon('fas fa-house-crack', '#ff4444'),
+            fire: createCustomIcon('fas fa-fire', '#ff8800'),
+            flood: createCustomIcon('fas fa-water', '#0099cc'),
+            heatwave: createCustomIcon('fas fa-sun', '#ffd700'),
+            hurricane: createCustomIcon('fas fa-wind', '#8b4513'),
+            hailstorm: createCustomIcon('fas fa-cloud-meatball', '#4169e1'),
+            default: createCustomIcon('fas fa-exclamation-triangle', '#ffbb33')
+        };
+
+        // Add legend
+        const legend = L.control({position: 'bottomright'});
+        legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <div><i class="fas fa-house-crack" style="color: #ff4444;"></i> Earthquake</div>
+                <div><i class="fas fa-fire" style="color: #ff8800;"></i> Fire</div>
+                <div><i class="fas fa-water" style="color: #0099cc;"></i> Flood</div>
+                <div><i class="fas fa-sun" style="color: #ffd700;"></i> Heatwave</div>
+                <div><i class="fas fa-wind" style="color: #8b4513;"></i> Hurricane</div>
+                <div><i class="fas fa-cloud-meatball" style="color: #4169e1;"></i> Hailstorm</div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+
+        // Fetch and display calamities
+        fetch('/calamities')
+            .then(res => res.json())
+            .then(calamities => {
+                if (Array.isArray(calamities)) {
+                    calamities.forEach(c => {
+                        let icon;
+                        const type = c.type.toLowerCase();
+                        icon = icons[type] || icons.default;
+
+                        const marker = L.marker([c.lat, c.lng], { icon });
+                        marker.bindPopup(`<b>${c.type}</b><br>${c.description || ''}`);
+                        calamityCluster.addLayer(marker);
+                    });
+                }
+            })
+            .catch(error => console.error('Error fetching calamities:', error));
+
+        // Fetch and display earthquakes
+        fetch('/earthquakes')
+            .then(res => res.json())
+            .then(data => {
+                const earthquakes = data.features || data.earthquakes || data;
+                
+                if (Array.isArray(earthquakes)) {
+                    earthquakes.forEach(eq => {
+                        const lat = eq.lat || (eq.geometry && eq.geometry.coordinates[1]);
+                        const lng = eq.lng || (eq.geometry && eq.geometry.coordinates[0]);
+                        const magnitude = eq.magnitude || (eq.properties && eq.properties.magnitude);
+                        const place = eq.place || (eq.properties && eq.properties.place);
+
+                        if (lat && lng) {
+                            const marker = L.marker([lat, lng], { icon: icons.earthquake });
+                            marker.bindPopup(`
+                                <b>Earthquake</b><br>
+                                ${magnitude ? `Magnitude: ${magnitude}<br>` : ''}
+                                ${place ? `Location: ${place}` : ''}
+                            `);
+                            earthquakeCluster.addLayer(marker);
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error('Error fetching earthquakes:', error));
+
+        // Handle collapsible sections
+        document.querySelectorAll('.section-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const sectionId = this.dataset.section + 'Section';
+                const content = document.getElementById(sectionId);
+                const wasActive = this.classList.contains('active');
+
+                // Close all sections
+                document.querySelectorAll('.section-header').forEach(h => h.classList.remove('active'));
+                document.querySelectorAll('.section-content').forEach(c => c.style.display = 'none');
+
+                // Open clicked section if it wasn't active
+                if (!wasActive) {
+                    this.classList.add('active');
+                    content.style.display = 'block';
+                }
+            });
+        });
+
+        // Handle pin method selection
+        document.getElementById('pinMethod').addEventListener('change', function(e) {
+            const pinPlacementForm = document.getElementById('pinPlacementForm');
+            const pinFields = document.querySelector('.pin-fields');
+            const zoneFields = document.querySelector('.zone-fields');
+            const submitButton = document.getElementById('addPinButton');
+            const coordDisplay = document.querySelector('.coordinates-display');
+
+            if (e.target.value === 'place-pin') {
+                pinPlacementForm.style.display = 'block';
+                pinFields.style.display = 'block';
+                zoneFields.style.display = 'none';
+                submitButton.textContent = 'Add Emergency';
+                coordDisplay.style.display = 'block';
+                
+                // Enable map click for pin placement
+                map.once('click', function(e) {
+                    const lat = e.latlng.lat.toFixed(6);
+                    const lng = e.latlng.lng.toFixed(6);
+                    document.getElementById('lat').value = lat;
+                    document.getElementById('lng').value = lng;
+                    coordDisplay.textContent = `Selected: Latitude: ${lat}, Longitude: ${lng}`;
+                });
+            } else if (e.target.value === 'select-zone') {
+                pinPlacementForm.style.display = 'block';
+                pinFields.style.display = 'none';
+                zoneFields.style.display = 'block';
+                submitButton.textContent = 'Send Alarm';
+                coordDisplay.style.display = 'none';
+            } else {
+                pinPlacementForm.style.display = 'none';
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('addPinButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            const method = document.getElementById('pinMethod').value;
+            const type = document.getElementById('emergencyType').value;
+            const description = document.getElementById('description').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const gravity = document.getElementById('gravity').value;
+
+            if (!type) {
+                document.getElementById('form-message').textContent = 'Please select a disaster type';
+                return;
+            }
+
+            let data = {
+                type,
+                description,
+                startTime,
+                endTime,
+                gravity
+            };
+
+            if (method === 'place-pin') {
+                const lat = parseFloat(document.getElementById('lat').value);
+                const lng = parseFloat(document.getElementById('lng').value);
+                
+                if (isNaN(lat) || isNaN(lng)) {
+                    document.getElementById('form-message').textContent = 'Please click on the map to set coordinates';
+                    return;
+                }
+                
+                data = { ...data, lat, lng };
+            } else {
+                const county = document.getElementById('zoneCounty').value;
+                const town = document.getElementById('zoneTown').value;
+                
+                if (!county) {
+                    document.getElementById('form-message').textContent = 'Please enter a county';
+                    return;
+                }
+                
+                data = { ...data, county, town };
+            }
+
+            fetch('/calamities', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('form-message').textContent = data.message || data.error;
+                if (!data.error) {
+                    if (method === 'place-pin') {
+                        const markerIcon = icons[type.toLowerCase()] || icons.default;
+                        const marker = L.marker([data.lat, data.lng], { icon: markerIcon });
+                        marker.bindPopup(`<b>${type}</b><br>${description}`);
+                        calamityCluster.addLayer(marker);
+                    }
+                    
+                    // Reset form
+                    document.getElementById('description').value = '';
+                    document.getElementById('lat').value = '';
+                    document.getElementById('lng').value = '';
+                    document.getElementById('zoneCounty').value = '';
+                    document.getElementById('zoneTown').value = '';
+                    document.getElementById('pinMethod').value = '';
+                    document.getElementById('startTime').value = '';
+                    document.getElementById('endTime').value = '';
+                    document.getElementById('gravity').value = '';
+                    document.getElementById('pinPlacementForm').style.display = 'none';
+                    document.querySelector('.coordinates-display').textContent = 'Click on map to set coordinates';
+
+                    // Clear success message after 3 seconds
+                    setTimeout(() => {
+                        document.getElementById('form-message').textContent = '';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Error details:', error);
+                document.getElementById('form-message').textContent = 'Error adding emergency: ' + error.message;
+                // Clear error message after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('form-message').textContent = '';
+                }, 3000);
+            });
+        });
+
+        // Initialize map center to a default location (e.g., center of your country)
+        map.setView([45.9432, 24.9668], 7); // Center of Romania
+
+        // Show filter section by default
+        document.querySelector('[data-section="filter"]').classList.add('active');
+        document.getElementById('filterSection').style.display = 'block';
+    </script>
+</body>
+
+</html>
