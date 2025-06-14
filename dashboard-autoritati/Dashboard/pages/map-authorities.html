@@ -297,6 +297,10 @@
                 <!-- Zone selection fields -->
                 <div class="zone-fields" style="display: none;">
                     <div class="form-field">
+                        <label>Country</label>
+                        <input type="text" class="filter-input" id="zoneCountry" placeholder="Country...">
+                    </div>
+                    <div class="form-field">
                         <label>County</label>
                         <input type="text" class="filter-input" id="zoneCounty" placeholder="County...">
                     </div>
@@ -340,6 +344,7 @@
     </div>
 
     <!-- Leaflet and plugins -->
+     <script src="calamities.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
     <script>
@@ -407,21 +412,32 @@
 
         // Fetch and display calamities
         fetch('/calamities')
-            .then(res => res.json())
-            .then(calamities => {
-                if (Array.isArray(calamities)) {
-                    calamities.forEach(c => {
-                        let icon;
-                        const type = c.type.toLowerCase();
-                        icon = icons[type] || icons.default;
+  .then(res => {
+    if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+    return res.json();
+  })
+  .then(data => {
+    // Filter calamities with valid coordinates
+    const validCalamities = data.filter(c => c.lat != null && c.lng != null);
+    console.log('Valid calamities:', validCalamities); // Debug: Check filtered data
 
+    if (Array.isArray(validCalamities) && validCalamities.length > 0) {
+      validCalamities.forEach(c => {
+        const type = c.type.toLowerCase();
+        const icon = icons[type] || icons.default;
                         const marker = L.marker([c.lat, c.lng], { icon });
-                        marker.bindPopup(`<b>${c.type}</b><br>${c.description || ''}`);
+                        marker.bindPopup(`<b>${c.type}</b>
+                        <br>${c.description || ''}`);
                         calamityCluster.addLayer(marker);
                     });
                 }
             })
             .catch(error => console.error('Error fetching calamities:', error));
+
+
+
+
+
 
         // Fetch and display earthquakes
         fetch('/earthquakes')
@@ -477,6 +493,12 @@
             const submitButton = document.getElementById('addPinButton');
             const coordDisplay = document.querySelector('.coordinates-display');
 
+            // Remove any existing temporary marker
+            if (window.tempMarker) {
+                map.removeLayer(window.tempMarker);
+                window.tempMarker = null;
+            }
+
             if (e.target.value === 'place-pin') {
                 pinPlacementForm.style.display = 'block';
                 pinFields.style.display = 'block';
@@ -485,12 +507,32 @@
                 coordDisplay.style.display = 'block';
                 
                 // Enable map click for pin placement
-                map.once('click', function(e) {
+                map.on('click', function(e) {
                     const lat = e.latlng.lat.toFixed(6);
                     const lng = e.latlng.lng.toFixed(6);
                     document.getElementById('lat').value = lat;
                     document.getElementById('lng').value = lng;
                     coordDisplay.textContent = `Selected: Latitude: ${lat}, Longitude: ${lng}`;
+
+                    // Remove previous temporary marker if exists
+                    if (window.tempMarker) {
+                        map.removeLayer(window.tempMarker);
+                    }
+
+                    // Add new temporary marker
+                    window.tempMarker = L.marker([lat, lng], {
+                        icon: icons.default,
+                        draggable: true
+                    }).addTo(map);
+
+                    // Update coordinates when marker is dragged
+                    window.tempMarker.on('dragend', function(event) {
+                        const newLat = event.target.getLatLng().lat.toFixed(6);
+                        const newLng = event.target.getLatLng().lng.toFixed(6);
+                        document.getElementById('lat').value = newLat;
+                        document.getElementById('lng').value = newLng;
+                        coordDisplay.textContent = `Selected: Latitude: ${newLat}, Longitude: ${newLng}`;
+                    });
                 });
             } else if (e.target.value === 'select-zone') {
                 pinPlacementForm.style.display = 'block';
@@ -513,18 +555,43 @@
             const endTime = document.getElementById('endTime').value;
             const gravity = document.getElementById('gravity').value;
 
-            if (!type) {
-                document.getElementById('form-message').textContent = 'Please select a disaster type';
-                return;
-            }
-
-            let data = {
+            console.log('Form values:', {
+                method,
                 type,
                 description,
                 startTime,
                 endTime,
                 gravity
+            });
+
+            // Validate only emergency type
+            if (!type) {
+                document.getElementById('form-message').textContent = 'Please select a disaster type';
+                return;
+            }
+
+            if (!method) {
+                document.getElementById('form-message').textContent = 'Please select how to add the emergency';
+                return;
+            }
+
+            // Function to convert datetime-local to date format for database
+            const formatDateForDB = (dateTimeStr) => {
+  if (!dateTimeStr) return null;
+  const date = new Date(dateTimeStr);
+  const pad = n => n < 10 ? '0' + n : n;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
+};
+            let data = {
+                type: type.trim(),
+                description: description.trim() || null,
+                startdate: formatDateForDB(startTime),
+                enddate: formatDateForDB(endTime),
+                gravity: gravity || null
             };
+
+            // Store original coordinates for marker creation
+            let originalLat, originalLng;
 
             if (method === 'place-pin') {
                 const lat = parseFloat(document.getElementById('lat').value);
@@ -535,61 +602,94 @@
                     return;
                 }
                 
+                // Store original coordinates
+                originalLat = lat;
+                originalLng = lng;
+                
                 data = { ...data, lat, lng };
             } else {
+                const country = document.getElementById('zoneCountry').value;
                 const county = document.getElementById('zoneCounty').value;
                 const town = document.getElementById('zoneTown').value;
                 
-                if (!county) {
-                    document.getElementById('form-message').textContent = 'Please enter a county';
-                    return;
-                }
-                
-                data = { ...data, county, town };
+                data = { 
+                    ...data, 
+                    country: country.trim() || null, 
+                    county: county.trim() || null, 
+                    town: town.trim() || null
+                };
             }
+
+            // Remove any undefined or null values
+            Object.keys(data).forEach(key => {
+                if (data[key] === undefined || data[key] === null) {
+                    delete data[key];
+                }
+            });
+
+            console.log('Sending data to server:', data); // Debug log
 
             fetch('/calamities', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('form-message').textContent = data.message || data.error;
-                if (!data.error) {
-                    if (method === 'place-pin') {
-                        const markerIcon = icons[type.toLowerCase()] || icons.default;
-                        const marker = L.marker([data.lat, data.lng], { icon: markerIcon });
-                        marker.bindPopup(`<b>${type}</b><br>${description}`);
-                        calamityCluster.addLayer(marker);
-                    }
-                    
-                    // Reset form
-                    document.getElementById('description').value = '';
-                    document.getElementById('lat').value = '';
-                    document.getElementById('lng').value = '';
-                    document.getElementById('zoneCounty').value = '';
-                    document.getElementById('zoneTown').value = '';
-                    document.getElementById('pinMethod').value = '';
-                    document.getElementById('startTime').value = '';
-                    document.getElementById('endTime').value = '';
-                    document.getElementById('gravity').value = '';
-                    document.getElementById('pinPlacementForm').style.display = 'none';
-                    document.querySelector('.coordinates-display').textContent = 'Click on map to set coordinates';
-
-                    // Clear success message after 3 seconds
-                    setTimeout(() => {
-                        document.getElementById('form-message').textContent = '';
-                    }, 3000);
+            .then(res => {
+                if (!res.ok) {
+                    return res.text().then(text => {
+                        console.error('Server response:', text);
+                        throw new Error(`Server error: ${res.status} - ${text}`);
+                    });
                 }
+                return res.json();
+            })
+            .then(response => {
+                document.getElementById('form-message').style.color = 'lightgreen';
+                document.getElementById('form-message').textContent = response.message || 'Emergency added successfully!';
+                
+                if (method === 'place-pin' && originalLat && originalLng) {
+                    // Remove temporary marker
+                    if (window.tempMarker) {
+                        map.removeLayer(window.tempMarker);
+                        window.tempMarker = null;
+                    }
+
+                    const markerIcon = icons[type.toLowerCase()] || icons.default;
+                    const marker = L.marker([originalLat, originalLng], { icon: markerIcon });
+                    marker.bindPopup(`<b>${type}</b><br>${description || ''}`);
+                    calamityCluster.addLayer(marker);
+                }
+                
+                // Reset form
+                document.getElementById('description').value = '';
+                document.getElementById('lat').value = '';
+                document.getElementById('lng').value = '';
+                document.getElementById('zoneCountry').value = '';
+                document.getElementById('zoneCounty').value = '';
+                document.getElementById('zoneTown').value = '';
+                document.getElementById('pinMethod').value = '';
+                document.getElementById('startTime').value = '';
+                document.getElementById('endTime').value = '';
+                document.getElementById('gravity').value = '';
+                document.getElementById('emergencyType').value = '';
+                document.getElementById('pinPlacementForm').style.display = 'none';
+                document.querySelector('.coordinates-display').textContent = 'Click on map to set coordinates';
+
+                // Clear success message after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('form-message').textContent = '';
+                    document.getElementById('form-message').style.color = 'white';
+                }, 3000);
             })
             .catch(error => {
                 console.error('Error details:', error);
-                document.getElementById('form-message').textContent = 'Error adding emergency: ' + error.message;
-                // Clear error message after 3 seconds
+                document.getElementById('form-message').style.color = 'red';
+                document.getElementById('form-message').textContent = 'Error: ' + error.message;
+                // Clear error message after 5 seconds
                 setTimeout(() => {
                     document.getElementById('form-message').textContent = '';
-                }, 3000);
+                    document.getElementById('form-message').style.color = 'white';
+                }, 5000);
             });
         });
 
@@ -599,6 +699,22 @@
         // Show filter section by default
         document.querySelector('[data-section="filter"]').classList.add('active');
         document.getElementById('filterSection').style.display = 'block';
+
+        function parseFrontendDate(str) {
+            if (!str) return null;
+            // Format dd/mm/yyyy, HH:mm:ss
+            const match = str.match(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/);
+            if (match) {
+                const [_, dd, mm, yyyy, HH, MM, SS] = match;
+                return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
+            }
+            // Format yyyy-mm-ddTHH:MM (from input type datetime-local)
+            if (str.includes('T')) {
+                return str.replace('T', ' ') + ':00';
+            }
+            // Already in SQL format
+            return str;
+        }
     </script>
 </body>
 
