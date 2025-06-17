@@ -1,0 +1,13 @@
+id,lat,lng,id_calamity,type_shelter,permanent,description,calamity_type
+1,46.3987,23.1262,NULL,shelter,1,opa,NULL
+2,47.5628,24.5852,NULL,shelter,1,jh,NULL
+5,45.6888,26.6528,23,"escape route",0,bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,NULL
+7,45.6273,26.4001,23,shelter,0,NULL,NULL
+8,47.1853,23.3624,27,shelter,0,NULL,NULL
+9,45.851,27.3505,23,"escape route",0,aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,NULL
+10,46.686,20.3247,NULL,shelter,1,fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff,NULL
+11,47.0913,23.6975,27,shelter,0,NULL,NULL
+13,48.12,21.9727,NULL,shelter,1,aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,NULL
+14,44.7211,28.3447,NULL,shelter,1,fffffffffffffffffffffffffffffffffffffffffffffffff,NULL
+15,47.281,22.8639,NULL,shelter,1,NULL,fire
+16,47.267,23.394,27,shelter,0,NULL,wildfire
