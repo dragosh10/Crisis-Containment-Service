@@ -9,6 +9,13 @@ function createCustomIcon(iconClass, color) {
   });
 }
 
+// Make createCustomIcon available globally
+window.createCustomIcon = createCustomIcon;
+
+// Global variables for disaster filter
+let selectedDisasterPin = null;
+let isSelectingDisasterPin = false;
+
 function loadCalamities(map) {
   const icons = {
     earthquake: createCustomIcon('fas fa-house-crack', '#ff4444'),
@@ -104,14 +111,21 @@ function loadCalamities(map) {
               <div style="margin-bottom: 12px;"><strong>Gravity:</strong> ${gravityText}</div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <button class="delete-pin-btn" data-id="${c.id}" style="color:white;background:#c00;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:14px;">Șterge pin</button>
-                <button class="show-shelters-btn" data-id="${c.id}" style="color:white;background:#007bff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:14px;">Show shelters</button>
-                <button class="add-shelter-btn" data-id="${c.id}" style="color:white;background:#28a745;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:14px;">Add shelter</button>
+                <button class="show-shelters-btn" data-id="${c.id}" style="color:white;background:#007bff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:14px;">Show shelters/escape routes</button>
               </div>
             </div>
           `;
           const marker = L.marker([c.lat, c.lng], {
             icon: icons[c.type] || icons.default
           }).bindPopup(popupHtml);
+          
+          // Add calamity data to marker for filtering
+          marker.calamityData = {
+            id: c.id,
+            type: c.type,
+            lat: c.lat,
+            lng: c.lng
+          };
           
           // Add marker to cluster group instead of directly to map
           window.calamityCluster.addLayer(marker);
@@ -135,21 +149,37 @@ function loadCalamities(map) {
                 }
               });
             }
-            // Show shelters button logic (placeholder)
+            
+            // Show shelters button logic
             const showSheltersBtn = document.querySelector(`.show-shelters-btn[data-id='${c.id}']`);
             if (showSheltersBtn) {
               showSheltersBtn.addEventListener('click', function() {
-                alert('Show shelters functionality to be implemented for calamity ID: ' + c.id);
-                // Add logic to display shelters here
+                if (window.toggleEmergencyShelters) {
+                  const isShowing = window.toggleEmergencyShelters(c.id);
+                  showSheltersBtn.textContent = isShowing ? 'Hide shelters/escape routes' : 'Show shelters/escape routes';
+                  showSheltersBtn.style.background = isShowing ? '#6c757d' : '#007bff';
+                }
               });
             }
-            // Add shelter button logic (placeholder)
-            const addShelterBtn = document.querySelector(`.add-shelter-btn[data-id='${c.id}']`);
-            if (addShelterBtn) {
-              addShelterBtn.addEventListener('click', function() {
-                alert('Add shelter functionality to be implemented for calamity ID: ' + c.id);
-                // Add logic to add a shelter here
-              });
+          });
+
+          // Add click handler for emergency selection
+          marker.on('click', function(e) {
+            if (window.isSelectingEmergency && window.isSelectingEmergency()) {
+              e.originalEvent.stopPropagation();
+              const wasSelected = window.handleEmergencySelection(c);
+              if (wasSelected) {
+                return; // Stop further processing if emergency was selected for shelter
+              }
+            }
+            
+            // Handle disaster pin selection for filter
+            if (window.isSelectingDisasterPin && window.isSelectingDisasterPin()) {
+              e.originalEvent.stopPropagation();
+              const wasSelected = window.handleDisasterPinSelection(c);
+              if (wasSelected) {
+                return; // Stop further processing if disaster was selected for filter
+              }
             }
           });
         });
@@ -519,4 +549,121 @@ function loadCalamities(map) {
       descError.style.display = 'none';
     }
   }
+
+  // Disaster filter checkbox logic
+  document.getElementById('disasterFilter').addEventListener('change', function() {
+    const disasterCoordinatesSection = document.getElementById('disasterCoordinatesSection');
+    const disasterTypeSelect = document.getElementById('disasterTypeSelect');
+    
+    if (this.checked) {
+      // Show the coordinates selection section
+      disasterCoordinatesSection.style.display = 'block';
+      isSelectingDisasterPin = true;
+      selectedDisasterPin = null;
+      
+      // Reset the confirmation checkbox
+      const confirmCheckbox = document.getElementById('confirmDisasterPin');
+      if (confirmCheckbox) {
+        confirmCheckbox.checked = false;
+      }
+      
+      // Hide disaster info until a pin is selected
+      document.getElementById('selected-disaster-info').style.display = 'none';
+      
+    } else {
+      // Hide coordinates section and reset everything
+      disasterCoordinatesSection.style.display = 'none';
+      isSelectingDisasterPin = false;
+      selectedDisasterPin = null;
+      disasterTypeSelect.value = '';
+      
+      // Reset confirmation checkbox
+      const confirmCheckbox = document.getElementById('confirmDisasterPin');
+      if (confirmCheckbox) {
+        confirmCheckbox.checked = false;
+      }
+    }
+  });
+
+  // Confirmation checkbox for disaster pin selection
+  document.getElementById('confirmDisasterPin').addEventListener('change', function() {
+    const disasterTypeSelect = document.getElementById('disasterTypeSelect');
+    
+    if (this.checked && selectedDisasterPin) {
+      // Checkbox is checked and we have a selected pin
+      isSelectingDisasterPin = false;
+      
+      // Set the disaster type select to match the selected pin
+      if (selectedDisasterPin.type) {
+        disasterTypeSelect.value = selectedDisasterPin.type;
+      }
+      
+      // Apply filtering based on selected pin and type
+      applyDisasterFilter();
+      
+    } else {
+      // Checkbox is unchecked - clear selection
+      isSelectingDisasterPin = true;
+      selectedDisasterPin = null;
+      disasterTypeSelect.value = '';
+      document.getElementById('selected-disaster-info').style.display = 'none';
+      
+      // Reset any applied filters
+      resetDisasterFilter();
+    }
+  });
+
+  // Function to apply disaster filter
+  function applyDisasterFilter() {
+    if (selectedDisasterPin && selectedDisasterPin.type) {
+      // Filter calamities to show only the selected type and nearby ones
+      window.calamityCluster.eachLayer(function(layer) {
+        if (layer.calamityData) {
+          if (layer.calamityData.type === selectedDisasterPin.type) {
+            layer.setOpacity(1.0);
+          } else {
+            layer.setOpacity(0.3); // Dim other types
+          }
+        }
+      });
+    }
+  }
+
+  // Function to reset disaster filter
+  function resetDisasterFilter() {
+    // Restore full opacity to all markers
+    window.calamityCluster.eachLayer(function(layer) {
+      layer.setOpacity(1.0);
+    });
+  }
+
+  // Function to handle disaster pin selection for filter
+  function handleDisasterPinSelection(calamity) {
+    if (isSelectingDisasterPin) {
+      selectedDisasterPin = {
+        id: calamity.id,
+        type: calamity.type,
+        lat: calamity.lat,
+        lng: calamity.lng
+      };
+      
+      // Update UI to show selected disaster
+      document.getElementById('selected-disaster-type').innerHTML = `<strong>Type:</strong> ${calamity.type}`;
+      document.getElementById('selected-disaster-coords').innerHTML = `<strong>Coordinates:</strong> ${calamity.lat}, ${calamity.lng}`;
+      document.getElementById('selected-disaster-info').style.display = 'block';
+      
+      // Reset the confirmation checkbox when a new disaster is selected
+      const confirmCheckbox = document.getElementById('confirmDisasterPin');
+      if (confirmCheckbox) {
+        confirmCheckbox.checked = false;
+      }
+      
+      return true; // Indicate that disaster was selected for filter
+    }
+    return false; // Normal behavior
+  }
+
+  // Make disaster filter function available globally
+  window.handleDisasterPinSelection = handleDisasterPinSelection;
+  window.isSelectingDisasterPin = () => isSelectingDisasterPin;
 }

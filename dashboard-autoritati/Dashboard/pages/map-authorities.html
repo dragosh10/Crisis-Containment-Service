@@ -6,190 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Map Authorities</title>
     <link rel="stylesheet" href="../styles.css">
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <!-- MarkerCluster CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        #map {
-            width: 100%;
-            height: 100%;
-            border-radius: 10px;
-        }
-        .custom-icon {
-            text-align: center;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        .marker-cluster-custom {
-            background: rgba(255, 68, 68, 0.6);
-            border: 3px solid rgba(255, 68, 68, 0.4);
-            border-radius: 50%;
-            color: white;
-            text-align: center;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .legend {
-            padding: 6px 8px;
-            background: white;
-            background: rgba(255,255,255,0.8);
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            border-radius: 5px;
-            line-height: 24px;
-        }
-        .legend i {
-            width: 18px;
-            height: 18px;
-            float: left;
-            margin-right: 8px;
-            opacity: 0.7;
-            text-align: center;
-        }
-        .coordinates-display {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-        .section-header {
-            cursor: pointer;
-            padding: 10px;
-            background-color: rgba(158, 23, 23, 0.2);
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        .section-header h2 {
-            margin: 0;
-            font-size: 1.2em;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .section-content {
-            padding: 10px 0;
-        }
-        .filter-group {
-            margin-bottom: 10px;
-        }
-        .filter-input {
-            margin-bottom: 5px;
-        }
-        .section-header:hover {
-            background-color: rgba(158, 23, 23, 0.3);
-        }
-        .section-header.active {
-            background-color: rgba(158, 23, 23, 0.4);
-        }
-        .section-header.active i {
-            transform: rotate(180deg);
-        }
-        .coordinates-group {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 5px;
-        }
-        .submit-btn:hover {
-            background-color: #8B1414 !important;
-        }
-        #pinPlacementForm {
-            background-color: rgba(158, 23, 23, 0.1);
-            padding: 10px;
-            border-radius: 10px;
-            margin-top: 10px;
-        }
-        .form-field {
-            margin-bottom: 10px;
-            display: flex;
-            flex-direction: column;
-        }
-        .form-field label {
-            color: white;
-            margin-bottom: 4px;
-            font-size: 0.9em;
-        }
-        .form-field .filter-input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        .form-field .filter-input:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-        .form-field .filter-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .form-field input[type="datetime-local"] {
-            margin-bottom: 5px;
-        }
-        .form-field input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-        }
-        .submit-btn {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-        }
-        .hamburger-toggle {
-            width: 100%;
-            height: 50px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .hamburger-toggle .line {
-            width: 24px;
-            height: 2px;
-            background-color: white;
-            margin: 2px 0;
-            transition: 0.3s;
-        }
-        .sidebar-collapsed .hamburger-toggle .line:nth-child(1) {
-            transform: rotate(-45deg) translate(-5px, 6px);
-        }
-        .sidebar-collapsed .hamburger-toggle .line:nth-child(2) {
-            opacity: 0;
-        }
-        .sidebar-collapsed .hamburger-toggle .line:nth-child(3) {
-            transform: rotate(45deg) translate(-5px, -6px);
-        }
-        .sidebar {
-            transform: none !important;
-        }
-        .sidebar-collapsed .sidebar-secondary {
-            transform: translateX(-100%);
-        }
-        .sidebar-secondary {
-            transition: transform 0.3s ease;
-        }
-        .main-content {
-            transition: margin-left 0.3s ease;
-        }
-        .sidebar-collapsed .main-content {
-            margin-left: 70px !important;
-        }
-    </style>
+    
 </head>
 
 <body>
@@ -217,10 +38,9 @@
             <div class="filter-group">
                 <label class="filter-label">
                     <input type="checkbox" class="filter-bullet" id="locationFilter">
-                    Location
+                   Everything
                 </label>
-                <input type="text" class="filter-input" placeholder="County..." id="countyInput">
-                <input type="text" class="filter-input" placeholder="Town..." id="townInput">
+               
             </div>
 
             <div class="filter-group">
@@ -230,13 +50,35 @@
                 </label>
                 <select class="filter-input" id="disasterTypeSelect">
                     <option value="" disabled selected>Type...</option>
+                    <option value="">All</option>
                     <option value="flood">Flood</option>
                     <option value="earthquake">Earthquake</option>
-                    <option value="fire">Wildfire</option>
+                    <option value="wildfire">Wildfire</option>
+                    <option value="fire">Fire</option>
                     <option value="heatwave">Heatwave</option>
                     <option value="hurricane">Hurricane</option>
                     <option value="hailstorm">Hail Storm</option>
+                 
+                    <option value="tsunami">Tsunami</option>
+                    <option value="volcanic eruption">Volcanic Eruption</option>
+                    <option value="landslide">Landslide</option>
+                    <option value="other">Other</option>
+
                 </select>
+                
+                <!-- Coordinates display section - hidden by default -->
+                <div id="disasterCoordinatesSection" style="display: none; margin-top: 8px;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 4px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                            <input type="checkbox" id="confirmDisasterPin" style="margin-right: 8px; transform: scale(1.2);">
+                            <label for="confirmDisasterPin" style="margin: 0; font-weight: bold; font-size: 12px;">Confirm pin selection</label>
+                        </div>
+                        <div id="selected-disaster-info" style="display: none;">
+                            <div id="selected-disaster-type" style="margin-bottom: 4px; font-size: 12px;"></div>
+                            <div id="selected-disaster-coords" style="margin-bottom: 4px; font-size: 12px;"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="filter-group">
@@ -246,12 +88,19 @@
                 </label>
                 <select class="filter-input">
                     <option value="" disabled selected>Type...</option>
+                    <option value="">All</option>
                     <option value="flood">Flood</option>
                     <option value="earthquake">Earthquake</option>
-                    <option value="fire">Wildfire</option>
+                    <option value="wildfire">Wildfire</option>
+                    <option value="fire">Fire</option>
                     <option value="heatwave">Heatwave</option>
                     <option value="hurricane">Hurricane</option>
                     <option value="hailstorm">Hail Storm</option>
+                  
+                    <option value="tsunami">Tsunami</option>
+                    <option value="volcanic eruption">Volcanic Eruption</option>
+                    <option value="landslide">Landslide</option>
+                    <option value="other">Other</option>
                 </select>
             </div>
         </div>
@@ -262,17 +111,23 @@
         <div class="section-content" id="emergencySection" style="display: none;">
             <div class="filter-group">
                 <label class="filter-label">
-                    <input type="checkbox" class="filter-bullet" id="addEmergencyCheck">
+                  
                     Disaster Type
                 </label>
                 <select class="filter-input" id="emergencyType">
-                    <option value="" disabled selected>Select type...</option>
+                    <option value="" disabled selected>Type...</option>
                     <option value="flood">Flood</option>
                     <option value="earthquake">Earthquake</option>
-                    <option value="fire">Wildfire</option>
+                    <option value="wildfire">Wildfire</option>
+                    <option value="fire">Fire</option>
                     <option value="heatwave">Heatwave</option>
                     <option value="hurricane">Hurricane</option>
                     <option value="hailstorm">Hail Storm</option>
+                 
+                    <option value="tsunami">Tsunami</option>
+                    <option value="volcanic eruption">Volcanic Eruption</option>
+                    <option value="landslide">Landslide</option>
+                    <option value="other">Other</option>
                 </select>
                 <select class="filter-input" id="pinMethod">
                     <option value="" disabled selected>How to add...</option>
@@ -297,15 +152,15 @@
                 <!-- Zone selection fields -->
                 <div class="zone-fields" style="display: none;">
                     <div class="form-field">
-                        <label>Country</label>
+                        
                         <input type="text" class="filter-input" id="zoneCountry" placeholder="Country...">
                     </div>
                     <div class="form-field">
-                        <label>County</label>
+                       
                         <input type="text" class="filter-input" id="zoneCounty" placeholder="County...">
                     </div>
                     <div class="form-field">
-                        <label>Town</label>
+                       
                         <input type="text" class="filter-input" id="zoneTown" placeholder="Town...">
                     </div>
                 </div>
@@ -313,7 +168,9 @@
                 <!-- Common fields for both methods -->
                 <div class="form-field">
                     <label>Description</label>
-                    <input type="text" class="filter-input" id="description" placeholder="Description">
+                    <input type="text" class="filter-input" id="description" placeholder="Description (max 250 characters)..." maxlength="250">
+                    <div id="char-count" style="font-size: 12px; color: #ccc; margin-top: 4px;">250 characters remaining</div>
+                    <div id="description-error" style="font-size: 12px; color: #ff4444; margin-top: 4px; display: none;"></div>
                 </div>
                 <div class="form-field">
                     <label>Time Interval</label>
@@ -324,6 +181,7 @@
                     <label>Gravity</label>
                     <select class="filter-input" id="gravity">
                         <option value="" disabled selected>Select gravity...</option>
+                        <option value="">None</option>
                         <option value="high">High</option>
                         <option value="medium">Medium</option>
                         <option value="low">Low</option>
@@ -335,6 +193,96 @@
                 <div id="form-message" style="color: white; text-align: center; margin-top: 10px;"></div>
             </div>
         </div>
+
+        <div class="section-header" data-section="shelter">
+            <h2>ADD SHELTER <i class="fas fa-chevron-down"></i></h2>
+        </div>
+        <div class="section-content" id="shelterSection" style="display: none;">
+            <div class="filter-group">
+                <label class="filter-label">
+                    Shelter Type
+                </label>
+                <select class="filter-input" id="shelterMethod">
+                    <option value="" disabled selected>Choose method...</option>
+                    <option value="emergency-shelter">Shelter for a certain emergency</option>
+                    <option value="permanent-shelter">Add permanent shelter</option>
+                </select>
+            </div>
+
+            <div class="filter-group" id="shelterForm" style="display: none;">
+                <!-- Emergency selection section -->
+                <div class="emergency-selection" id="emergencySelection" style="display: none;">
+                    <div class="form-field">
+                        <label>Click on an emergency pin on the map to select it (you can change selection)</label>
+                        <div id="emergency-info" style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 4px; margin-top: 8px; display: none;">
+                            <div id="selected-emergency-type" style="margin-bottom: 4px;"></div>
+                            <div id="selected-emergency-coords" style="margin-bottom: 4px;"></div>
+                            <div id="selected-emergency-icon" style="font-size: 24px;"></div>
+                        </div>
+                        
+                        <!-- Emergency confirmation section -->
+                        <div id="emergencyConfirmationSection" style="display: none; margin-top: 8px;">
+                            <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 4px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <input type="checkbox" id="confirmEmergencyPin" style="margin-right: 8px; transform: scale(1.2);">
+                                    <label for="confirmEmergencyPin" style="margin: 0; font-weight: bold; font-size: 12px;">Confirm emergency selection</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shelter coordinates section -->
+                <div class="shelter-coordinates" id="shelterCoordinates" style="display: none;">
+                    <div class="form-field">
+                        <label>Shelter Location (click on map)</label>
+                        <input type="number" step="any" class="filter-input" id="shelterLat" placeholder="Shelter Latitude" readonly>
+                        <input type="number" step="any" class="filter-input" id="shelterLng" placeholder="Shelter Longitude" readonly>
+                    </div>
+                </div>
+
+                <!-- Common fields -->
+                <div class="common-shelter-fields" id="commonShelterFields" style="display: none;">
+                    <!-- Calamity type field for permanent shelters -->
+                    <div class="form-field" id="permanentCalamityTypeField" style="display: none;">
+                        <label>Emergency Type</label>
+                        <select class="filter-input" id="permanentCalamityType">
+                            <option value="" disabled selected>Select emergency type...</option>
+                            <option value="flood">Flood</option>
+                            <option value="earthquake">Earthquake</option>
+                            <option value="wildfire">Wildfire</option>
+                            <option value="fire">Fire</option>
+                            <option value="heatwave">Heatwave</option>
+                            <option value="hurricane">Hurricane</option>
+                            <option value="hailstorm">Hail Storm</option>
+                            <option value="tsunami">Tsunami</option>
+                            <option value="volcanic eruption">Volcanic Eruption</option>
+                            <option value="landslide">Landslide</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Type</label>
+                        <select class="filter-input" id="shelterType">
+                            <option value="" disabled selected>Select type...</option>
+                            <option value="">None</option>
+                            <option value="shelter">Shelter</option>
+                            <option value="escape route">Escape route</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Description</label>
+                        <input type="text" class="filter-input" id="shelterDescription" placeholder="Description (max 250 characters)..." maxlength="250">
+                        <div id="shelter-char-count" style="font-size: 12px; color: #ccc; margin-top: 4px;">250 characters remaining</div>
+                        <div id="shelter-description-error" style="font-size: 12px; color: #ff4444; margin-top: 4px; display: none;"></div>
+                    </div>
+                    <button class="filter-input submit-btn" id="addShelterButton" style="background-color: #28a745; color: white; cursor: pointer;">
+                        Add Shelter
+                    </button>
+                    <div id="shelter-form-message" style="color: white; text-align: center; margin-top: 10px;"></div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="main-content">
         <div id="map"></div>
@@ -343,378 +291,93 @@
         </div>
     </div>
 
-    <!-- Leaflet and plugins -->
+    <script src="fires.js"></script>
      <script src="calamities.js"></script>
+     <script src="shelters.js"></script>
+     <script src="earthquake.js"></script>
+     <script src="floods.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+    
     <script>
-        // Initialize map
+      
         const map = L.map('map').setView([0, 0], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
         }).addTo(map);
 
-        // Create marker cluster groups
-        const earthquakeCluster = L.markerClusterGroup({
-            iconCreateFunction: function(cluster) {
-                const count = cluster.getChildCount();
-                return L.divIcon({
-                    html: count,
-                    className: 'marker-cluster-custom',
-                    iconSize: L.point(40, 40)
-                });
-            }
-        });
-        const calamityCluster = L.markerClusterGroup();
-        
-        // Add clusters to map
-        map.addLayer(earthquakeCluster);
-        map.addLayer(calamityCluster);
 
-        // Custom icon creation function
-        function createCustomIcon(iconClass, color) {
-            const iconSize = 48;
-            return L.divIcon({
-                html: `<i class="${iconClass} fa-2x" style="color: ${color};"></i>`,
-                className: 'custom-icon',
-                iconSize: [iconSize, iconSize],
-                iconAnchor: [iconSize/2, iconSize/2],
-                popupAnchor: [0, -iconSize/2]
-            });
+        loadEarthquakes(map);
+        loadFires(map);
+        loadCalamities(map);
+        loadFloods(map);
+        
+        // Initialize shelters after DOM is ready
+        if (typeof initializeShelters === 'function') {
+            initializeShelters(map, null, createCustomIcon);
+        }
+        if (typeof loadShelters === 'function') {
+            loadShelters(map, createCustomIcon);
         }
 
-        // Create icons for different types
-        const icons = {
-            earthquake: createCustomIcon('fas fa-house-crack', '#ff4444'),
-            fire: createCustomIcon('fas fa-fire', '#ff8800'),
-            flood: createCustomIcon('fas fa-water', '#0099cc'),
-            heatwave: createCustomIcon('fas fa-sun', '#ffd700'),
-            hurricane: createCustomIcon('fas fa-wind', '#8b4513'),
-            hailstorm: createCustomIcon('fas fa-cloud-meatball', '#4169e1'),
-            default: createCustomIcon('fas fa-exclamation-triangle', '#ffbb33')
-        };
-
-        // Add legend
         const legend = L.control({position: 'bottomright'});
         legend.onAdd = function (map) {
             const div = L.DomUtil.create('div', 'legend');
             div.innerHTML = `
-                <div><i class="fas fa-house-crack" style="color: #ff4444;"></i> Earthquake</div>
-                <div><i class="fas fa-fire" style="color: #ff8800;"></i> Fire</div>
-                <div><i class="fas fa-water" style="color: #0099cc;"></i> Flood</div>
-                <div><i class="fas fa-sun" style="color: #ffd700;"></i> Heatwave</div>
-                <div><i class="fas fa-wind" style="color: #8b4513;"></i> Hurricane</div>
-                <div><i class="fas fa-cloud-meatball" style="color: #4169e1;"></i> Hailstorm</div>
+                <div class="legend-header" style="background: rgba(0,0,0,0.8); padding: 8px; border-radius: 4px; color: white; margin-bottom: 4px;">
+                    <strong>Disaster Types .</strong>
+                   
+                    <button id="legend-toggle" style="float: right; background: transparent; border: 1px solid white; color: white; padding: 2px 6px; font-size: 12px; cursor: pointer; border-radius: 3px;">Hide</button>
+                </div>
+                <div id="legend-content" style="background: rgba(0,0,0,0.8); padding: 8px; border-radius: 4px; color: white;">
+                    <div><i class="fas fa-house-crack" style="color: #ff4444;"></i> Earthquake</div>
+                    <div><i class="fas fa-fire" style="color: #ff8800;"></i> Fire</div>
+                    <div><i class="fas fa-water" style="color: #0099cc;"></i> Flood</div>
+
+                    <div><i class="fas fa-sun" style="color: #ffd700;"></i> Heatwave</div>
+                    <div><i class="fas fa-wind" style="color: #8b4513;"></i> Hurricane</div>
+                    <div><i class="fas fa-cloud-meatball" style="color: #4169e1;"></i> Hailstorm</div>
+                    <div><i class="fas fa-tree" style="color: #ff6600;"></i> Wildfire</div>
+                   
+                    <div><i class="fas fa-water" style="color: #006699;"></i> Tsunami</div>
+                    <div><i class="fas fa-mountain" style="color: #cc0000;"></i> Volcanic Eruption</div>
+                    <div><i class="fas fa-mountain" style="color: #8b4513;"></i> Landslide</div>
+                    <div><i class="fas fa-exclamation-triangle" style="color: #ffbb33;"></i> Other</div>
+                </div>
             `;
             return div;
         };
         legend.addTo(map);
 
-        // Fetch and display calamities
-        fetch('/calamities')
-  .then(res => {
-    if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-    return res.json();
-  })
-  .then(data => {
-    // Filter calamities with valid coordinates
-    const validCalamities = data.filter(c => c.lat != null && c.lng != null);
-    console.log('Valid calamities:', validCalamities); // Debug: Check filtered data
+        // Legend toggle functionality
+        map.on('legendadd', function() {
+            const toggleBtn = document.getElementById('legend-toggle');
+            const legendContent = document.getElementById('legend-content');
+            let isVisible = true;
 
-    if (Array.isArray(validCalamities) && validCalamities.length > 0) {
-      validCalamities.forEach(c => {
-        const type = c.type.toLowerCase();
-        const icon = icons[type] || icons.default;
-                        const marker = L.marker([c.lat, c.lng], { icon });
-                        marker.bindPopup(`<b>${c.type}</b>
-                        <br>${c.description || ''}`);
-                        calamityCluster.addLayer(marker);
-                    });
+            toggleBtn.addEventListener('click', function() {
+                if (isVisible) {
+                    legendContent.style.display = 'none';
+                    toggleBtn.textContent = 'Show';
+                } else {
+                    legendContent.style.display = 'block';
+                    toggleBtn.textContent = 'Hide';
                 }
-            })
-            .catch(error => console.error('Error fetching calamities:', error));
-
-
-
-
-
-
-        // Fetch and display earthquakes
-        fetch('/earthquakes')
-            .then(res => res.json())
-            .then(data => {
-                const earthquakes = data.features || data.earthquakes || data;
-                
-                if (Array.isArray(earthquakes)) {
-                    earthquakes.forEach(eq => {
-                        const lat = eq.lat || (eq.geometry && eq.geometry.coordinates[1]);
-                        const lng = eq.lng || (eq.geometry && eq.geometry.coordinates[0]);
-                        const magnitude = eq.magnitude || (eq.properties && eq.properties.magnitude);
-                        const place = eq.place || (eq.properties && eq.properties.place);
-
-                        if (lat && lng) {
-                            const marker = L.marker([lat, lng], { icon: icons.earthquake });
-                            marker.bindPopup(`
-                                <b>Earthquake</b><br>
-                                ${magnitude ? `Magnitude: ${magnitude}<br>` : ''}
-                                ${place ? `Location: ${place}` : ''}
-                            `);
-                            earthquakeCluster.addLayer(marker);
-                        }
-                    });
-                }
-            })
-            .catch(error => console.error('Error fetching earthquakes:', error));
-
-        // Handle collapsible sections
-        document.querySelectorAll('.section-header').forEach(header => {
-            header.addEventListener('click', function() {
-                const sectionId = this.dataset.section + 'Section';
-                const content = document.getElementById(sectionId);
-                const wasActive = this.classList.contains('active');
-
-                // Close all sections
-                document.querySelectorAll('.section-header').forEach(h => h.classList.remove('active'));
-                document.querySelectorAll('.section-content').forEach(c => c.style.display = 'none');
-
-                // Open clicked section if it wasn't active
-                if (!wasActive) {
-                    this.classList.add('active');
-                    content.style.display = 'block';
-                }
+                isVisible = !isVisible;
             });
         });
 
-        // Handle pin method selection
-        document.getElementById('pinMethod').addEventListener('change', function(e) {
-            const pinPlacementForm = document.getElementById('pinPlacementForm');
-            const pinFields = document.querySelector('.pin-fields');
-            const zoneFields = document.querySelector('.zone-fields');
-            const submitButton = document.getElementById('addPinButton');
-            const coordDisplay = document.querySelector('.coordinates-display');
+        // Trigger legend add event
+        setTimeout(() => {
+            map.fire('legendadd');
+        }, 100);
 
-            // Remove any existing temporary marker
-            if (window.tempMarker) {
-                map.removeLayer(window.tempMarker);
-                window.tempMarker = null;
-            }
-
-            if (e.target.value === 'place-pin') {
-                pinPlacementForm.style.display = 'block';
-                pinFields.style.display = 'block';
-                zoneFields.style.display = 'none';
-                submitButton.textContent = 'Add Emergency';
-                coordDisplay.style.display = 'block';
-                
-                // Enable map click for pin placement
-                map.on('click', function(e) {
-                    const lat = e.latlng.lat.toFixed(6);
-                    const lng = e.latlng.lng.toFixed(6);
-                    document.getElementById('lat').value = lat;
-                    document.getElementById('lng').value = lng;
-                    coordDisplay.textContent = `Selected: Latitude: ${lat}, Longitude: ${lng}`;
-
-                    // Remove previous temporary marker if exists
-                    if (window.tempMarker) {
-                        map.removeLayer(window.tempMarker);
-                    }
-
-                    // Add new temporary marker
-                    window.tempMarker = L.marker([lat, lng], {
-                        icon: icons.default,
-                        draggable: true
-                    }).addTo(map);
-
-                    // Update coordinates when marker is dragged
-                    window.tempMarker.on('dragend', function(event) {
-                        const newLat = event.target.getLatLng().lat.toFixed(6);
-                        const newLng = event.target.getLatLng().lng.toFixed(6);
-                        document.getElementById('lat').value = newLat;
-                        document.getElementById('lng').value = newLng;
-                        coordDisplay.textContent = `Selected: Latitude: ${newLat}, Longitude: ${newLng}`;
-                    });
-                });
-            } else if (e.target.value === 'select-zone') {
-                pinPlacementForm.style.display = 'block';
-                pinFields.style.display = 'none';
-                zoneFields.style.display = 'block';
-                submitButton.textContent = 'Send Alarm';
-                coordDisplay.style.display = 'none';
-            } else {
-                pinPlacementForm.style.display = 'none';
-            }
-        });
-
-        // Handle form submission
-        document.getElementById('addPinButton').addEventListener('click', function(e) {
-            e.preventDefault();
-            const method = document.getElementById('pinMethod').value;
-            const type = document.getElementById('emergencyType').value;
-            const description = document.getElementById('description').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            const gravity = document.getElementById('gravity').value;
-
-            console.log('Form values:', {
-                method,
-                type,
-                description,
-                startTime,
-                endTime,
-                gravity
-            });
-
-            // Validate only emergency type
-            if (!type) {
-                document.getElementById('form-message').textContent = 'Please select a disaster type';
-                return;
-            }
-
-            if (!method) {
-                document.getElementById('form-message').textContent = 'Please select how to add the emergency';
-                return;
-            }
-
-            // Function to convert datetime-local to date format for database
-            const formatDateForDB = (dateTimeStr) => {
-  if (!dateTimeStr) return null;
-  const date = new Date(dateTimeStr);
-  const pad = n => n < 10 ? '0' + n : n;
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
-};
-            let data = {
-                type: type.trim(),
-                description: description.trim() || null,
-                startdate: formatDateForDB(startTime),
-                enddate: formatDateForDB(endTime),
-                gravity: gravity || null
-            };
-
-            // Store original coordinates for marker creation
-            let originalLat, originalLng;
-
-            if (method === 'place-pin') {
-                const lat = parseFloat(document.getElementById('lat').value);
-                const lng = parseFloat(document.getElementById('lng').value);
-                
-                if (isNaN(lat) || isNaN(lng)) {
-                    document.getElementById('form-message').textContent = 'Please click on the map to set coordinates';
-                    return;
-                }
-                
-                // Store original coordinates
-                originalLat = lat;
-                originalLng = lng;
-                
-                data = { ...data, lat, lng };
-            } else {
-                const country = document.getElementById('zoneCountry').value;
-                const county = document.getElementById('zoneCounty').value;
-                const town = document.getElementById('zoneTown').value;
-                
-                data = { 
-                    ...data, 
-                    country: country.trim() || null, 
-                    county: county.trim() || null, 
-                    town: town.trim() || null
-                };
-            }
-
-            // Remove any undefined or null values
-            Object.keys(data).forEach(key => {
-                if (data[key] === undefined || data[key] === null) {
-                    delete data[key];
-                }
-            });
-
-            console.log('Sending data to server:', data); // Debug log
-
-            fetch('/calamities', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(res => {
-                if (!res.ok) {
-                    return res.text().then(text => {
-                        console.error('Server response:', text);
-                        throw new Error(`Server error: ${res.status} - ${text}`);
-                    });
-                }
-                return res.json();
-            })
-            .then(response => {
-                document.getElementById('form-message').style.color = 'lightgreen';
-                document.getElementById('form-message').textContent = response.message || 'Emergency added successfully!';
-                
-                if (method === 'place-pin' && originalLat && originalLng) {
-                    // Remove temporary marker
-                    if (window.tempMarker) {
-                        map.removeLayer(window.tempMarker);
-                        window.tempMarker = null;
-                    }
-
-                    const markerIcon = icons[type.toLowerCase()] || icons.default;
-                    const marker = L.marker([originalLat, originalLng], { icon: markerIcon });
-                    marker.bindPopup(`<b>${type}</b><br>${description || ''}`);
-                    calamityCluster.addLayer(marker);
-                }
-                
-                // Reset form
-                document.getElementById('description').value = '';
-                document.getElementById('lat').value = '';
-                document.getElementById('lng').value = '';
-                document.getElementById('zoneCountry').value = '';
-                document.getElementById('zoneCounty').value = '';
-                document.getElementById('zoneTown').value = '';
-                document.getElementById('pinMethod').value = '';
-                document.getElementById('startTime').value = '';
-                document.getElementById('endTime').value = '';
-                document.getElementById('gravity').value = '';
-                document.getElementById('emergencyType').value = '';
-                document.getElementById('pinPlacementForm').style.display = 'none';
-                document.querySelector('.coordinates-display').textContent = 'Click on map to set coordinates';
-
-                // Clear success message after 3 seconds
-                setTimeout(() => {
-                    document.getElementById('form-message').textContent = '';
-                    document.getElementById('form-message').style.color = 'white';
-                }, 3000);
-            })
-            .catch(error => {
-                console.error('Error details:', error);
-                document.getElementById('form-message').style.color = 'red';
-                document.getElementById('form-message').textContent = 'Error: ' + error.message;
-                // Clear error message after 5 seconds
-                setTimeout(() => {
-                    document.getElementById('form-message').textContent = '';
-                    document.getElementById('form-message').style.color = 'white';
-                }, 5000);
-            });
-        });
-
-        // Initialize map center to a default location (e.g., center of your country)
-        map.setView([45.9432, 24.9668], 7); // Center of Romania
-
-        // Show filter section by default
+        map.setView([45.9432, 24.9668], 7); 
         document.querySelector('[data-section="filter"]').classList.add('active');
         document.getElementById('filterSection').style.display = 'block';
 
-        function parseFrontendDate(str) {
-            if (!str) return null;
-            // Format dd/mm/yyyy, HH:mm:ss
-            const match = str.match(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/);
-            if (match) {
-                const [_, dd, mm, yyyy, HH, MM, SS] = match;
-                return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
-            }
-            // Format yyyy-mm-ddTHH:MM (from input type datetime-local)
-            if (str.includes('T')) {
-                return str.replace('T', ' ') + ':00';
-            }
-            // Already in SQL format
-            return str;
-        }
+       
     </script>
 </body>
 

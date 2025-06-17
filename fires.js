@@ -30,7 +30,7 @@ async function loadFires(map) {
       const brightness = cols[brightIndex] || '';
     const confidence = cols[confIndex] || '';
 const acq_date = cols[dateIndex] || '';
-const acq_time = cols[timeIndex] || '';
+//const acq_time = cols[timeIndex] || '';
 const satellite = cols[satIndex] || '';
 const instrument = cols[instIndex] || '';
 

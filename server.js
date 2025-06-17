@@ -20,7 +20,7 @@ const PORT = 3000;
 const server = http.createServer((req, res) => {
 
     res.setHeader('Access-Control-Allow-Origin', '*');
-res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
 res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 if (req.method === 'OPTIONS') {
   res.writeHead(204);
@@ -38,6 +38,34 @@ if (req.method === 'OPTIONS') {
             }
         });
         return; 
+    }
+
+    if (req.method === 'GET' && req.url === '/floods') {
+        // Fetch real flood data from UK Environment Agency API
+        const https = require('https');
+        
+        const apiUrl = 'https://environment.data.gov.uk/flood-monitoring/id/floods';
+        
+        https.get(apiUrl, (apiRes) => {
+            let data = '';
+            apiRes.on('data', (chunk) => data += chunk);
+            apiRes.on('end', () => {
+                try {
+                    const floodData = JSON.parse(data);
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(floodData));
+                } catch (error) {
+                    console.error('Error parsing flood data:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Failed to parse flood data' }));
+                }
+            });
+        }).on('error', (error) => {
+            console.error('Error fetching flood data:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Failed to fetch flood data from API' }));
+        });
+        return;
     }
 
     if (req.method === 'GET' && req.url === '/calamities') {
@@ -207,6 +235,98 @@ if (req.method === 'OPTIONS') {
         return;
     }
 
+    // GET /shelters endpoint
+    if (req.method === 'GET' && req.url === '/shelters') {
+        db.query('SELECT * FROM shelters')
+            .then(([rows, fields]) => {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(rows));
+            })
+            .catch(err => {
+                console.error(err);
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Database error' }));
+            });
+        return;
+    }
+
+    // POST /shelters endpoint
+    if (req.method === 'POST' && req.url === '/shelters') {
+        console.log('Received POST request to /shelters');
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk;
+        });
+        req.on('end', async () => {
+            try {
+                console.log('Raw body:', body);
+                if (!body) {
+                    console.log('Empty body received');
+                    res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ error: 'Empty request body' }));
+                    return;
+                }
+                const data = JSON.parse(body);
+                console.log('Parsed shelter data:', data);
+                const { lat, lng, id_calamity, type_shelter, permanent, description, calamity_type } = data;
+
+                if (!lat || !lng || !type_shelter) {
+                    console.log('Missing required fields:', { lat, lng, type_shelter });
+                    res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ error: 'Missing required fields: lat, lng, type_shelter' }));
+                    return;
+                }
+
+                console.log('Inserting shelter into database:', { lat, lng, id_calamity, type_shelter, permanent, description, calamity_type });
+                const [result] = await db.query(
+                    `INSERT INTO shelters (lat, lng, id_calamity, type_shelter, permanent, description, calamity_type) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                    [lat, lng, id_calamity || null, type_shelter, permanent || false, description || null, calamity_type || null]
+                );
+
+                res.writeHead(201, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({ message: 'Shelter added successfully', id: result.insertId }));
+            } catch (err) {
+                console.error('Error details:', err.message);
+                res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({ error: 'Failed to process request: ' + err.message }));
+            }
+        });
+        return;
+    }
+
+    // DELETE /shelters/:id endpoint
+    if (req.method === 'DELETE' && req.url.startsWith('/shelters/')) {
+        const id = req.url.split('/').pop();
+        if (!id) {
+            res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end(JSON.stringify({ error: 'Missing shelter id' }));
+            return;
+        }
+        try {
+            db.query('DELETE FROM shelters WHERE id = ?', [id])
+                .then(([result]) => {
+                    if (result.affectedRows === 0) {
+                        res.writeHead(404, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                        res.end(JSON.stringify({ error: 'Shelter not found' }));
+                    } else {
+                        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                        res.end(JSON.stringify({ message: 'Shelter deleted successfully' }));
+                    }
+                })
+                .catch(err => {
+                    console.error('Delete shelter error:', err);
+                    res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ error: 'Failed to delete shelter: ' + err.message }));
+                });
+        } catch (err) {
+            console.error('Delete shelter error:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end(JSON.stringify({ error: 'Failed to delete shelter: ' + err.message }));
+        }
+        return;
+    }
+
     if (req.method === 'GET') {
         let filePath = '.' + req.url;
         if (filePath === './') {
@@ -262,3 +382,5 @@ if (req.method === 'OPTIONS') {
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
+
+
