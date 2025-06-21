@@ -1,15 +1,226 @@
-// Shelter functionality
+
+//sql injection
+function sanitizeForSQL(input) {
+    if (typeof input !== 'string') {
+        return input;
+    }
+    
+  
+    return input
+        .replace(/'/g, "''")          
+        .replace(/"/g, '""')          
+        .replace(/;/g, '')            
+        .replace(/--/g, '')          
+        .replace(/\/\*/g, '')          
+        .replace(/\*\//g, '')          
+        .replace(/\bOR\b/gi, '')       
+        .replace(/\bAND\b/gi, '')      
+        .replace(/\bUNION\b/gi, '')    
+        .replace(/\bSELECT\b/gi, '')   
+        .replace(/\bINSERT\b/gi, '')   
+        .replace(/\bUPDATE\b/gi, '')  
+        .replace(/\bDELETE\b/gi, '')   
+        .replace(/\bDROP\b/gi, '')     
+        .replace(/\bEXEC\b/gi, '')     
+        .replace(/\bALTER\b/gi, '');   
+}
+
+
+function validateSQLSafety(input) {
+    if (typeof input !== 'string') {
+        return true;
+    }
+    
+    const dangerousPatterns = [
+        /'.*OR.*'/i,
+        /'.*AND.*'/i,
+        /UNION.*SELECT/i,
+        /DROP.*TABLE/i,
+        /DELETE.*FROM/i,
+        /INSERT.*INTO/i,
+        /UPDATE.*SET/i,
+        /--/,
+        /\/\*.*\*\//,
+        /;\s*$/
+    ];
+    
+    return !dangerousPatterns.some(pattern => pattern.test(input));
+}
+
+//Cross-Site Scripting Xss
+
+function encodeHTML(input) {
+    if (typeof input !== 'string') {
+        return input;
+    }
+    
+    const entityMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;',
+        '`': '&#x60;',
+        '=': '&#x3D;'
+    };
+    
+    return input.replace(/[&<>"'`=\/]/g, function (s) {
+        return entityMap[s];
+    });
+}
+
+
+function sanitizeHTML(input) {
+    if (typeof input !== 'string') {
+        return input;
+    }
+    
+    
+    input = input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    
+    
+    const dangerousTags = [
+        'script', 'iframe', 'object', 'embed', 'form', 'input', 
+        'textarea', 'button', 'select', 'option', 'meta', 'link'
+    ];
+    
+    dangerousTags.forEach(tag => {
+        const regex = new RegExp(`<${tag}\\b[^>]*>.*?</${tag}>`, 'gi');
+        input = input.replace(regex, '');
+        
+        
+        const selfClosingRegex = new RegExp(`<${tag}\\b[^>]*/>`, 'gi');
+        input = input.replace(selfClosingRegex, '');
+    });
+    
+    
+    const dangerousAttrs = [
+        'onclick', 'onload', 'onerror', 'onmouseover', 'onmouseout',
+        'onfocus', 'onblur', 'onchange', 'onsubmit', 'onkeyup',
+        'onkeydown', 'onkeypress', 'javascript:', 'vbscript:'
+    ];
+    
+    dangerousAttrs.forEach(attr => {
+        const regex = new RegExp(`\\s*${attr}\\s*=\\s*["'][^"']*["']`, 'gi');
+        input = input.replace(regex, '');
+    });
+    
+    return input;
+}
+
+
+function validateXSSSafety(input) {
+    if (typeof input !== 'string') {
+        return true;
+    }
+    
+    const xssPatterns = [
+        /<script/i,
+        /<iframe/i,
+        /javascript:/i,
+        /vbscript:/i,
+        /onload=/i,
+        /onerror=/i,
+        /onclick=/i,
+        /onmouseover=/i,
+        /<img[^>]+src[^>]*>/i,
+        /<svg[^>]*>/i,
+        /eval\(/i,
+        /alert\(/i,
+        /document\.cookie/i,
+        /document\.write/i
+    ];
+    
+    return !xssPatterns.some(pattern => pattern.test(input));
+}
+
+
+function secureInput(input, type = 'general') {
+   
+    if (!input || typeof input !== 'string' || input.trim() === '') {
+        return '';
+    }
+    
+    const trimmedInput = input.trim();
+    
+   
+    if (!validateSQLSafety(trimmedInput)) {
+        throw new Error('Potentially dangerous SQL pattern detected');
+    }
+    
+    
+    if (!validateXSSSafety(trimmedInput)) {
+        throw new Error('Potentially dangerous XSS pattern detected');
+    }
+    
+    
+    let sanitized = trimmedInput;
+    
+    switch (type) {
+        case 'description':
+            
+            sanitized = sanitizeForSQL(sanitized);
+            sanitized = sanitizeHTML(sanitized);
+            sanitized = encodeHTML(sanitized);
+            break;
+            
+        default:
+            
+            sanitized = sanitizeForSQL(sanitized);
+            sanitized = encodeHTML(sanitized);
+            break;
+    }
+    
+    
+    sanitized = sanitized.trim();
+    
+    
+    if (sanitized !== trimmedInput) {
+        console.warn('Input was sanitized for security:', { original: trimmedInput, sanitized: sanitized });
+    }
+    
+    return sanitized;
+}
+
+//Safe DOM Manipulation
+
+function safeSetText(element, text) {
+    if (!element) return;
+    
+    
+    element.textContent = encodeHTML(String(text));
+}
+
+function safeSetHTML(element, html) {
+    if (!element) return;
+    
+   
+    const sanitizedHTML = sanitizeHTML(encodeHTML(String(html)));
+    element.innerHTML = sanitizedHTML;
+}
+
+function safeSetAttribute(element, attribute, value) {
+    if (!element) return;
+    
+
+    const sanitizedValue = encodeHTML(String(value));
+    element.setAttribute(attribute, sanitizedValue);
+}
+
+
+
 let selectedEmergency = null;
 let shelterTempMarker = null;
 let isSelectingEmergency = false;
 let emergencyConfirmed = false;
 
 function initializeShelters(map, icons, createCustomIcon) {
-  // Create shelter icons
+  
   const shelterIcon = createCustomIcon('fas fa-home', '#28a745');
   const escapeRouteIcon = createCustomIcon('fas fa-route', '#ffc107');
 
-  // Shelter method selection handler
+ 
   document.getElementById('shelterMethod').addEventListener('change', function(e) {
       const shelterForm = document.getElementById('shelterForm');
       const emergencySelection = document.getElementById('emergencySelection');
@@ -17,7 +228,7 @@ function initializeShelters(map, icons, createCustomIcon) {
       const commonFields = document.getElementById('commonShelterFields');
       const permanentCalamityTypeField = document.getElementById('permanentCalamityTypeField');
       
-      // Clear previous state
+    
       selectedEmergency = null;
       isSelectingEmergency = false;
       emergencyConfirmed = false;
@@ -27,7 +238,7 @@ function initializeShelters(map, icons, createCustomIcon) {
       }
       map.off('click');
       
-      // Reset confirmation checkbox
+     //reset confirmation checkbox
       const confirmCheckbox = document.getElementById('confirmEmergencyPin');
       if (confirmCheckbox) {
           confirmCheckbox.checked = false;
@@ -41,11 +252,11 @@ function initializeShelters(map, icons, createCustomIcon) {
           permanentCalamityTypeField.style.display = 'none';
           isSelectingEmergency = true;
           
-          // Hide confirmation section initially
+          // hide confirmation section initially
           document.getElementById('emergencyConfirmationSection').style.display = 'none';
           document.getElementById('emergency-info').style.display = 'none';
           
-          // Add cancel button for emergency shelter
+          
           addShelterCancelButton('emergency');
           
       } else if (e.target.value === 'permanent-shelter') {
@@ -55,10 +266,8 @@ function initializeShelters(map, icons, createCustomIcon) {
           commonFields.style.display = 'block';
           permanentCalamityTypeField.style.display = 'block';
           
-          // Add cancel button for permanent shelter
+        
           addShelterCancelButton('permanent');
-          
-          // Enable map clicking for shelter coordinates
           enableShelterMapClick();
       } else {
           shelterForm.style.display = 'none';
@@ -67,17 +276,17 @@ function initializeShelters(map, icons, createCustomIcon) {
       }
   });
 
-  // Emergency confirmation checkbox handler
+  // confirmation checkbox 
   document.getElementById('confirmEmergencyPin').addEventListener('change', function() {
       const shelterCoordinates = document.getElementById('shelterCoordinates');
       const commonFields = document.getElementById('commonShelterFields');
       
       if (this.checked && selectedEmergency) {
-          // Checkbox is checked and we have a selected emergency
+          // am selectat un emergency
           emergencyConfirmed = true;
           isSelectingEmergency = false;
           
-          // Show shelter coordinates and common fields
+          // shelter coordonates fields se afiseaza 
           shelterCoordinates.style.display = 'block';
           commonFields.style.display = 'block';
           
@@ -85,36 +294,35 @@ function initializeShelters(map, icons, createCustomIcon) {
           enableShelterMapClick();
           
       } else {
-          // Checkbox is unchecked - clear everything
+          // checkbox dai unchecked atunci se sterge tot
           emergencyConfirmed = false;
           isSelectingEmergency = true;
           selectedEmergency = null;
           
-          // Hide shelter coordinates and common fields
+          // shelder coordonates fields se ascund
           shelterCoordinates.style.display = 'none';
           commonFields.style.display = 'none';
           
-          // Clear form fields
+         
           clearShelterForm();
           
-          // Remove temporary marker
+         
           if (shelterTempMarker) {
               map.removeLayer(shelterTempMarker);
               shelterTempMarker = null;
           }
           
-          // Disable map click for shelter coordinates
           map.off('click');
           
-          // Hide emergency info and confirmation
+         
           document.getElementById('emergency-info').style.display = 'none';
           document.getElementById('emergencyConfirmationSection').style.display = 'none';
       }
   });
 
-  // Function to add cancel button for shelter
+  // cancel button shelter
   function addShelterCancelButton(type) {
-      removeShelterCancelButton(); // Remove existing button first
+      removeShelterCancelButton(); 
       
       const submitButton = document.getElementById('addShelterButton');
       const cancelBtn = document.createElement('button');
@@ -140,18 +348,18 @@ function initializeShelters(map, icons, createCustomIcon) {
       });
   }
 
-  // Function to remove cancel button
+  
   function removeShelterCancelButton() {
       const cancelBtn = document.getElementById('cancelShelterButton');
       if (cancelBtn) cancelBtn.remove();
   }
 
-  // Function to enable map click for shelter coordinates
+  
   function enableShelterMapClick() {
       map.on('click', function(e) {
           const shelterMethod = document.getElementById('shelterMethod').value;
           
-          // Allow map click for permanent shelters OR confirmed emergency shelters
+          
           const canPlaceShelter = (shelterMethod === 'permanent-shelter') || 
                                  (shelterMethod === 'emergency-shelter' && !isSelectingEmergency && emergencyConfirmed);
           
@@ -166,13 +374,13 @@ function initializeShelters(map, icons, createCustomIcon) {
                   map.removeLayer(shelterTempMarker);
               }
               
-              // Add new shelter temp marker
+             
               shelterTempMarker = L.marker([lat, lng], {
                   icon: shelterIcon,
                   draggable: true
               }).addTo(map);
               
-              // Update coordinates when marker is dragged
+             
               shelterTempMarker.on('dragend', function(event) {
                   const newLat = event.target.getLatLng().lat.toFixed(6);
                   const newLng = event.target.getLatLng().lng.toFixed(6);
@@ -183,25 +391,9 @@ function initializeShelters(map, icons, createCustomIcon) {
       });
   }
 
-  // Helper function to get icon color
-  function getIconColor(type) {
-    const colorMap = {
-      earthquake: '#ff4444',
-      fire: '#ff8800',
-      flood: '#0099cc',
-      heatwave: '#ffd700',
-      hurricane: '#8b4513',
-      hailstorm: '#4169e1',
-      wildfire: '#ff6600',
-      tsunami: '#006699',
-      'volcanic eruption': '#cc0000',
-      landslide: '#8b4513',
-      other: '#ffbb33'
-    };
-    return colorMap[type] || '#ffbb33';
-  }
 
-  // Helper function to get calamity type by ID
+
+  // functie helper pentru a obtine tipul de calamitate dupa id
   async function getCalamityTypeById(calamityId) {
     try {
       const response = await fetch('/calamities');
@@ -214,35 +406,53 @@ function initializeShelters(map, icons, createCustomIcon) {
     }
   }
 
-  // Shelter description validation
+  // Shelter description validation with security
   const shelterDescriptionField = document.getElementById('shelterDescription');
   const shelterCharCount = document.getElementById('shelter-char-count');
   const shelterDescriptionError = document.getElementById('shelter-description-error');
 
   if (shelterDescriptionField) {
       shelterDescriptionField.addEventListener('input', function(e) {
-          const value = e.target.value;
-          const remainingChars = 250 - value.length;
-          
-          // Update character count
-          shelterCharCount.textContent = `${remainingChars} characters remaining`;
-          shelterCharCount.style.color = remainingChars < 20 ? '#ff4444' : '#ccc';
-          
-          // Validate characters (alphanumeric + .,;()!/ and spaces)
-          const validPattern = /^[a-zA-Z0-9\s.,;()!/]*$/;
-          
-          if (!validPattern.test(value)) {
-              shelterDescriptionError.textContent = 'Only alphanumeric characters and .,;()!/ punctuation are allowed';
-              shelterDescriptionError.style.display = 'block';
-              // Remove invalid characters
-              e.target.value = value.replace(/[^a-zA-Z0-9\s.,;()!/]/g, '');
-          } else {
-              shelterDescriptionError.style.display = 'none';
+          try {
+              let value = e.target.value;
+              const maxLength = 250;
+              
+              // Apply security validation
+              if (!validateSQLSafety(value)) {
+                  e.target.value = sanitizeForSQL(value);
+                  value = e.target.value;
+                  alert('Potentially dangerous SQL characters removed');
+              }
+              
+              if (!validateXSSSafety(value)) {
+                  e.target.value = encodeHTML(value);
+                  value = e.target.value;
+                  alert('Input sanitized for XSS protection');
+              }
+              
+              const remainingChars = maxLength - value.length;
+              shelterCharCount.textContent = `${remainingChars} characters remaining`;
+              shelterCharCount.style.color = remainingChars < 20 ? '#ff4444' : '#ccc';
+              
+            
+              const validPattern = /^[a-zA-Z0-9\s.,;()!\/\-]*$/;
+              
+              if (!validPattern.test(value)) {
+                  shelterDescriptionError.textContent = 'Only alphanumeric characters and .,;()!/- punctuation are allowed';
+                  shelterDescriptionError.style.display = 'block';
+                  e.target.value = value.replace(/[^a-zA-Z0-9\s.,;()!\/\-]/g, '');
+              } else {
+                  shelterDescriptionError.style.display = 'none';
+              }
+          } catch (error) {
+              console.error('Security validation error:', error);
+              e.target.value = '';
+              shelterCharCount.textContent = '250 characters remaining';
+              alert('Input rejected for security reasons');
           }
       });
 
       shelterDescriptionField.addEventListener('paste', function(e) {
-          // Allow paste but filter on next input event
           setTimeout(() => {
               const event = new Event('input', { bubbles: true });
               e.target.dispatchEvent(event);
@@ -250,7 +460,7 @@ function initializeShelters(map, icons, createCustomIcon) {
       });
   }
 
-  // Function to clear shelter form
+  
   function clearShelterForm() {
     document.getElementById('shelterLat').value = '';
     document.getElementById('shelterLng').value = '';
@@ -264,25 +474,25 @@ function initializeShelters(map, icons, createCustomIcon) {
     selectedEmergency = null;
     emergencyConfirmed = false;
     
-    // Reset confirmation checkbox
+   
     const confirmCheckbox = document.getElementById('confirmEmergencyPin');
     if (confirmCheckbox) {
         confirmCheckbox.checked = false;
     }
     
-    // Reset character count
+    
     if (shelterCharCount) {
       shelterCharCount.textContent = '250 characters remaining';
       shelterCharCount.style.color = '#ccc';
     }
     
-    // Hide description error
+    
     if (shelterDescriptionError) {
       shelterDescriptionError.style.display = 'none';
     }
   }
 
-  // Shelter form submission
+  
   document.getElementById('addShelterButton').addEventListener('click', async function(e) {
       e.preventDefault();
       
@@ -293,7 +503,7 @@ function initializeShelters(map, icons, createCustomIcon) {
       const shelterLng = parseFloat(document.getElementById('shelterLng').value);
       const permanentCalamityType = document.getElementById('permanentCalamityType').value;
       
-      // Validate required fields
+      // validare inputs
       if (!shelterType) {
           document.getElementById('shelter-form-message').textContent = 'Please select a shelter type';
           document.getElementById('shelter-form-message').style.color = 'red';
@@ -318,22 +528,29 @@ function initializeShelters(map, icons, createCustomIcon) {
           return;
       }
       
-      // Validate description if provided
+     
       if (shelterDescription) {
-          const validPattern = /^[a-zA-Z0-9\s.,;()!/]*$/;
-          if (!validPattern.test(shelterDescription)) {
-              document.getElementById('shelter-form-message').textContent = 'Description contains invalid characters. Only alphanumeric and .,;()!/ are allowed';
-              document.getElementById('shelter-form-message').style.color = 'red';
-              return;
-          }
-          if (shelterDescription.length > 250) {
-              document.getElementById('shelter-form-message').textContent = 'Description is too long. Maximum 250 characters allowed';
+          try {
+              
+              const secureDescription = secureInput(shelterDescription, 'description');
+              
+              if (secureDescription.length > 250) {
+                  document.getElementById('shelter-form-message').textContent = 'Description is too long. Maximum 250 characters allowed';
+                  document.getElementById('shelter-form-message').style.color = 'red';
+                  return;
+              }
+              
+             
+              document.getElementById('shelterDescription').value = secureDescription;
+              
+          } catch (error) {
+              document.getElementById('shelter-form-message').textContent = 'Description contains unsafe content: ' + error.message;
               document.getElementById('shelter-form-message').style.color = 'red';
               return;
           }
       }
       
-      // Prepare data for submission
+      
       let data = {
           lat: shelterLat,
           lng: shelterLng,
@@ -342,17 +559,18 @@ function initializeShelters(map, icons, createCustomIcon) {
           description: shelterDescription || null
       };
       
-      // Handle calamity type
+     
+      // slectare calamitate type
       if (shelterMethod === 'emergency-shelter' && selectedEmergency) {
           data.id_calamity = selectedEmergency.id;
-          // Get calamity type for emergency shelters
+         
           data.calamity_type = await getCalamityTypeById(selectedEmergency.id);
       } else if (shelterMethod === 'permanent-shelter') {
-          // Use selected calamity type for permanent shelters
+         
           data.calamity_type = permanentCalamityType;
       }
       
-      // Submit shelter data
+    //submit data to server
       fetch('/shelters', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -371,18 +589,18 @@ function initializeShelters(map, icons, createCustomIcon) {
           document.getElementById('shelter-form-message').style.color = 'lightgreen';
           document.getElementById('shelter-form-message').textContent = response.message || 'Shelter added successfully!';
           
-          // Remove temporary marker
+        
           if (shelterTempMarker) {
               map.removeLayer(shelterTempMarker);
               shelterTempMarker = null;
           }
           
-          // Refresh shelters on map if function exists
+          
           if (window.refreshShelters) {
               window.refreshShelters();
           }
           
-          // Reset form
+          // resetare form
           clearShelterForm();
           document.getElementById('shelterForm').style.display = 'none';
           document.getElementById('shelterMethod').value = '';
@@ -391,7 +609,7 @@ function initializeShelters(map, icons, createCustomIcon) {
           isSelectingEmergency = false;
           emergencyConfirmed = false;
           
-          // Clear success message after 3 seconds
+       
           setTimeout(() => {
               document.getElementById('shelter-form-message').textContent = '';
               document.getElementById('shelter-form-message').style.color = 'white';
@@ -401,7 +619,7 @@ function initializeShelters(map, icons, createCustomIcon) {
           console.error('Error details:', error);
           document.getElementById('shelter-form-message').style.color = 'red';
           document.getElementById('shelter-form-message').textContent = 'Error: ' + error.message;
-          // Clear error message after 5 seconds
+          
           setTimeout(() => {
               document.getElementById('shelter-form-message').textContent = '';
               document.getElementById('shelter-form-message').style.color = 'white';
@@ -409,7 +627,7 @@ function initializeShelters(map, icons, createCustomIcon) {
       });
   });
 
-  // Function to handle emergency selection for shelters
+
   function handleEmergencySelection(calamity) {
       if (isSelectingEmergency) {
           selectedEmergency = {
@@ -419,37 +637,37 @@ function initializeShelters(map, icons, createCustomIcon) {
               lng: calamity.lng
           };
           
-          // Update UI to show selected emergency
+       
           document.getElementById('selected-emergency-type').innerHTML = `<strong>Type:</strong> ${calamity.type}`;
           document.getElementById('selected-emergency-coords').innerHTML = `<strong>Coordinates:</strong> ${calamity.lat}, ${calamity.lng}`;
           document.getElementById('selected-emergency-icon').style.display = 'none';
           document.getElementById('emergency-info').style.display = 'block';
           
-          // Show confirmation section but don't proceed to shelter coordinates yet
+        
           document.getElementById('emergencyConfirmationSection').style.display = 'block';
           
-          // Reset confirmation checkbox when a new emergency is selected
+         
           const confirmCheckbox = document.getElementById('confirmEmergencyPin');
           if (confirmCheckbox) {
               confirmCheckbox.checked = false;
           }
           
-          // Don't show shelter coordinates until confirmed
+       
           emergencyConfirmed = false;
           
-          return true; // Indicate that the emergency was selected for shelter
+          return true; 
       }
-      return false; // Indicate normal behavior
+      return false; 
   }
 
-  // Make functions available globally
+ 
   window.handleEmergencySelection = handleEmergencySelection;
   window.isSelectingEmergency = () => isSelectingEmergency;
 }
 
-// Function to load and display shelters on the map
+
 function loadShelters(map, createCustomIcon) {
-    // Create shelter cluster groups - separate for permanent and emergency shelters
+   
     if (!window.permanentShelterCluster) {
         window.permanentShelterCluster = L.markerClusterGroup({
             chunkedLoading: true,
@@ -475,18 +693,18 @@ function loadShelters(map, createCustomIcon) {
                 });
             }
         });
-        // Don't add to map initially - only when toggled
+      
     }
 
-    // Track which emergency shelters are currently visible
+ 
     let visibleEmergencyShelters = new Set();
 
-    // Function to refresh permanent shelters only
+   
     function refreshPermanentShelters() {
         fetch('/shelters')
             .then(res => res.json())
             .then(data => {
-                // Clear existing permanent shelter markers
+              
                 window.permanentShelterCluster.clearLayers();
 
                 data.filter(shelter => shelter.permanent === 1 || shelter.permanent === true)
@@ -499,7 +717,7 @@ function loadShelters(map, createCustomIcon) {
             .catch(console.error);
     }
 
-    // Function to show emergency shelters for a specific calamity
+  
     function showEmergencyShelters(calamityId) {
         fetch('/shelters')
             .then(res => res.json())
@@ -522,7 +740,7 @@ function loadShelters(map, createCustomIcon) {
             .catch(console.error);
     }
 
-    // Function to hide emergency shelters for a specific calamity
+ 
     function hideEmergencyShelters(calamityId) {
         window.emergencyShelterCluster.clearLayers();
         if (map.hasLayer(window.emergencyShelterCluster)) {
@@ -530,17 +748,17 @@ function loadShelters(map, createCustomIcon) {
         }
     }
 
-    // Function to create shelter marker with all functionality
+ 
     function createShelterMarker(shelter, cluster, createCustomIcon) {
-        // Choose icon based on shelter type
+     
         const shelterIcon = shelter.type_shelter === 'shelter' 
             ? createCustomIcon('fas fa-home', '#28a745')
             : createCustomIcon('fas fa-route', '#ffc107');
 
-        // Use calamity_type if available, otherwise show "N/A"
+      
         const calamityTypeText = shelter.calamity_type || 'N/A';
         
-        // Description with show more functionality
+      
         let desc = shelter.description || 'N/A';
         let showMoreBtn = '';
         let descShort = desc;
@@ -564,9 +782,9 @@ function loadShelters(map, createCustomIcon) {
             icon: shelterIcon
         }).bindPopup(popupHtml);
 
-        // Add popup event handlers
+     
         marker.on('popupopen', function() {
-            // Show more functionality
+          //show more logic
             const showMore = document.querySelector(`.shelter-show-more-link[data-id="shelter-desc-${shelter.id}"]`);
             if (showMore) {
                 showMore.addEventListener('click', function(e) {
@@ -576,7 +794,7 @@ function loadShelters(map, createCustomIcon) {
                 });
             }
 
-            // Delete shelter functionality
+            // delete button logic
             const deleteBtn = document.querySelector(`.delete-shelter-btn[data-id="${shelter.id}"]`);
             if (deleteBtn) {
                 deleteBtn.addEventListener('click', function() {
@@ -587,7 +805,7 @@ function loadShelters(map, createCustomIcon) {
                                 if (response.error) {
                                     alert('Error: ' + response.error);
                                 } else {
-                                    // Remove marker from appropriate cluster
+                                
                                     cluster.removeLayer(marker);
                                     alert('Shelter deleted successfully!');
                                 }
@@ -604,12 +822,12 @@ function loadShelters(map, createCustomIcon) {
         cluster.addLayer(marker);
     }
 
-    // Toggle function for emergency shelters
+   
     function toggleEmergencyShelters(calamityId) {
         const calamityElement = document.querySelector(`.show-shelters-btn[data-id='${calamityId}']`);
         const isCurrentlyShowing = calamityElement && calamityElement.classList.contains('shelters-showing');
         
-        // Hide any shelters that are currently showing
+     
         document.querySelectorAll('.show-shelters-btn.shelters-showing').forEach(btn => {
             if(btn !== calamityElement) {
                 hideEmergencyShelters(btn.dataset.id);
@@ -636,10 +854,10 @@ function loadShelters(map, createCustomIcon) {
         }
     }
 
-    // Function to refresh shelters (for use after adding new ones)
+   
     function refreshShelters() {
         refreshPermanentShelters();
-        // Keep emergency shelters if they were visible
+       
         const currentlyVisible = Array.from(visibleEmergencyShelters);
         visibleEmergencyShelters.clear();
         window.emergencyShelterCluster.clearLayers();
@@ -649,10 +867,10 @@ function loadShelters(map, createCustomIcon) {
         });
     }
 
-    // Initial load - only permanent shelters
+   
     refreshPermanentShelters();
 
-    // Make functions available globally
+   
     window.refreshShelters = refreshShelters;
     window.toggleEmergencyShelters = toggleEmergencyShelters;
 }

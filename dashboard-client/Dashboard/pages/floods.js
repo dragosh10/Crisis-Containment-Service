@@ -38,7 +38,7 @@ function loadFloods(map) {
         floodData.items.forEach((flood, index) => {
           console.log(`Processing flood ${index + 1}:`, flood);
           
-  
+       
           const floodArea = flood.floodArea;
           const description = flood.description || flood.message || 'Flood Warning';
           const severity = flood.severity || flood.severityLevel || 'Unknown';
@@ -49,6 +49,7 @@ function loadFloods(map) {
             return;
           }
   
+         
           fetch(floodArea.polygon)
             .then(res => {
               if (!res.ok) {
@@ -75,12 +76,13 @@ function loadFloods(map) {
               }
   
               let latlngs = [];
-          
+              
+             
               if (geometry.type === "Polygon") {
-            
+                
                 latlngs = geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
               } else if (geometry.type === "MultiPolygon") {
-              
+             
                 latlngs = geometry.coordinates[0][0].map(coord => [coord[1], coord[0]]);
               } else {
                 console.warn('Unsupported geometry type:', geometry.type);
@@ -88,7 +90,6 @@ function loadFloods(map) {
                 return;
               }
   
-            
               const severityColors = {
                 'Severe Flood Warning': '#d73027',
                 'Flood Warning': '#fc8d59',
@@ -120,11 +121,10 @@ function loadFloods(map) {
   
               floodLayer.addLayer(polygon);
   
-             
+           
               const bounds = polygon.getBounds();
               const center = bounds.getCenter();
   
-         
               const getFloodIcon = (severity) => {
                 const severityLevel = flood.severityLevel || severity;
                 let iconClass = 'fas fa-water';
@@ -168,12 +168,12 @@ function loadFloods(map) {
             });
         });
   
-       
+      
         map.addLayer(floodLayer);
         
         console.log(`Started processing ${floodData.items.length} flood areas`);
         
-      
+       
         setTimeout(() => {
           console.log(`Flood processing complete: ${processedCount} successful, ${failedCount} failed`);
         }, 5000);
@@ -187,7 +187,7 @@ function loadFloods(map) {
           console.log('UK Environment Agency API error:', err.message);
         }
         
-        
+      
         console.log('Flood data service may be temporarily unavailable');
       });
   }
