@@ -51,7 +51,7 @@ async function loadFires(map) {
       const lat = parseFloat(cols[latIndex]);
       const lon = parseFloat(cols[lonIndex]);
       
-      // Skip invalid coordinates
+     
       if (isNaN(lat) || isNaN(lon)) {
         return;
       }
@@ -111,7 +111,7 @@ async function loadFires(map) {
       console.log('NASA FIRMS API error:', err.message);
     }
     
-    // Don't show alerts to users, just log the errors
+    
     console.log('Fire data will be unavailable until the NASA FIRMS service is restored');
   }
 }
