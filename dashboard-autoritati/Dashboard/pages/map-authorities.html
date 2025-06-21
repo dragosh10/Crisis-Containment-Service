@@ -137,7 +137,7 @@
             </div>
 
             <div class="filter-group" id="pinPlacementForm" style="display: none;">
-                <!-- Pin placement fields -->
+               
                 <div class="pin-fields">
                     <div class="form-field">
                         <label>Latitude</label>
@@ -149,23 +149,23 @@
                     </div>
                 </div>
 
-                <!-- Zone selection fields -->
+              
                 <div class="zone-fields" style="display: none;">
                     <div class="form-field">
                         
-                        <input type="text" class="filter-input" id="zoneCountry" placeholder="Country..." maxlength="50">
+                        <input type="text" class="filter-input" id="zoneCountry" placeholder="Country...">
                     </div>
                     <div class="form-field">
                        
-                        <input type="text" class="filter-input" id="zoneCounty" placeholder="County..." maxlength="50">
+                        <input type="text" class="filter-input" id="zoneCounty" placeholder="County...">
                     </div>
                     <div class="form-field">
                        
-                        <input type="text" class="filter-input" id="zoneTown" placeholder="Town..." maxlength="50">
+                        <input type="text" class="filter-input" id="zoneTown" placeholder="Town...">
                     </div>
                 </div>
 
-                <!-- Common fields for both methods -->
+              
                 <div class="form-field">
                     <label>Description</label>
                     <input type="text" class="filter-input" id="description" placeholder="Description (max 250 characters)..." maxlength="250">
@@ -210,7 +210,7 @@
             </div>
 
             <div class="filter-group" id="shelterForm" style="display: none;">
-                <!-- Emergency selection section -->
+                
                 <div class="emergency-selection" id="emergencySelection" style="display: none;">
                     <div class="form-field">
                         <label>Click on an emergency pin on the map to select it (you can change selection)</label>
@@ -220,7 +220,7 @@
                             <div id="selected-emergency-icon" style="font-size: 24px;"></div>
                         </div>
                         
-                        <!-- Emergency confirmation section -->
+                       
                         <div id="emergencyConfirmationSection" style="display: none; margin-top: 8px;">
                             <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 4px;">
                                 <div style="display: flex; align-items: center; margin-bottom: 8px;">
@@ -232,7 +232,7 @@
                     </div>
                 </div>
 
-                <!-- Shelter coordinates section -->
+               
                 <div class="shelter-coordinates" id="shelterCoordinates" style="display: none;">
                     <div class="form-field">
                         <label>Shelter Location (click on map)</label>
@@ -241,9 +241,9 @@
                     </div>
                 </div>
 
-                <!-- Common fields -->
+               
                 <div class="common-shelter-fields" id="commonShelterFields" style="display: none;">
-                    <!-- Calamity type field for permanent shelters -->
+                 
                     <div class="form-field" id="permanentCalamityTypeField" style="display: none;">
                         <label>Emergency Type</label>
                         <select class="filter-input" id="permanentCalamityType">
@@ -313,7 +313,7 @@
         loadCalamities(map);
         loadFloods(map);
         
-        // Initialize shelters after DOM is ready
+       
         if (typeof initializeShelters === 'function') {
             initializeShelters(map, null, createCustomIcon);
         }
@@ -350,7 +350,7 @@
         };
         legend.addTo(map);
 
-        // Legend toggle functionality
+       
         map.on('legendadd', function() {
             const toggleBtn = document.getElementById('legend-toggle');
             const legendContent = document.getElementById('legend-content');
@@ -368,7 +368,7 @@
             });
         });
 
-        // Trigger legend add event
+      
         setTimeout(() => {
             map.fire('legendadd');
         }, 100);
