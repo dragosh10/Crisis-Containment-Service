@@ -26,7 +26,7 @@
         <div class="icon-container active">
             <img src="../icons/map.png" alt="Map Icon">
         </div>
-        <div class="icon-container">
+        <div class="icon-container" id="logout-icon" style="cursor: pointer;">
             <img src="../icons/logout.png" alt="Logout Icon">
         </div>
     </div>
@@ -376,6 +376,33 @@
         map.setView([45.9432, 24.9668], 7); 
         document.querySelector('[data-section="filter"]').classList.add('active');
         document.getElementById('filterSection').style.display = 'block';
+
+        // Logout functionality
+        document.getElementById('logout-icon').addEventListener('click', function() {
+            if (confirm('Are you sure you want to log out?')) {
+                fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/';
+                    } else {
+                        console.error('Logout failed');
+                        // Redirect anyway in case of error
+                        window.location.href = '/';
+                    }
+                })
+                .catch(error => {
+                    console.error('Logout error:', error);
+                    // Redirect anyway in case of error
+                    window.location.href = '/';
+                });
+            }
+        });
 
        
     </script>

@@ -1,14 +1,57 @@
 
-let clientId = 3; //hardcoded
+let clientId = null; // Will be fetched dynamically
 let clientPins = [];
 let clientPinCluster = null;
 let tempAlarmPin = null;
 let currentPinCount = 0;
 
+// Function to get current user info and set clientId
+async function initializeClientId() {
+    try {
+        const response = await fetch('/api/user');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.user && !data.user.is_authority) {
+                clientId = data.user.id;
+                console.log('Client ID initialized:', clientId);
+                return true;
+            } else {
+                console.error('User is not a client or not found');
+                return false;
+            }
+        } else if (response.status === 401) {
+            console.log('User not authenticated - forms will be available but data operations disabled');
+            return false;
+        } else if (response.status === 404) {
+            console.error('API endpoint not found - server may need to be restarted');
+            return false;
+        } else {
+            console.error('Failed to fetch user info, status:', response.status);
+            return false;
+        }
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+        return false;
+    }
+}
+
+// Utility function to ensure clientId is available
+function ensureClientId(showUserMessage = false) {
+    if (clientId === null) {
+        console.error('Client ID not initialized. Make sure initializeClientAlarms was called first.');
+        if (showUserMessage) {
+            alert('Please log in as a client to use alarm features.');
+        }
+        return false;
+    }
+    return true;
+}
+
 
 async function ensureClientExists() {
-    try {
-       
+    if (!ensureClientId()) return false;
+    
+    try {       
         const zoneResponse = await fetch('/client-zone/ensure', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -34,8 +77,19 @@ async function ensureClientExists() {
     }
 }
 
-function initializeClientAlarms(map, createCustomIcon) {
+async function initializeClientAlarms(map, createCustomIcon) {
+    // Always set up the form handlers first, regardless of authentication status
+    setTimeout(() => {
+        setupAlarmMethodHandlers(map, createCustomIcon);
+    }, 100);
     
+    // Then try to initialize the client ID
+    const clientIdInitialized = await initializeClientId();
+    if (!clientIdInitialized) {
+        console.error('Failed to initialize client ID. User may not be logged in or may not be a client.');
+        console.log('Forms will be available but data operations will be disabled until proper authentication.');
+        return;
+    }
    
     if (!window.clientPinCluster) {
         window.clientPinCluster = L.markerClusterGroup({
@@ -62,21 +116,17 @@ function initializeClientAlarms(map, createCustomIcon) {
         map.addLayer(window.clientPinCluster);
     }
 
-  
+    // Now that clientId is set, proceed with loading data
     ensureClientExists().then(() => {
-      
         loadClientPins();
     });
-
-   
-    setTimeout(() => {
-        setupAlarmMethodHandlers(map, createCustomIcon);
-    }, 100);
 }
 
 
 
 async function displayClientZoneStatus() {
+    if (!ensureClientId()) return;
+    
     try {
         const response = await fetch(`/client-zone/${clientId}`);
         let statusMessage = '';
@@ -131,6 +181,8 @@ async function displayClientZoneStatus() {
 }
 
 async function saveClientZoneData(country, county, town) {
+    if (!ensureClientId()) return;
+    
     try {
       
         const secureCountry = country ? secureInput(country.trim(), 'zone') : '';
@@ -180,6 +232,8 @@ async function saveClientZoneData(country, county, town) {
 
 
 async function loadClientPins() {
+    if (!ensureClientId()) return;
+    
     try {
         const response = await fetch(`/client-pins/${clientId}`);
         if (response.ok) {
@@ -764,42 +818,34 @@ window.initializeClientAlarms = initializeClientAlarms;
 window.loadClientPins = loadClientPins;
 window.updatePinCountDisplay = updatePinCountDisplay;
 
-// ===== SECURITY PREVENTION TECHNIQUES =====
-// Real implementation of attack prevention mechanisms
+//SQL Injection Prevention
 
-/**
- * SQL Injection Prevention
- * ------------------------
- * These functions prevent SQL injection attacks by sanitizing and validating input
- */
 
-// Input sanitization for SQL injection prevention
 function sanitizeForSQL(input) {
     if (typeof input !== 'string') {
         return input;
     }
     
-    // Remove or escape dangerous SQL characters
     return input
-        .replace(/'/g, "''")           // Escape single quotes
-        .replace(/"/g, '""')           // Escape double quotes
-        .replace(/;/g, '')             // Remove semicolons
-        .replace(/--/g, '')            // Remove SQL comments
-        .replace(/\/\*/g, '')          // Remove block comment start
-        .replace(/\*\//g, '')          // Remove block comment end
-        .replace(/\bOR\b/gi, '')       // Remove OR keywords
-        .replace(/\bAND\b/gi, '')      // Remove AND keywords
-        .replace(/\bUNION\b/gi, '')    // Remove UNION keywords
-        .replace(/\bSELECT\b/gi, '')   // Remove SELECT keywords
-        .replace(/\bINSERT\b/gi, '')   // Remove INSERT keywords
-        .replace(/\bUPDATE\b/gi, '')   // Remove UPDATE keywords
-        .replace(/\bDELETE\b/gi, '')   // Remove DELETE keywords
-        .replace(/\bDROP\b/gi, '')     // Remove DROP keywords
-        .replace(/\bEXEC\b/gi, '')     // Remove EXEC keywords
-        .replace(/\bALTER\b/gi, '');   // Remove ALTER keywords
+        .replace(/'/g, "''")           
+        .replace(/"/g, '""')           
+        .replace(/;/g, '')            
+        .replace(/--/g, '')          
+        .replace(/\/\*/g, '')         
+        .replace(/\*\//g, '')         
+        .replace(/\bOR\b/gi, '')      
+        .replace(/\bAND\b/gi, '')      
+        .replace(/\bUNION\b/gi, '')    
+        .replace(/\bSELECT\b/gi, '')   
+        .replace(/\bINSERT\b/gi, '')   
+        .replace(/\bUPDATE\b/gi, '')  
+        .replace(/\bDELETE\b/gi, '')   
+        .replace(/\bDROP\b/gi, '')     
+        .replace(/\bEXEC\b/gi, '')     
+        .replace(/\bALTER\b/gi, '');   
 }
 
-// Validate input against SQL injection patterns
+
 function validateSQLSafety(input) {
     if (typeof input !== 'string') {
         return true;
@@ -821,13 +867,8 @@ function validateSQLSafety(input) {
     return !dangerousPatterns.some(pattern => pattern.test(input));
 }
 
-/**
- * XSS Prevention
- * --------------
- * These functions prevent Cross-Site Scripting attacks
- */
+//XSS Prevention
 
-// HTML entity encoding to prevent XSS
 function encodeHTML(input) {
     if (typeof input !== 'string') {
         return input;
@@ -849,16 +890,16 @@ function encodeHTML(input) {
     });
 }
 
-// Remove potentially dangerous HTML tags and attributes
+
 function sanitizeHTML(input) {
     if (typeof input !== 'string') {
         return input;
     }
     
-    // Remove script tags and their content
+    
     input = input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
     
-    // Remove dangerous HTML tags
+  
     const dangerousTags = [
         'script', 'iframe', 'object', 'embed', 'form', 'input', 
         'textarea', 'button', 'select', 'option', 'meta', 'link'
@@ -868,12 +909,12 @@ function sanitizeHTML(input) {
         const regex = new RegExp(`<${tag}\\b[^>]*>.*?</${tag}>`, 'gi');
         input = input.replace(regex, '');
         
-        // Also remove self-closing tags
+     
         const selfClosingRegex = new RegExp(`<${tag}\\b[^>]*/>`, 'gi');
         input = input.replace(selfClosingRegex, '');
     });
     
-    // Remove dangerous attributes
+   
     const dangerousAttrs = [
         'onclick', 'onload', 'onerror', 'onmouseover', 'onmouseout',
         'onfocus', 'onblur', 'onchange', 'onsubmit', 'onkeyup',
@@ -888,7 +929,7 @@ function sanitizeHTML(input) {
     return input;
 }
 
-// Validate input against XSS patterns
+
 function validateXSSSafety(input) {
     if (typeof input !== 'string') {
         return true;
@@ -914,67 +955,61 @@ function validateXSSSafety(input) {
     return !xssPatterns.some(pattern => pattern.test(input));
 }
 
-/**
- * Comprehensive Input Validation and Sanitization
- * -----------------------------------------------
- * Main function that applies all security measures
- */
+
 function secureInput(input, type = 'general') {
-    // Handle null, undefined, or empty string
+    
     if (!input || typeof input !== 'string' || input.trim() === '') {
         return '';
     }
     
     const trimmedInput = input.trim();
     
-    // Step 1: Check for SQL injection patterns
+
     if (!validateSQLSafety(trimmedInput)) {
         throw new Error('Potentially dangerous SQL pattern detected');
     }
     
-    // Step 2: Check for XSS patterns
     if (!validateXSSSafety(trimmedInput)) {
         throw new Error('Potentially dangerous XSS pattern detected');
     }
-    
-    // Step 3: Apply sanitization based on input type
+   
     let sanitized = trimmedInput;
     
     switch (type) {
         case 'zone':
-            // For zone data (country, county, town)
+            
             sanitized = sanitizeForSQL(sanitized);
             sanitized = encodeHTML(sanitized);
-            // Only allow letters, spaces, and basic punctuation
+       
             sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,]/g, '');
             break;
             
         case 'pinName':
-            // For pin names
+        
             sanitized = sanitizeForSQL(sanitized);
             sanitized = encodeHTML(sanitized);
-            // Allow letters, numbers, spaces, and basic punctuation
+           
             sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,!]/g, '');
             break;
             
         case 'description':
-            // For descriptions
+           
             sanitized = sanitizeForSQL(sanitized);
             sanitized = sanitizeHTML(sanitized);
             sanitized = encodeHTML(sanitized);
             break;
             
         default:
-            // General sanitization
+         
             sanitized = sanitizeForSQL(sanitized);
             sanitized = encodeHTML(sanitized);
             break;
     }
     
-    // Step 4: Final trim
+   
     sanitized = sanitized.trim();
     
-    // Step 5: Final validation and logging
+
     if (sanitized !== trimmedInput) {
         console.warn('Input was sanitized for security:', { original: trimmedInput, sanitized: sanitized });
     }
@@ -982,22 +1017,17 @@ function secureInput(input, type = 'general') {
     return sanitized;
 }
 
-/**
- * Safe DOM Manipulation
- * ---------------------
- * Functions to safely update DOM elements
- */
+//Safe DOM Manipulation
+
 function safeSetText(element, text) {
     if (!element) return;
     
-    // Use textContent to prevent XSS
     element.textContent = encodeHTML(String(text));
 }
 
 function safeSetHTML(element, html) {
     if (!element) return;
     
-    // Sanitize HTML before setting
     const sanitizedHTML = sanitizeHTML(encodeHTML(String(html)));
     element.innerHTML = sanitizedHTML;
 }
@@ -1005,7 +1035,7 @@ function safeSetHTML(element, html) {
 function safeSetAttribute(element, attribute, value) {
     if (!element) return;
     
-    // Sanitize attribute value
+   
     const sanitizedValue = encodeHTML(String(value));
     element.setAttribute(attribute, sanitizedValue);
 }
