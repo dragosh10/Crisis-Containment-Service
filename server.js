@@ -6,6 +6,17 @@ const url = require('url');
 const bcrypt = require('bcrypt');
 const saltRounds = 10; // pentru criptarea parolei
 
+// Funcție pentru parsarea cookie-urilor
+const getCookies = (cookieString) => {
+    if (!cookieString) return {};
+    return cookieString.split(';')
+        .map(cookie => cookie.trim().split('='))
+        .reduce((cookies, [key, value]) => ({
+            ...cookies,
+            [key]: value
+        }), {});
+};
+
 const server = http.createServer(async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
     let filePath = parsedUrl.pathname;
@@ -42,10 +53,13 @@ const server = http.createServer(async (req, res) => {
                 // Criptăm parola înainte de a o salva
                 const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-                // Inserăm noul utilizator cu parola criptată
+                // Verificăm dacă email-ul este de la o autoritate (@cri.com)
+                const isAuthority = email.toLowerCase().endsWith('@cri.com');
+
+                // Inserăm noul utilizator cu parola criptată și statusul de autoritate
                 await pool.query(
-                    'INSERT INTO users (email, password) VALUES ($1, $2)',
-                    [email, hashedPassword]
+                    'INSERT INTO users (email, password, is_authority) VALUES ($1, $2, $3)',
+                    [email, hashedPassword, isAuthority]
                 );
 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -69,7 +83,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && filePath === '/api/logout') {
         res.writeHead(200, {
             'Content-Type': 'application/json',
-            'Set-Cookie': 'userEmail=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; HttpOnly'
+            'Set-Cookie': 'userEmail=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
         });
         res.end(JSON.stringify({ success: true }));
         return;
@@ -100,9 +114,12 @@ const server = http.createServer(async (req, res) => {
                         const cookieExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
                         res.writeHead(200, {
                             'Content-Type': 'application/json',
-                            'Set-Cookie': `userEmail=${email}; expires=${cookieExpiry.toUTCString()}; path=/; HttpOnly`
+                            'Set-Cookie': `userEmail=${email}; expires=${cookieExpiry.toUTCString()}; path=/`
                         });
-                        res.end(JSON.stringify({ success: true }));
+                        res.end(JSON.stringify({ 
+                            success: true, 
+                            isAuthority: result.rows[0].is_authority 
+                        }));
                     } else {
                         res.writeHead(401, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({ success: false, message: 'Email sau parolă incorectă!' }));
@@ -120,21 +137,37 @@ const server = http.createServer(async (req, res) => {
         return;
     }
     
-    // Dacă suntem pe root, redirectăm către login
+    // Dacă suntem pe root, redirectăm către dashboard-ul corespunzător
     if (filePath === '/') {
-        filePath = '/login.html';
+        const cookies = getCookies(req.headers.cookie);
+        if (cookies.userEmail) {
+            // Verificăm dacă utilizatorul este autoritate
+            try {
+                const result = await pool.query(
+                    'SELECT is_authority FROM users WHERE email = $1',
+                    [cookies.userEmail]
+                );
+                
+                if (result.rows.length > 0 && result.rows[0].is_authority) {
+                    res.writeHead(302, { 'Location': '/authority-dashboard.html' });
+                } else {
+                    res.writeHead(302, { 'Location': '/dashboard.html' });
+                }
+                res.end();
+                return;
+            } catch (error) {
+                console.error('Error checking authority status for root redirect:', error);
+                res.writeHead(302, { 'Location': '/dashboard.html' });
+                res.end();
+                return;
+            }
+        } else {
+            // Dacă nu este logat, redirecționăm către login
+            res.writeHead(302, { 'Location': '/login.html' });
+            res.end();
+            return;
+        }
     }
-
-    // Funcție pentru parsarea cookie-urilor
-    const getCookies = (cookieString) => {
-        if (!cookieString) return {};
-        return cookieString.split(';')
-            .map(cookie => cookie.trim().split('='))
-            .reduce((cookies, [key, value]) => ({
-                ...cookies,
-                [key]: value
-            }), {});
-    };
 
     // Verificăm cookie-urile pentru paginile protejate
     if (filePath === '/dashboard.html') {
@@ -145,22 +178,90 @@ const server = http.createServer(async (req, res) => {
             res.end();
             return;
         }
+        
+        // Verificăm dacă utilizatorul este autoritate și îl redirecționăm către dashboard-ul corespunzător
+        try {
+            const result = await pool.query(
+                'SELECT is_authority FROM users WHERE email = $1',
+                [cookies.userEmail]
+            );
+            
+            if (result.rows.length > 0 && result.rows[0].is_authority) {
+                // Dacă este autoritate, redirecționăm către dashboard-ul de autoritate
+                res.writeHead(302, { 'Location': '/authority-dashboard.html' });
+                res.end();
+                return;
+            }
+        } catch (error) {
+            console.error('Error checking authority status for dashboard redirect:', error);
+        }
+    }
+
+    // Verificăm cookie-urile pentru dashboard-ul de autoritate
+    if (filePath === '/authority-dashboard.html') {
+        const cookies = getCookies(req.headers.cookie);
+        if (!cookies.userEmail) {
+            // Dacă nu există cookie, redirecționăm către login
+            res.writeHead(302, { 'Location': '/login.html' });
+            res.end();
+            return;
+        }
+        
+        // Verificăm dacă utilizatorul este autoritate
+        try {
+            const result = await pool.query(
+                'SELECT is_authority FROM users WHERE email = $1',
+                [cookies.userEmail]
+            );
+            
+            if (result.rows.length === 0 || !result.rows[0].is_authority) {
+                // Dacă nu este autoritate, redirecționăm către dashboard normal
+                res.writeHead(302, { 'Location': '/dashboard.html' });
+                res.end();
+                return;
+            }
+        } catch (error) {
+            console.error('Error checking authority status:', error);
+            res.writeHead(302, { 'Location': '/login.html' });
+            res.end();
+            return;
+        }
     }
 
     // Mapăm URL-urile la fișierele corecte
     if (filePath === '/login.html') {
-        // Dacă utilizatorul este deja logat, redirecționăm către dashboard
+        // Dacă utilizatorul este deja logat, redirecționăm către dashboard-ul corespunzător
         const cookies = getCookies(req.headers.cookie);
         if (cookies.userEmail) {
-            res.writeHead(302, { 'Location': '/dashboard.html' });
-            res.end();
-            return;
+            // Verificăm dacă utilizatorul este autoritate pentru a-l redirecționa către dashboard-ul corect
+            try {
+                const result = await pool.query(
+                    'SELECT is_authority FROM users WHERE email = $1',
+                    [cookies.userEmail]
+                );
+                
+                if (result.rows.length > 0 && result.rows[0].is_authority) {
+                    res.writeHead(302, { 'Location': '/authority-dashboard.html' });
+                } else {
+                    res.writeHead(302, { 'Location': '/dashboard.html' });
+                }
+                res.end();
+                return;
+            } catch (error) {
+                console.error('Error checking authority status for redirect:', error);
+                // În caz de eroare, redirecționăm către dashboard normal
+                res.writeHead(302, { 'Location': '/dashboard.html' });
+                res.end();
+                return;
+            }
         }
         filePath = './src/views/login.html';
     } else if (filePath === '/signup.html') {
         filePath = './src/views/signup.html';
     } else if (filePath === '/dashboard.html') {
         filePath = './src/views/dashboard.html';
+    } else if (filePath === '/authority-dashboard.html') {
+        filePath = './src/views/authority-dashboard.html';
     } else if (filePath.startsWith('/public/')) {
         // Servim fișiere statice din folderul public
         filePath = '.' + filePath;

@@ -21,7 +21,12 @@ async function handleLogin() {
         const data = await response.json();
 
         if (data.success) {
-            window.location.href = '/dashboard.html';
+            // Verificăm dacă utilizatorul este autoritate
+            if (data.isAuthority) {
+                window.location.href = '/authority-dashboard.html';
+            } else {
+                window.location.href = '/dashboard.html';
+            }
         } else {
             alert('Email sau parolă incorectă!');
         }

@@ -1,5 +1,108 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Utilizator - CRI</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <style>
+        .user-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .user-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .logout-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .welcome-message {
+            font-size: 1.2em;
+            margin: 20px 0;
+            color: #333;
+        }
+    </style>
+</head>
 <body>
-<h1>
-    MERGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-</h1>
+    <div class="container">
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
+        
+        <div class="user-header">
+            <h1>Dashboard Utilizator CRI</h1>
+            <p>Bine ați venit în contul dvs. personal</p>
+        </div>
+        
+        <div class="user-content">
+            <h2>🎉 Felicitări!</h2>
+            <p class="welcome-message">
+                Ați fost autentificat cu succes în sistemul CRI.
+            </p>
+            <p>
+                Acest este dashboard-ul pentru utilizatorii obișnuiți. 
+                Dacă aveți nevoie de acces la funcționalități avansate, 
+                contactați administratorul sistemului.
+            </p>
+            <br>
+            <p><strong>Status:</strong> Utilizator normal</p>
+            <p><strong>Acces:</strong> Funcționalități de bază</p>
+            <p><strong>Email:</strong> <span id="userEmail">Se încarcă...</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Funcție pentru a obține email-ul din cookie
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        
+        // Afișăm email-ul utilizatorului
+        function displayUserEmail() {
+            const userEmail = getCookie('userEmail');
+            console.log('Cookie-uri disponibile:', document.cookie);
+            console.log('Email găsit:', userEmail);
+            
+            if (userEmail) {
+                document.getElementById('userEmail').textContent = userEmail;
+            } else {
+                document.getElementById('userEmail').textContent = 'Necunoscut';
+            }
+        }
+        
+        // Inițializăm afișarea email-ului
+        displayUserEmail();
+        
+        function handleLogout() {
+            fetch('/api/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(() => {
+                window.location.href = '/login.html';
+            });
+        }
+    </script>
 </body>
+</html>

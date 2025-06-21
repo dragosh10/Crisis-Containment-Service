@@ -11,5 +11,9 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     first_name VARCHAR(100),
     last_name VARCHAR(100),
+    is_authority BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Adăugăm câmpul is_authority dacă nu există (pentru cazul când tabelul există deja)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_authority BOOLEAN DEFAULT FALSE;
