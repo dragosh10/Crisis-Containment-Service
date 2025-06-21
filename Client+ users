@@ -1,0 +1,44 @@
+
+CREATE TABLE clientZone (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_client INT NOT NULL,
+    Country VARCHAR(50) NOT NULL,
+    County VARCHAR(50),
+    Town VARCHAR(50)
+);
+
+CREATE TABLE clientPins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_client INT NOT NULL,
+    pin1_lat FLOAT,
+    pin1_lng FLOAT,
+    pin2_lat FLOAT,
+    pin2_lng FLOAT,
+    pin3_lat FLOAT,
+    pin3_lng FLOAT
+);
+
+ALTER TABLE clientPins
+ADD COLUMN pin1_name VARCHAR(15) NULL,
+ADD COLUMN pin2_name VARCHAR(15) NULL,
+ADD COLUMN pin3_name VARCHAR(15) NULL;
+
+
+ALTER TABLE clientZone
+MODIFY COLUMN Country VARCHAR(50) NULL;
+
+
+
+clientzone
+
+1	1	Romania	Suceava	Arbore
+2	3			
+				
+clientpins
+1	1	45.629	23.6997	45.8746	23.6426	46.8075	24.7632	Home	Work	Mom
+2	3	46.2102	24.95					Work		
+										
+users  (parola e : Parola123 la ambele)
+1	utilizator@gmail.com	$2b$10$r.n.FV/dPp1Li2DvzFyCu.LFZ1IawNkAXxN/rDk.OQ3By2LNziPeu			0	2025-06-21 06:13:26
+2	autoritate@cri.com	$2b$10$H9sVh0yAWbYPFSsSwcupleS.5yra3/n8DkToEkZdim0.Ccte4ixdy			1	2025-06-21 06:15:05
+						
