@@ -7,8 +7,6 @@ function loadEarthquakes(map) {
           return;
         }
   
-        const markers = L.markerClusterGroup();
-  
         data.features.forEach(eq => {
           const [lon, lat] = eq.geometry.coordinates;
           const mag = eq.properties.mag;
@@ -24,10 +22,18 @@ function loadEarthquakes(map) {
               <a href="${url}" target="_blank">Details</a>
             `);
   
-          markers.addLayer(marker);
+          marker.calamityData = { 
+            type: 'earthquake', 
+            lat: lat, 
+            lng: lon, 
+            magnitude: mag,
+            place: place,
+            time: time,
+            url: url
+          };
+          window.allCalamityMarkers.push(marker);
+          window.calamityCluster.addLayer(marker);
         });
-  
-        map.addLayer(markers);
       })
       .catch(err => {
         console.error('Error loading earthquake data:', err);

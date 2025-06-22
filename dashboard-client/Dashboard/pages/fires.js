@@ -91,7 +91,9 @@ async function loadFires(map) {
         sticky: true
       });
 
-      markers.addLayer(marker);
+      marker.calamityData = { type: 'fire', lat: lat, lng: lon, ...{ acq_date, acq_time, brightness, confidence, satellite, instrument } };
+      window.allCalamityMarkers.push(marker);
+      window.calamityCluster.addLayer(marker);
       processedCount++;
     });
 

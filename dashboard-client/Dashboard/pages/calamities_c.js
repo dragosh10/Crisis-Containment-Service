@@ -1,4 +1,6 @@
-
+let selectedDisasterPin = null;
+let isSelectingDisasterPin = false;
+window.allCalamityMarkers = window.allCalamityMarkers || [];
 
 function createCustomIcon(iconClass, color) {
   const iconSize = 48;
@@ -13,11 +15,6 @@ function createCustomIcon(iconClass, color) {
 
 
 window.createCustomIcon = createCustomIcon;
-
-
-let selectedDisasterPin = null;
-let isSelectingDisasterPin = false;
-
 
 
 function initializeCalamityIcons() {
@@ -151,7 +148,14 @@ function setupMarkerClickHandlers(marker, calamity) {
       }
     }
     
-   
+    // Handle disaster pin selection for filter
+    if (window.isSelectingDisasterPin && window.isSelectingDisasterPin()) {
+      e.originalEvent.stopPropagation();
+      const wasSelected = window.handleDisasterPinSelection(calamity);
+      if (wasSelected) {
+        return; // Stop further processing if disaster was selected for filter
+      }
+    }
   });
 }
 
@@ -165,6 +169,7 @@ function refreshCalamities() {
     .then(data => {
       
       window.calamityCluster.clearLayers();
+      window.allCalamityMarkers = [];
 
       data.filter(c => c.lat != null && c.lng != null).forEach(c => {
         const now = new Date();
@@ -180,7 +185,7 @@ function refreshCalamities() {
         setupPopupHandlers(marker, c, description);
         setupMarkerClickHandlers(marker, c);
         
-       
+        window.allCalamityMarkers.push(marker);
         window.calamityCluster.addLayer(marker);
       });
     })
@@ -241,4 +246,73 @@ function loadCalamities(map) {
  
 
   window.isSelectingDisasterPin = () => isSelectingDisasterPin;
+
+  // Function to apply disaster filter
+  function applyDisasterFilter() {
+    if (selectedDisasterPin && selectedDisasterPin.type) {
+      // Filter calamities to show only the selected type and nearby ones
+      window.calamityCluster.eachLayer(function(layer) {
+        if (layer.calamityData) {
+          if (layer.calamityData.type === selectedDisasterPin.type) {
+            layer.setOpacity(1.0);
+          } else {
+            layer.setOpacity(0.3); // Dim other types
+          }
+        }
+      });
+    }
+  }
+
+  // Function to reset disaster filter
+  function resetDisasterFilter() {
+    // Restore full opacity to all markers
+    window.calamityCluster.eachLayer(function(layer) {
+      layer.setOpacity(1.0);
+    });
+  }
+
+  // Function to handle disaster pin selection for filter
+  function handleDisasterPinSelection(calamity) {
+    if (isSelectingDisasterPin) {
+      selectedDisasterPin = {
+        id: calamity.id,
+        type: calamity.type,
+        lat: calamity.lat,
+        lng: calamity.lng
+      };
+      
+      // Update UI to show selected disaster
+      document.getElementById('selected-disaster-type').innerHTML = `<strong>Type:</strong> ${calamity.type}`;
+      document.getElementById('selected-disaster-coords').innerHTML = `<strong>Coordinates:</strong> ${calamity.lat}, ${calamity.lng}`;
+      document.getElementById('selected-disaster-info').style.display = 'block';
+      
+      // Reset the confirmation checkbox when a new disaster is selected
+      const confirmCheckbox = document.getElementById('confirmDisasterPin');
+      if (confirmCheckbox) {
+        confirmCheckbox.checked = false;
+      }
+      
+      return true; // Indicate that disaster was selected for filter
+    }
+    return false; // Normal behavior
+  }
+
+  // Make disaster filter function available globally
+  window.handleDisasterPinSelection = handleDisasterPinSelection;
+
+  function filterCalamitiesByType(type) {
+    window.calamityCluster.clearLayers();
+    if (!type || type === 'All' || type === '') {
+      window.allCalamityMarkers.forEach(marker => window.calamityCluster.addLayer(marker));
+      return;
+    }
+    window.allCalamityMarkers.forEach(marker => {
+      if (marker.calamityData && marker.calamityData.type === type) {
+        window.calamityCluster.addLayer(marker);
+      }
+    });
+  }
+
+  // Make filter function available globally
+  window.filterCalamitiesByType = filterCalamitiesByType;
 }
