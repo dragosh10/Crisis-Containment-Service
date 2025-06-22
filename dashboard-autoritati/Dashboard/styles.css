@@ -1,0 +1,479 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.sidebar {
+    width: 68px;
+    height: 100vh;
+    background-color: #B03434;
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 75px;
+    gap: 115px;
+}
+
+.icon-container {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease, border-radius 0.3s ease, width 0.3s ease, height 0.3s ease;
+    cursor: pointer;
+}
+
+.sidebar img {
+    width: 30px;
+    height: 30px;
+}
+
+.icon-container:hover {
+    width: 48px;
+    height: 48px;
+    background-color: #9E1717;
+    border-radius: 15px;
+}
+
+.icon-container.active {
+    width: 48px;
+    height: 48px;
+    background-color: #9E1717;
+    border-radius: 15px;
+}
+
+.sidebar .icon-container:last-child {
+    margin-top: auto;
+    margin-bottom: 20px;
+}
+
+.sidebar-secondary {
+    width: 289px;
+    height: 100vh;
+    background-color: #C83E3E;
+    position: fixed;
+    left: 68px;
+    top: 0;
+    padding: 20px;
+    color: white;
+    font-family: sans-serif;
+}
+
+.sidebar-secondary h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    margin-top: 100px;
+    color: white;
+}
+
+/* Stil pentru al doilea h2 (ADD AN EMERGENCY) */
+.sidebar-secondary h2:nth-of-type(2) {
+    margin-top: 100px; /* Mărim spațiul deasupra secțiunii */
+}
+
+.filter-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.filter-label {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 5px;
+    font-weight: bold;
+    width: 174px;
+    justify-content: flex-start;
+    line-height: 15px;
+}
+
+.filter-bullet {
+    width: 15px;
+    height: 15px;
+    margin-right: 4px;
+    flex-shrink: 0;
+    appearance: none;
+    border-radius: 5px;
+    background-color: white;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    vertical-align: bottom;
+}
+
+.filter-bullet:checked {
+    background-color: #9E1717;
+    border: 1px solid #9E1717;
+    position: relative;
+}
+
+.filter-bullet:checked::after {
+    color: white;
+    font-size: 10px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.filter-input {
+    width: 174px;
+    height: 33px;
+    padding: 0 10px;
+    margin: 0 auto 10px auto;
+    border: none;
+    border-radius: 20px;
+    outline: none;
+    box-sizing: border-box;
+    display: block;
+    background-color: white;
+    color: #666;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    position: relative;
+    text-align: center;
+    line-height: normal;
+    display: flex;
+    align-items: center;
+}
+
+.filter-input::after {
+    font-size: 10px;
+    color: #666;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.filter-input option {
+    color: black;
+    text-align: center;
+    padding: 5px 0;
+}
+
+.main-content {
+    position: fixed;
+    left: 357px; /* 68px (sidebar) + 289px (sidebar-secondary) */
+    top: 0;
+    background-color: white;
+    width: calc(100% - 357px); /* Ocupă restul lățimii ecranului */
+    height: 100vh; /* Întinde div-ul pe toată înălțimea ecranului */
+    overflow-y: auto; /* Permite scroll vertical dacă conținutul depășește înălțimea */
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+}
+.custom-icon {
+    text-align: center;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+.marker-cluster-custom {
+    background: rgba(255, 68, 68, 0.6);
+    border: 3px solid rgba(255, 68, 68, 0.4);
+    border-radius: 50%;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+.legend {
+    padding: 6px 8px;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    line-height: 24px;
+}
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+    text-align: center;
+}
+.coordinates-display {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+.section-header {
+    cursor: pointer;
+    padding: 10px;
+    background-color: rgba(158, 23, 23, 0.2);
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.section-header h2 {
+    margin: 0;
+    font-size: 1.2em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.section-content {
+    padding: 10px 0;
+}
+.filter-group {
+    margin-bottom: 10px;
+}
+.filter-input {
+    margin-bottom: 5px;
+}
+.section-header:hover {
+    background-color: rgba(158, 23, 23, 0.3);
+}
+.section-header.active {
+    background-color: rgba(158, 23, 23, 0.4);
+}
+.section-header.active i {
+    transform: rotate(180deg);
+}
+.coordinates-group {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+.submit-btn:hover {
+    background-color: #8B1414 !important;
+}
+#pinPlacementForm {
+    background-color: rgba(158, 23, 23, 0.1);
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+.form-field {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+}
+.form-field label {
+    color: white;
+    margin-bottom: 4px;
+    font-size: 0.9em;
+}
+.form-field .filter-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+.form-field .filter-input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.form-field .filter-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+.form-field input[type="datetime-local"] {
+    margin-bottom: 5px;
+}
+.form-field input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+.submit-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+.hamburger-toggle {
+    width: 100%;
+    height: 50px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.hamburger-toggle .line {
+    width: 24px;
+    height: 2px;
+    background-color: white;
+    margin: 2px 0;
+    transition: 0.3s;
+}
+.sidebar-collapsed .hamburger-toggle .line:nth-child(1) {
+    transform: rotate(-45deg) translate(-5px, 6px);
+}
+.sidebar-collapsed .hamburger-toggle .line:nth-child(2) {
+    opacity: 0;
+}
+.sidebar-collapsed .hamburger-toggle .line:nth-child(3) {
+    transform: rotate(45deg) translate(-5px, -6px);
+}
+.sidebar {
+    transform: none !important;
+}
+.sidebar-collapsed .sidebar-secondary {
+    transform: translateX(-100%);
+}
+.sidebar-secondary {
+    transition: transform 0.3s ease;
+}
+.main-content {
+    transition: margin-left 0.3s ease;
+}
+.sidebar-collapsed .main-content {
+    margin-left: 70px !important;
+}
+
+
+ .legend {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        .legend div {
+            margin: 4px 0;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+        
+        .legend i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .legend-header {
+            position: relative;
+        }
+
+        #legend-toggle:hover {
+            background: rgba(255,255,255,0.1) !important;
+        }
+
+        .custom-icon {
+            background: transparent !important;
+            border: none !important;
+        }
+
+        /* Custom shelter cluster styling */
+        .marker-cluster-permanent-shelter {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+            position: relative;
+        }
+
+        .marker-cluster-permanent-shelter div {
+            background: transparent;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            position: relative;
+        }
+
+        .marker-cluster-permanent-shelter div:before {
+            content: '🏠';
+            font-size: 16px;
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .marker-cluster-permanent-shelter span {
+            margin-top: 12px;
+            font-size: 12px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .marker-cluster-emergency-shelter {
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+            position: relative;
+        }
+
+        .marker-cluster-emergency-shelter div {
+            background: transparent;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            position: relative;
+        }
+
+        .marker-cluster-emergency-shelter div:before {
+            content: '🚨';
+            font-size: 16px;
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .marker-cluster-emergency-shelter span {
+            margin-top: 12px;
+            font-size: 12px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* Hover effects */
+        .marker-cluster-permanent-shelter:hover {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
+            box-shadow: 0 6px 16px rgba(40, 167, 69, 0.6);
+        }
+
+        .marker-cluster-emergency-shelter:hover {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.6);
+        }
+
+        /* Animation for emergency shelters */
+        .marker-cluster-emergency-shelter {
+            animation: emergencyPulse 2s infinite;
+        }
+
+        @keyframes emergencyPulse {
+            0% { box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4); }
+            50% { box-shadow: 0 4px 12px rgba(0, 123, 255, 0.8); }
+            100% { box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4); }
+        }

@@ -1,0 +1,231 @@
+* {
+    font-family: 'Montserrat', sans-serif;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+}
+
+.container {
+    display: flex;
+    width: 1300px;
+    height: 916px;
+    border-radius: 50px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.half {
+    width: 50%;
+    height: 100%;
+}
+
+.left-side {
+    background-color: #E7E7E7;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+}
+
+
+.right-side {
+    background-color: #D03C3F;
+}
+
+.input-field {
+    background-color: #D9D9D9;
+    width: 300px;
+    height: 45px;
+    border-radius: 50px;
+    border: none;
+    margin-bottom: 25px;
+    padding-left: 50px;
+    font-size: 17px;
+    color: #666;
+    outline: none;
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    background-size: 16px 16px;
+}
+
+.input-field::placeholder {
+    color: #999;
+}
+
+.email-input {
+    background-image: url('/public/images/email-icon.png');
+}
+
+.password-input {
+    background-image: url('/public/images/password-icon.png');
+}
+
+.proceed-button {
+    background-color: #c83e3e;
+    color: white;
+    width: 105px;
+    height: 29px;
+    border-radius: 25px;
+    border: none;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #a63333;
+}
+
+.button:active {
+    background-color: #8b2a2a;
+}
+
+.crisis-text-block {
+    padding: 25px 30px;
+    display: inline-block;
+    display: flex;
+    align-items: center;
+}
+
+.crisis-text {
+
+    font-weight: 100;
+    font-size: 30px;
+    color: black;
+    font-weight: normal;
+}
+
+.crisis-management-text {
+    font-weight: 600;
+    font-size: 30px;
+    color: #d1302b;
+    margin-left: 8px;
+    letter-spacing: 1px;
+}
+
+.account-text {
+    position: absolute;
+    bottom: 50px;
+    text-align: center;
+    font-size: 20px;
+    color: #333;
+}
+
+
+.donthave {
+    color: black;
+    font-weight: 200;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.click-redirect {
+    color: black;
+    font-weight: 600;
+    cursor: pointer;
+    display: block;
+    margin-top: 0;
+    text-decoration: none;
+}
+
+.click-redirect:hover {
+    text-decoration: underline;
+}
+
+/* =========== PARTEA DREAPTA =========== */
+.pro-tips-section {
+    margin-left: 80px;
+    margin-right: 80px;
+    margin-top: 100px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.emergency-illustration {
+    flex: 0 0 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.emergency-image {
+    max-width: 80%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.tips-content {
+    flex: 1;
+    color: white;
+    position: relative;
+}
+
+.tips-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+
+.tip-text {
+    font-size: 16px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+
+
+.tip-text strong {
+    font-weight: bold;
+}
+
+.navigation-arrows {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.nav-arrow {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 18px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+.nav-arrow:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.nav-arrow:active {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+
+
+

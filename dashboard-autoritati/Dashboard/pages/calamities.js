@@ -1,0 +1,1071 @@
+//iconuri
+
+function createCustomIcon(iconClass, color) {
+  const iconSize = 48;
+  return L.divIcon({
+      html: `<i class="${iconClass} fa-2x" style="color: ${color};"></i>`,
+      className: 'custom-icon',
+      iconSize: [iconSize, iconSize],
+      iconAnchor: [iconSize/2, iconSize/2],
+      popupAnchor: [0, -iconSize/2]
+  });
+}
+
+
+window.createCustomIcon = createCustomIcon;
+
+
+function initializeCalamityIcons() {
+  return {
+    earthquake: createCustomIcon('fas fa-house-crack', '#ff4444'),
+    fire: createCustomIcon('fas fa-fire', '#ff8800'),
+    flood: createCustomIcon('fas fa-water', '#0099cc'),
+    heatwave: createCustomIcon('fas fa-sun', '#ffd700'),
+    hurricane: createCustomIcon('fas fa-wind', '#8b4513'),
+    hailstorm: createCustomIcon('fas fa-cloud-meatball', '#4169e1'),
+    wildfire: createCustomIcon('fas fa-tree', '#ff6600'),
+    tsunami: createCustomIcon('fas fa-water', '#006699'),
+    'volcanic eruption': createCustomIcon('fas fa-mountain', '#cc0000'),
+    landslide: createCustomIcon('fas fa-mountain', '#8b4513'),
+    other: createCustomIcon('fas fa-exclamation-triangle', '#ffbb33'),
+    default: createCustomIcon('fas fa-exclamation-triangle', '#ffbb33')
+  };
+}
+
+//functii date
+
+function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+           
+            if (dateStr.includes('/')) return dateStr; 
+            
+           
+            if (dateStr.includes('T')) {
+              const date = new Date(dateStr);
+              const pad = n => n < 10 ? '0' + n : n;
+              return `${pad(date.getDate())}/${pad(date.getMonth()+1)}/${date.getFullYear()}, ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+            }
+            
+         
+            if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+              const date = new Date(dateStr);
+              const pad = n => n < 10 ? '0' + n : n;
+              return `${pad(date.getDate())}/${pad(date.getMonth()+1)}/${date.getFullYear()}, ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+            }
+            
+            return dateStr;
+}
+
+function formatDateForDB(dateTimeStr) {
+  if (!dateTimeStr) return null;
+  const date = new Date(dateTimeStr);
+  const pad = n => n < 10 ? '0' + n : n;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
+}
+
+
+//pinuri si markere
+
+function createCalamityMarker(calamity, icons) {
+          const gravitySymbols = {
+            low: '🟢',
+            medium: '🟡',
+            high: '🟠',
+            critical: '🔴'
+          };
+  const gravityText = calamity.gravity ? `${gravitySymbols[calamity.gravity] || ''} ${calamity.gravity.charAt(0).toUpperCase() + calamity.gravity.slice(1)}` : 'N/A';
+  
+      //functie show more
+  let desc = calamity.description || 'N/A';
+          let showMoreBtn = '';
+          let descShort = desc;
+          if (desc.length > 10) {
+            descShort = desc.slice(0, 10) + '...';
+    showMoreBtn = `<br><a href="#" class="show-more-link" data-id="desc-${calamity.id}" style="color: #007bff; text-decoration: underline;">Show more</a>`;
+          }
+  
+          // popup pin + butoane
+          const popupHtml = `
+            <div style="min-width:220px;max-width:300px; line-height: 1.4;">
+      <div style="margin-bottom: 8px;"><strong>Type:</strong> ${calamity.type}</div>
+      <div style="margin-bottom: 8px;"><strong>Start Date:</strong> ${formatDate(calamity.startdate)}</div>
+      <div style="margin-bottom: 8px;"><strong>End Date:</strong> ${formatDate(calamity.enddate)}</div>
+      <div style="margin-bottom: 8px;"><strong>Description:</strong><br><span id="desc-${calamity.id}" style="word-wrap: break-word;">${descShort}</span>${showMoreBtn}</div>
+              <div style="margin-bottom: 12px;"><strong>Gravity:</strong> ${gravityText}</div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="delete-pin-btn" data-id="${calamity.id}" style="color:white;background:#c00;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:14px;">Șterge pin</button>
+        <button class="show-shelters-btn" data-id="${calamity.id}" style="color:white;background:#007bff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:14px;">Show shelters/escape routes</button>
+              </div>
+            </div>
+          `;
+  
+  const marker = L.marker([calamity.lat, calamity.lng], {
+    icon: icons[calamity.type] || icons.default
+          }).bindPopup(popupHtml);
+          
+          //adaugare date la marker
+          marker.calamityData = {
+    id: calamity.id,
+    type: calamity.type,
+    lat: calamity.lat,
+    lng: calamity.lng
+  };
+  
+  return { marker, description: desc };
+}
+
+
+//show more logic 
+
+function setupPopupHandlers(marker, calamity, description) {
+          marker.on('popupopen', function() {
+            // Show more logic
+    const showMore = document.querySelector(`.show-more-link[data-id='desc-${calamity.id}']`);
+            if (showMore) {
+              showMore.addEventListener('click', function(e) {
+                e.preventDefault();
+        document.getElementById(`desc-${calamity.id}`).textContent = description;
+                showMore.style.display = 'none';
+              });
+            }
+    
+    // delete pin logic
+    const delBtn = document.querySelector(`.delete-pin-btn[data-id='${calamity.id}']`);
+            if (delBtn) {
+              delBtn.addEventListener('click', function() {
+                if (confirm('Ești sigur? Acțiunea este ireversibilă?')) {
+         
+
+
+
+ // trimitere request delete calamitate
+          fetch(`/calamities/${calamity.id}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+          })
+          .then(res => {
+            if (!res.ok) {
+              return res.text().then(text => {
+                console.error('Server response:', text);
+                throw new Error(`Server error: ${res.status} - ${text}`);
+              });
+            }
+            return res.json();
+          })
+          .then(response => {
+        
+
+            // dispare pinul
+            window.calamityCluster.removeLayer(marker);
+            console.log('Calamity deleted successfully:', response.message);
+          })
+          .catch(error => {
+            console.error('Error deleting calamity:', error);
+            alert('Error deleting calamity: ' + error.message);
+          });
+        }
+              });
+            }
+            
+            // show shelters buton
+    const showSheltersBtn = document.querySelector(`.show-shelters-btn[data-id='${calamity.id}']`);
+            if (showSheltersBtn) {
+              showSheltersBtn.addEventListener('click', function() {
+                if (window.toggleEmergencyShelters) {
+          const isShowing = window.toggleEmergencyShelters(calamity.id);
+                  showSheltersBtn.textContent = isShowing ? 'Hide shelters/escape routes' : 'Show shelters/escape routes';
+                  showSheltersBtn.style.background = isShowing ? '#6c757d' : '#007bff';
+                }
+              });
+            }
+          });
+}
+
+
+
+function setupMarkerClickHandlers(marker, calamity) {
+          marker.on('click', function(e) {
+            if (window.isSelectingEmergency && window.isSelectingEmergency()) {
+              e.originalEvent.stopPropagation();
+      const wasSelected = window.handleEmergencySelection(calamity);
+              if (wasSelected) {
+                return; 
+              }
+            }
+            
+            // Handle disaster pin selection for filter
+            if (window.isSelectingDisasterPin && window.isSelectingDisasterPin()) {
+              e.originalEvent.stopPropagation();
+              const wasSelected = window.handleDisasterPinSelection(calamity);
+              if (wasSelected) {
+                return; // Stop further processing if disaster was selected for filter
+              }
+            }
+                 
+          });
+}
+
+
+
+function refreshCalamities() {
+  const icons = initializeCalamityIcons();
+  
+  fetch('/calamities')
+    .then(res => res.json())
+    .then(data => {
+      
+      // Clear only database calamities from the cluster
+      window.calamityCluster.eachLayer(function(layer) {
+        if (layer.calamityData && layer.calamityData.id) {
+          // This is a database calamity (has an ID), remove it
+          window.calamityCluster.removeLayer(layer);
+          // Remove from allCalamityMarkers array
+          const index = window.allCalamityMarkers.indexOf(layer);
+          if (index > -1) {
+            window.allCalamityMarkers.splice(index, 1);
+          }
+        }
+      });
+
+      // Add new database calamities
+      data.filter(c => c.lat != null && c.lng != null).forEach(c => {
+        const now = new Date();
+        
+        //filtrare dupa data adaugarii (ultimle 5 zile)
+        if (c.added_at) {
+          const [d, m, y, h, min, s] = c.added_at.match(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/).slice(1).map(Number);
+          const addedDate = new Date(y, m - 1, d, h, min, s);
+          const diffDays = (now - addedDate) / (1000 * 60 * 60 * 24);
+          if (diffDays > 5) return; 
+        }
+        
+        const { marker, description } = createCalamityMarker(c, icons);
+        setupPopupHandlers(marker, c, description);
+        setupMarkerClickHandlers(marker, c);
+        
+        // Add marker to global array for filtering
+        window.allCalamityMarkers.push(marker);
+        window.calamityCluster.addLayer(marker);
+      });
+    })
+    .catch(console.error);
+}
+
+
+  //partea de formular
+
+function clearAddEmergencyForm() {
+  document.getElementById('description').value = '';
+  document.getElementById('lat').value = '';
+  document.getElementById('lng').value = '';
+  document.getElementById('zoneCountry').value = '';
+  document.getElementById('zoneCounty').value = '';
+  document.getElementById('zoneTown').value = '';
+  document.getElementById('startTime').value = '';
+  document.getElementById('endTime').value = '';
+  document.getElementById('gravity').value = '';
+  document.getElementById('emergencyType').value = '';
+  document.getElementById('form-message').textContent = '';
+  document.getElementById('form-message').style.color = 'white';
+  document.querySelector('.coordinates-display').textContent = 'Click on map to set coordinates';
+  
+
+  const charCount = document.getElementById('char-count');
+  if (charCount) {
+    charCount.textContent = '250 characters remaining';
+    charCount.style.color = '#ccc';
+  }
+  
+  
+  const descError = document.getElementById('description-error');
+  if (descError) {
+    descError.style.display = 'none';
+  }
+}
+
+function setupFormValidation() {
+   
+    const descriptionField = document.getElementById('description');
+    const charCount = document.getElementById('char-count');
+    const descriptionError = document.getElementById('description-error');
+
+    if (descriptionField) {
+        descriptionField.addEventListener('input', function(e) {
+            try {
+                let value = e.target.value;
+                const maxLength = 250;
+                
+               
+                if (!validateSQLSafety(value)) {
+                    e.target.value = sanitizeForSQL(value);
+                    value = e.target.value;
+                    alert('Potentially dangerous SQL characters removed');
+                }
+                
+                if (!validateXSSSafety(value)) {
+                    e.target.value = encodeHTML(value);
+                    value = e.target.value;
+                    alert('Input sanitized for XSS protection');
+                }
+                
+                const remainingChars = maxLength - value.length;
+                charCount.textContent = `${remainingChars} characters remaining`;
+                charCount.style.color = remainingChars < 20 ? '#ff4444' : '#ccc';
+                
+               
+                const validPattern = /^[a-zA-Z0-9\s.,;()!\/\-]*$/;
+                
+                if (!validPattern.test(value)) {
+                    descriptionError.textContent = 'Only alphanumeric characters and .,;()!/- punctuation are allowed';
+                    descriptionError.style.display = 'block';
+                    e.target.value = value.replace(/[^a-zA-Z0-9\s.,;()!\/\-]/g, '');
+                } else {
+                    descriptionError.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Security validation error:', error);
+                e.target.value = '';
+                charCount.textContent = '250 characters remaining';
+                alert('Input rejected for security reasons');
+            }
+        });
+
+        descriptionField.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                const event = new Event('input', { bubbles: true });
+                e.target.dispatchEvent(event);
+            }, 0);
+        });
+    }
+
+    const zoneFields = ['zoneCountry', 'zoneCounty', 'zoneTown'];
+    zoneFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        const counterId = `${fieldId}-count`;
+        
+        
+        let counter = document.getElementById(counterId);
+        if (!counter && field) {
+            counter = document.createElement('div');
+            counter.id = counterId;
+            counter.style.cssText = 'font-size: 12px; color: #ccc; margin-top: 4px;';
+            field.parentNode.insertBefore(counter, field.nextSibling);
+        }
+
+        if (field && counter) {
+            field.maxLength = 50;
+            counter.textContent = '50 characters remaining';
+            
+            field.addEventListener('input', function(e) {
+                try {
+                    const maxLength = 50;
+                    let value = e.target.value;
+                    
+                 
+                    if (!validateSQLSafety(value)) {
+                        e.target.value = sanitizeForSQL(value);
+                        value = e.target.value;
+                        alert('Potentially dangerous SQL characters removed');
+                    }
+                    
+                    if (!validateXSSSafety(value)) {
+                        e.target.value = encodeHTML(value);
+                        value = e.target.value;
+                        alert('Input sanitized for XSS protection');
+                    }
+                    
+                  
+                    const cleanValue = value.replace(/[^a-zA-Z0-9\s\-\.,]/g, '');
+                    if (cleanValue !== value) {
+                        e.target.value = cleanValue;
+                        value = cleanValue;
+                        alert('Special characters removed - only letters, numbers, spaces, hyphens, dots and commas allowed');
+                    }
+                    
+                    const remaining = maxLength - value.length;
+                    counter.textContent = `${remaining} characters remaining`;
+                    counter.style.color = remaining < 10 ? '#ff4444' : '#ccc';
+                } catch (error) {
+                    console.error('Security validation error:', error);
+                    e.target.value = '';
+                    counter.textContent = '50 characters remaining';
+                    alert('Input rejected for security reasons');
+                }
+            });
+        }
+    });
+}
+
+function handleFormSubmission(map) {
+  document.getElementById('addPinButton').addEventListener('click', function(e) {
+      e.preventDefault();
+      const method = document.getElementById('pinMethod').value;
+      const type = document.getElementById('emergencyType').value;
+      const description = document.getElementById('description').value;
+      const startTime = document.getElementById('startTime').value;
+      const endTime = document.getElementById('endTime').value;
+      const gravity = document.getElementById('gravity').value;
+
+      console.log('Form values:', {
+          method,
+          type,
+          description,
+          startTime,
+          endTime,
+          gravity
+      });
+
+     
+      if (!type) {
+          document.getElementById('form-message').textContent = 'Please select a disaster type';
+          return;
+      }
+
+      if (!method) {
+          document.getElementById('form-message').textContent = 'Please select how to add the emergency';
+          return;
+      }
+
+     
+      if (description) {
+          try {
+            
+              const secureDescription = secureInput(description, 'description');
+              
+              if (secureDescription.length > 250) {
+                  document.getElementById('form-message').textContent = 'Description is too long. Maximum 250 characters allowed';
+                  document.getElementById('form-message').style.color = 'red';
+                  return;
+              }
+              
+             
+              document.getElementById('description').value = secureDescription;
+              
+          } catch (error) {
+              document.getElementById('form-message').textContent = 'Description contains unsafe content: ' + error.message;
+              document.getElementById('form-message').style.color = 'red';
+              return;
+          }
+      }
+
+      let data = {
+          type: type.trim(),
+          description: description.trim() || null,
+          startdate: formatDateForDB(startTime),
+          enddate: formatDateForDB(endTime),
+          gravity: gravity || null
+      };
+
+     
+
+      if (method === 'place-pin') {
+          const lat = parseFloat(document.getElementById('lat').value);
+          const lng = parseFloat(document.getElementById('lng').value);
+          
+          if (isNaN(lat) || isNaN(lng)) {
+              document.getElementById('form-message').textContent = 'Please click on the map to set coordinates';
+              return;
+          }
+          
+          
+          originalLat = lat;
+          originalLng = lng;
+          
+          data = { ...data, lat, lng };
+      } else {
+          const country = document.getElementById('zoneCountry').value;
+          const county = document.getElementById('zoneCounty').value;
+          const town = document.getElementById('zoneTown').value;
+          
+         
+          try {
+              let secureCountry = null;
+              let secureCounty = null;
+              let secureTown = null;
+              
+              if (country && country.trim()) {
+                  secureCountry = secureInput(country.trim(), 'zone');
+                  if (secureCountry.length > 50) {
+                      document.getElementById('form-message').textContent = 'Country is too long. Maximum 50 characters allowed';
+                      document.getElementById('form-message').style.color = 'red';
+                      return;
+                  }
+              }
+              
+              if (county && county.trim()) {
+                  secureCounty = secureInput(county.trim(), 'zone');
+                  if (secureCounty.length > 50) {
+                      document.getElementById('form-message').textContent = 'County is too long. Maximum 50 characters allowed';
+                      document.getElementById('form-message').style.color = 'red';
+                      return;
+                  }
+              }
+              
+              if (town && town.trim()) {
+                  secureTown = secureInput(town.trim(), 'zone');
+                  if (secureTown.length > 50) {
+                      document.getElementById('form-message').textContent = 'Town is too long. Maximum 50 characters allowed';
+                      document.getElementById('form-message').style.color = 'red';
+                      return;
+                  }
+              }
+              
+              data = { 
+                  ...data, 
+                  country: secureCountry, 
+                  county: secureCounty, 
+                  town: secureTown
+              };
+              
+          } catch (error) {
+              document.getElementById('form-message').textContent = 'Zone data contains unsafe content: ' + error.message;
+              document.getElementById('form-message').style.color = 'red';
+              return;
+          }
+      }
+
+ 
+      Object.keys(data).forEach(key => {
+          if (data[key] === undefined || data[key] === null) {
+              delete data[key];
+          }
+      });
+
+      console.log('Sending data to server:', data);
+
+      fetch('/calamities', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+      })
+      .then(res => {
+          if (!res.ok) {
+              return res.text().then(text => {
+                  console.error('Server response:', text);
+                  throw new Error(`Server error: ${res.status} - ${text}`);
+              });
+          }
+          return res.json();
+      })
+      .then(response => {
+          document.getElementById('form-message').style.color = 'lightgreen';
+          document.getElementById('form-message').textContent = response.message || 'Emergency added successfully!';
+          
+          
+          if (window.tempMarker) {
+              map.removeLayer(window.tempMarker);
+              window.tempMarker = null;
+          }
+
+        
+          window.refreshCalamities();
+      
+          clearAddEmergencyForm();
+          document.getElementById('pinPlacementForm').style.display = 'none';
+          document.getElementById('pinMethod').value = '';
+          
+       
+          const cancelPinBtn = document.getElementById('cancelPinButton');
+          const cancelZoneBtn = document.getElementById('cancelZoneButton');
+          if (cancelPinBtn) cancelPinBtn.remove();
+          if (cancelZoneBtn) cancelZoneBtn.remove();
+          
+         
+          map.off('click');
+          
+        
+          document.querySelector('.coordinates-display').style.display = 'none';
+
+          
+          setTimeout(() => {
+              document.getElementById('form-message').textContent = '';
+              document.getElementById('form-message').style.color = 'white';
+          }, 3000);
+      })
+      .catch(error => {
+          console.error('Error details:', error);
+          document.getElementById('form-message').style.color = 'red';
+          document.getElementById('form-message').textContent = 'Error: ' + error.message;
+         
+          setTimeout(() => {
+              document.getElementById('form-message').textContent = '';
+              document.getElementById('form-message').style.color = 'white';
+          }, 5000);
+      });
+  });
+}
+
+function setupPinMethodHandler(map) {
+  const icons = initializeCalamityIcons();
+  
+  document.getElementById('pinMethod').addEventListener('change', function(e) {
+    const pinPlacementForm = document.getElementById('pinPlacementForm');
+    const pinFields = document.querySelector('.pin-fields');
+    const zoneFields = document.querySelector('.zone-fields');
+    const submitButton = document.getElementById('addPinButton');
+    const coordDisplay = document.querySelector('.coordinates-display');
+
+   
+    if (window.tempMarker) {
+        map.removeLayer(window.tempMarker);
+        window.tempMarker = null;
+    }
+
+   
+    map.off('click');
+
+    if (e.target.value === 'place-pin') {
+        pinPlacementForm.style.display = 'block';
+        pinFields.style.display = 'block';
+        zoneFields.style.display = 'none';
+        submitButton.textContent = 'Add Emergency';
+        coordDisplay.style.display = 'block';
+        coordDisplay.textContent = 'Click on map to set coordinates';
+        
+  //buton cancel pentru pin
+        if (!document.getElementById('cancelPinButton')) {
+          const cancelBtn = document.createElement('button');
+          cancelBtn.id = 'cancelPinButton';
+          cancelBtn.textContent = 'Cancel';
+          cancelBtn.className = 'filter-input';
+          cancelBtn.style.cssText = 'background-color: #666; color: white; cursor: pointer; margin-top: 8px;';
+          submitButton.parentNode.insertBefore(cancelBtn, submitButton.nextSibling);
+          
+          cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+       
+            clearAddEmergencyForm();
+            pinPlacementForm.style.display = 'none';
+            document.getElementById('pinMethod').value = '';
+            coordDisplay.style.display = 'none';
+            
+            if (window.tempMarker) {
+              map.removeLayer(window.tempMarker);
+              window.tempMarker = null;
+            }
+          
+            map.off('click');
+          });
+        }
+        
+    
+        map.on('click', function(e) {
+            const lat = e.latlng.lat.toFixed(6);
+            const lng = e.latlng.lng.toFixed(6);
+            document.getElementById('lat').value = lat;
+            document.getElementById('lng').value = lng;
+            coordDisplay.textContent = `Selected: Latitude: ${lat}, Longitude: ${lng}`;
+
+            
+            if (window.tempMarker) {
+                map.removeLayer(window.tempMarker);
+            }
+
+           
+            window.tempMarker = L.marker([lat, lng], {
+                icon: icons.default,
+                draggable: true
+            }).addTo(map);
+
+          
+            window.tempMarker.on('dragend', function(event) {
+                const newLat = event.target.getLatLng().lat.toFixed(6);
+                const newLng = event.target.getLatLng().lng.toFixed(6);
+                document.getElementById('lat').value = newLat;
+                document.getElementById('lng').value = newLng;
+                coordDisplay.textContent = `Selected: Latitude: ${newLat}, Longitude: ${newLng}`;
+            });
+        });
+    } else if (e.target.value === 'select-zone') {
+        pinPlacementForm.style.display = 'block';
+        pinFields.style.display = 'none';
+        zoneFields.style.display = 'block';
+        submitButton.textContent = 'Send Alarm';
+        coordDisplay.style.display = 'none';
+        
+        // buton cancel pentru zona
+        if (!document.getElementById('cancelZoneButton')) {
+          const cancelBtn = document.createElement('button');
+          cancelBtn.id = 'cancelZoneButton';
+          cancelBtn.textContent = 'Cancel';
+          cancelBtn.className = 'filter-input';
+          cancelBtn.style.cssText = 'background-color: #666; color: white; cursor: pointer; margin-top: 8px;';
+          submitButton.parentNode.insertBefore(cancelBtn, submitButton.nextSibling);
+          
+          cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+          
+            //cleer form
+            clearAddEmergencyForm();
+            pinPlacementForm.style.display = 'none';
+            document.getElementById('pinMethod').value = '';
+          });
+        }
+    } else {
+        pinPlacementForm.style.display = 'none';
+        // pa cancel buttons
+        const cancelPinBtn = document.getElementById('cancelPinButton');
+        const cancelZoneBtn = document.getElementById('cancelZoneButton');
+        if (cancelPinBtn) cancelPinBtn.remove();
+        if (cancelZoneBtn) cancelZoneBtn.remove();
+    }
+  });
+}
+
+
+function setupSectionHeaders() {
+  document.querySelectorAll('.section-header').forEach(header => {
+    header.addEventListener('click', function() {
+        const sectionId = this.dataset.section + 'Section';
+        const content = document.getElementById(sectionId);
+        const wasActive = this.classList.contains('active');
+
+        document.querySelectorAll('.section-header').forEach(h => h.classList.remove('active'));
+        document.querySelectorAll('.section-content').forEach(c => c.style.display = 'none');
+
+      
+        if (!wasActive) {
+            this.classList.add('active');
+            content.style.display = 'block';
+        }
+    });
+  });
+}
+
+
+
+function loadCalamities(map) {
+
+  if (!window.calamityCluster) {
+    window.calamityCluster = L.markerClusterGroup({
+      chunkedLoading: true,
+      chunkProgress: function(processed, total, elapsed) {
+        if (processed === total) {
+         
+        }
+      }
+    });
+ 
+    map.addLayer(window.calamityCluster);
+  }
+
+  
+  refreshCalamities();
+
+  
+  window.refreshCalamities = refreshCalamities;
+
+
+  setupPinMethodHandler(map);
+  setupSectionHeaders();
+  setupFormValidation();
+  handleFormSubmission(map);
+ 
+
+ 
+ 
+  
+}
+
+//SQL injection
+function sanitizeForSQL(input) {
+    if (typeof input !== 'string') {
+        return input;
+    }
+    
+   
+    return input
+        .replace(/'/g, "''")           
+        .replace(/"/g, '""')           
+        .replace(/;/g, '')            
+        .replace(/--/g, '')          
+        .replace(/\/\*/g, '')         
+        .replace(/\*\//g, '')         
+        .replace(/\bOR\b/gi, '')      
+        .replace(/\bAND\b/gi, '')      
+        .replace(/\bUNION\b/gi, '')    
+        .replace(/\bSELECT\b/gi, '')   
+        .replace(/\bINSERT\b/gi, '')   
+        .replace(/\bUPDATE\b/gi, '')  
+        .replace(/\bDELETE\b/gi, '')   
+        .replace(/\bDROP\b/gi, '')     
+        .replace(/\bEXEC\b/gi, '')     
+        .replace(/\bALTER\b/gi, '');   
+}
+
+function validateSQLSafety(input) {
+    if (typeof input !== 'string') {
+        return true;
+    }
+    
+    const dangerousPatterns = [
+        /'.*OR.*'/i,
+        /'.*AND.*'/i,
+        /UNION.*SELECT/i,
+        /DROP.*TABLE/i,
+        /DELETE.*FROM/i,
+        /INSERT.*INTO/i,
+        /UPDATE.*SET/i,
+        /--/,
+        /\/\*.*\*\//,
+        /;\s*$/
+    ];
+    
+    return !dangerousPatterns.some(pattern => pattern.test(input));
+}
+
+ //XSS Prevention
+ 
+function encodeHTML(input) {
+    if (typeof input !== 'string') {
+        return input;
+    }
+    
+    const entityMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;',
+        '`': '&#x60;',
+        '=': '&#x3D;'
+    };
+    
+    return input.replace(/[&<>"'`=\/]/g, function (s) {
+        return entityMap[s];
+    });
+}
+
+
+function sanitizeHTML(input) {
+    if (typeof input !== 'string') {
+        return input;
+    }
+    
+  
+    input = input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    
+    
+    const dangerousTags = [
+        'script', 'iframe', 'object', 'embed', 'form', 'input', 
+        'textarea', 'button', 'select', 'option', 'meta', 'link'
+    ];
+    
+    dangerousTags.forEach(tag => {
+        const regex = new RegExp(`<${tag}\\b[^>]*>.*?</${tag}>`, 'gi');
+        input = input.replace(regex, '');
+        
+       
+        const selfClosingRegex = new RegExp(`<${tag}\\b[^>]*/>`, 'gi');
+        input = input.replace(selfClosingRegex, '');
+    });
+    
+    
+    const dangerousAttrs = [
+        'onclick', 'onload', 'onerror', 'onmouseover', 'onmouseout',
+        'onfocus', 'onblur', 'onchange', 'onsubmit', 'onkeyup',
+        'onkeydown', 'onkeypress', 'javascript:', 'vbscript:'
+    ];
+    
+    dangerousAttrs.forEach(attr => {
+        const regex = new RegExp(`\\s*${attr}\\s*=\\s*["'][^"']*["']`, 'gi');
+        input = input.replace(regex, '');
+    });
+    
+    return input;
+}
+
+
+function validateXSSSafety(input) {
+    if (typeof input !== 'string') {
+        return true;
+    }
+    
+    const xssPatterns = [
+        /<script/i,
+        /<iframe/i,
+        /javascript:/i,
+        /vbscript:/i,
+        /onload=/i,
+        /onerror=/i,
+        /onclick=/i,
+        /onmouseover=/i,
+        /<img[^>]+src[^>]*>/i,
+        /<svg[^>]*>/i,
+        /eval\(/i,
+        /alert\(/i,
+        /document\.cookie/i,
+        /document\.write/i
+    ];
+    
+    return !xssPatterns.some(pattern => pattern.test(input));
+}
+
+
+function secureInput(input, type = 'general') {
+    // Handle null, undefined, or empty string
+    if (!input || typeof input !== 'string' || input.trim() === '') {
+        return '';
+    }
+    
+    const trimmedInput = input.trim();
+    
+   
+    if (!validateSQLSafety(trimmedInput)) {
+        throw new Error('Potentially dangerous SQL pattern detected');
+    }
+    
+   
+    if (!validateXSSSafety(trimmedInput)) {
+        throw new Error('Potentially dangerous XSS pattern detected');
+    }
+    
+ 
+    let sanitized = trimmedInput;
+    
+    switch (type) {
+        case 'zone':
+            
+            sanitized = sanitizeForSQL(sanitized);
+            sanitized = encodeHTML(sanitized);
+           
+            sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,]/g, '');
+            break;
+            
+        case 'description':
+        
+            sanitized = sanitizeForSQL(sanitized);
+            sanitized = sanitizeHTML(sanitized);
+            sanitized = encodeHTML(sanitized);
+            break;
+            
+        default:
+          
+            sanitized = sanitizeForSQL(sanitized);
+            sanitized = encodeHTML(sanitized);
+            break;
+    }
+    
+   
+    sanitized = sanitized.trim();
+    
+    
+    if (sanitized !== trimmedInput) {
+        console.warn('Input was sanitized for security:', { original: trimmedInput, sanitized: sanitized });
+    }
+    
+    return sanitized;
+}
+
+//Safe DOM Manipulation
+
+function safeSetText(element, text) {
+    if (!element) return;
+    
+   
+    element.textContent = encodeHTML(String(text));
+}
+
+function safeSetHTML(element, html) {
+    if (!element) return;
+    
+    
+    const sanitizedHTML = sanitizeHTML(encodeHTML(String(html)));
+    element.innerHTML = sanitizedHTML;
+}
+
+function safeSetAttribute(element, attribute, value) {
+    if (!element) return;
+    
+   
+    const sanitizedValue = encodeHTML(String(value));
+    element.setAttribute(attribute, sanitizedValue);
+}
+
+// Global variables for disaster filter
+let selectedDisasterPin = null;
+let isSelectingDisasterPin = false;
+window.allCalamityMarkers = window.allCalamityMarkers || [];
+
+// Function to apply disaster filter
+function applyDisasterFilter() {
+  if (selectedDisasterPin && selectedDisasterPin.type) {
+    // Filter calamities to show only the selected type and nearby ones
+    window.calamityCluster.eachLayer(function(layer) {
+      if (layer.calamityData) {
+        if (layer.calamityData.type === selectedDisasterPin.type) {
+          layer.setOpacity(1.0);
+        } else {
+          layer.setOpacity(0.3); // Dim other types
+        }
+      }
+    });
+  }
+}
+
+// Function to reset disaster filter
+function resetDisasterFilter() {
+  // Restore full opacity to all markers
+  window.calamityCluster.eachLayer(function(layer) {
+    layer.setOpacity(1.0);
+  });
+}
+
+// Function to handle disaster pin selection for filter
+function handleDisasterPinSelection(calamity) {
+  if (isSelectingDisasterPin) {
+    selectedDisasterPin = {
+      id: calamity.id,
+      type: calamity.type,
+      lat: calamity.lat,
+      lng: calamity.lng
+    };
+    
+    // Update UI to show selected disaster
+    const selectedDisasterType = document.getElementById('selected-disaster-type');
+    const selectedDisasterCoords = document.getElementById('selected-disaster-coords');
+    const selectedDisasterInfo = document.getElementById('selected-disaster-info');
+    
+    if (selectedDisasterType) {
+      selectedDisasterType.innerHTML = `<strong>Type:</strong> ${calamity.type}`;
+    }
+    if (selectedDisasterCoords) {
+      selectedDisasterCoords.innerHTML = `<strong>Coordinates:</strong> ${calamity.lat}, ${calamity.lng}`;
+    }
+    if (selectedDisasterInfo) {
+      selectedDisasterInfo.style.display = 'block';
+    }
+    
+    // Reset the confirmation checkbox when a new disaster is selected
+    const confirmCheckbox = document.getElementById('confirmDisasterPin');
+    if (confirmCheckbox) {
+      confirmCheckbox.checked = false;
+    }
+    
+    return true; // Indicate that disaster was selected for filter
+  }
+  return false; // Normal behavior
+}
+
+// Function to filter calamities by type
+function filterCalamitiesByType(type) {
+  window.calamityCluster.clearLayers();
+  if (!type || type === 'All' || type === '') {
+    window.allCalamityMarkers.forEach(marker => window.calamityCluster.addLayer(marker));
+    return;
+  }
+  window.allCalamityMarkers.forEach(marker => {
+    if (marker.calamityData && marker.calamityData.type === type) {
+      window.calamityCluster.addLayer(marker);
+    }
+  });
+}
+
+// Make disaster filter functions available globally
+window.handleDisasterPinSelection = handleDisasterPinSelection;
+window.isSelectingDisasterPin = () => isSelectingDisasterPin;
+window.filterCalamitiesByType = filterCalamitiesByType;
+window.applyDisasterFilter = applyDisasterFilter;
+window.resetDisasterFilter = resetDisasterFilter;
+
