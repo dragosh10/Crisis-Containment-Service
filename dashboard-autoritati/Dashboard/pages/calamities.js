@@ -214,12 +214,22 @@ function refreshCalamities() {
     .then(res => res.json())
     .then(data => {
       
-      window.calamityCluster.clearLayers();
-      window.allCalamityMarkers = []; // Reset array for filtering
+      // Clear only database calamities from the cluster
+      window.calamityCluster.eachLayer(function(layer) {
+        if (layer.calamityData && layer.calamityData.id) {
+          // This is a database calamity (has an ID), remove it
+          window.calamityCluster.removeLayer(layer);
+          // Remove from allCalamityMarkers array
+          const index = window.allCalamityMarkers.indexOf(layer);
+          if (index > -1) {
+            window.allCalamityMarkers.splice(index, 1);
+          }
+        }
+      });
 
+      // Add new database calamities
       data.filter(c => c.lat != null && c.lng != null).forEach(c => {
         const now = new Date();
-       
         
         //filtrare dupa data adaugarii (ultimle 5 zile)
         if (c.added_at) {
@@ -235,12 +245,11 @@ function refreshCalamities() {
         
         // Add marker to global array for filtering
         window.allCalamityMarkers.push(marker);
-       
         window.calamityCluster.addLayer(marker);
-        });
-      })
-      .catch(console.error);
-  }
+      });
+    })
+    .catch(console.error);
+}
 
 
   //partea de formular
