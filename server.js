@@ -11,7 +11,6 @@ const saltRounds = 10;
 const db = mysql.createPool({
   host: 'localhost',
   user: 'root',
-  password: 'sarah',
   database: 'web',
   port: 3306,
   waitForConnections: true,

@@ -42,7 +42,6 @@ async function loadFires(map) {
     const satIndex = headers.indexOf('satellite');
     const instIndex = headers.indexOf('instrument');
 
-    const markers = L.markerClusterGroup();
     let processedCount = 0;
 
     lines.slice(1).forEach(line => {
@@ -91,11 +90,12 @@ async function loadFires(map) {
         sticky: true
       });
 
-      markers.addLayer(marker);
+      marker.calamityData = { type: 'fire', lat: lat, lng: lon, ...{ acq_date, acq_time, brightness, confidence, satellite, instrument } };
+      window.allCalamityMarkers.push(marker);
+      window.calamityCluster.addLayer(marker);
       processedCount++;
     });
 
-    map.addLayer(markers);
     console.log(`Successfully loaded ${processedCount} fire hotspots from NASA FIRMS`);
     
   } catch (err) {

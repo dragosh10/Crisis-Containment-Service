@@ -86,21 +86,10 @@
                     <input type="checkbox" class="filter-bullet">
                     Shelter
                 </label>
-                <select class="filter-input">
-                    <option value="" disabled selected>Type...</option>
-                    <option value="">All</option>
-                    <option value="flood">Flood</option>
-                    <option value="earthquake">Earthquake</option>
-                    <option value="wildfire">Wildfire</option>
-                    <option value="fire">Fire</option>
-                    <option value="heatwave">Heatwave</option>
-                    <option value="hurricane">Hurricane</option>
-                    <option value="hailstorm">Hail Storm</option>
-                  
-                    <option value="tsunami">Tsunami</option>
-                    <option value="volcanic eruption">Volcanic Eruption</option>
-                    <option value="landslide">Landslide</option>
-                    <option value="other">Other</option>
+                <select class="filter-input" id="shelterTypeFilter" disabled>
+                    <option value="all">All Shelters</option>
+                    <option value="permanent">Permanent</option>
+                    <option value="emergency">Emergency</option>
                 </select>
             </div>
         </div>
@@ -296,6 +285,7 @@
      <script src="shelters.js"></script>
      <script src="earthquake.js"></script>
      <script src="floods.js"></script>
+     <script src="filter.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
@@ -376,6 +366,29 @@
         map.setView([45.9432, 24.9668], 7); 
         document.querySelector('[data-section="filter"]').classList.add('active');
         document.getElementById('filterSection').style.display = 'block';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Disaster Type
+            const disasterFilterCheckbox = document.getElementById('disasterFilter');
+            const disasterTypeSelect = document.getElementById('disasterTypeSelect');
+            if (disasterFilterCheckbox && disasterTypeSelect) {
+                disasterFilterCheckbox.addEventListener('change', function() {
+                    disasterTypeSelect.disabled = !this.checked;
+                });
+                // Inițial dezactivez
+                disasterTypeSelect.disabled = !disasterFilterCheckbox.checked;
+            }
+            // Shelter
+            const shelterFilterCheckbox = document.querySelector('.filter-label input[type="checkbox"]:not(#disasterFilter):not(#locationFilter)');
+            const shelterTypeSelect = document.getElementById('shelterTypeFilter');
+            if (shelterFilterCheckbox && shelterTypeSelect) {
+                shelterFilterCheckbox.addEventListener('change', function() {
+                    shelterTypeSelect.disabled = !this.checked;
+                });
+                // Inițial dezactivez
+                shelterTypeSelect.disabled = !shelterFilterCheckbox.checked;
+            }
+        });
 
         // Logout functionality
         document.getElementById('logout-icon').addEventListener('click', function() {

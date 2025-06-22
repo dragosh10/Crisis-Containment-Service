@@ -157,7 +157,10 @@ function loadFloods(map) {
                 </div>
               `);
               
-              floodLayer.addLayer(marker);
+              marker.calamityData = { type: 'flood', lat: flood.lat, lng: flood.lng, ...flood };
+              window.allCalamityMarkers.push(marker);
+              window.calamityCluster.addLayer(marker);
+              
               processedCount++;
               
               console.log(`Successfully processed flood area ${processedCount}`);

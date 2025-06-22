@@ -1,4 +1,3 @@
-
 //sql injection
 function sanitizeForSQL(input) {
     if (typeof input !== 'string') {
@@ -706,11 +705,14 @@ function loadShelters(map, createCustomIcon) {
             .then(data => {
               
                 window.permanentShelterCluster.clearLayers();
+                window.allPermanentShelterMarkers = []; // Reset array for filtering
 
                 data.filter(shelter => shelter.permanent === 1 || shelter.permanent === true)
                     .forEach(shelter => {
                         if (shelter.lat && shelter.lng) {
-                            createShelterMarker(shelter, window.permanentShelterCluster, createCustomIcon);
+                            const marker = createShelterMarker(shelter, window.permanentShelterCluster, createCustomIcon);
+                            // Add marker to global array for filtering
+                            window.allPermanentShelterMarkers.push(marker);
                         }
                     });
             })
@@ -782,6 +784,9 @@ function loadShelters(map, createCustomIcon) {
             icon: shelterIcon
         }).bindPopup(popupHtml);
 
+        // Add shelter data to marker for filtering
+        marker.shelterData = shelter;
+
      
         marker.on('popupopen', function() {
           //show more logic
@@ -820,6 +825,7 @@ function loadShelters(map, createCustomIcon) {
         });
 
         cluster.addLayer(marker);
+        return marker;
     }
 
    
@@ -874,3 +880,90 @@ function loadShelters(map, createCustomIcon) {
     window.refreshShelters = refreshShelters;
     window.toggleEmergencyShelters = toggleEmergencyShelters;
 }
+
+// Make disaster filter functions available globally - commented out as these functions are in calamities.js
+// window.handleDisasterPinSelection = handleDisasterPinSelection;
+// window.isSelectingDisasterPin = () => isSelectingDisasterPin;
+// window.filterCalamitiesByType = filterCalamitiesByType;
+// window.applyDisasterFilter = applyDisasterFilter;
+// window.resetDisasterFilter = resetDisasterFilter;
+
+// Filtrare sheltere după permanent (1 = permanent, 0 = emergency)
+function filterSheltersByPermanent(permanentValue) {
+  if (!window.permanentShelterCluster || !window.allPermanentShelterMarkers) return;
+  window.permanentShelterCluster.clearLayers();
+  if (typeof permanentValue === 'undefined') {
+    // Toate: permanente + toate emergency
+    window.allPermanentShelterMarkers.forEach(marker => {
+      window.permanentShelterCluster.addLayer(marker);
+    });
+    fetch('/shelters')
+      .then(res => res.json())
+      .then(data => {
+        data.filter(shelter => shelter.permanent === 0 || shelter.permanent === false)
+          .forEach(shelter => {
+            if (shelter.lat && shelter.lng) {
+              const shelterIcon = shelter.type_shelter === 'shelter' 
+                ? createCustomIcon('fas fa-home', '#28a745')
+                : createCustomIcon('fas fa-route', '#ffc107');
+              const marker = L.marker([shelter.lat, shelter.lng], { icon: shelterIcon })
+                .bindPopup(`<div style="min-width:200px;max-width:300px; line-height: 1.4;">
+                  <div style="margin-bottom: 8px;"><strong>Type:</strong> ${shelter.type_shelter}</div>
+                  <div style="margin-bottom: 8px;"><strong>Category:</strong> ${shelter.calamity_type || 'N/A'}</div>
+                  <div style="margin-bottom: 8px;"><strong>Location:</strong> ${shelter.lat}, ${shelter.lng}</div>
+                  <div style="margin-bottom: 8px;"><strong>Description:</strong><br>${shelter.description || 'N/A'}</div>
+                  <div style="margin-bottom: 12px;"></div>
+                  <button class='delete-shelter-btn' data-id='${shelter.id}' style='color:white;background:#dc3545;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:14px;'>Delete shelter</button>
+                </div>`);
+              marker.shelterData = shelter;
+              window.permanentShelterCluster.addLayer(marker);
+            }
+          });
+      });
+  } else if (Number(permanentValue) === 0) {
+    // Doar emergency
+    fetch('/shelters')
+      .then(res => res.json())
+      .then(data => {
+        data.filter(shelter => shelter.permanent === 0 || shelter.permanent === false)
+          .forEach(shelter => {
+            if (shelter.lat && shelter.lng) {
+              const shelterIcon = shelter.type_shelter === 'shelter' 
+                ? createCustomIcon('fas fa-home', '#28a745')
+                : createCustomIcon('fas fa-route', '#ffc107');
+              const marker = L.marker([shelter.lat, shelter.lng], { icon: shelterIcon })
+                .bindPopup(`<div style="min-width:200px;max-width:300px; line-height: 1.4;">
+                  <div style="margin-bottom: 8px;"><strong>Type:</strong> ${shelter.type_shelter}</div>
+                  <div style="margin-bottom: 8px;"><strong>Category:</strong> ${shelter.calamity_type || 'N/A'}</div>
+                  <div style="margin-bottom: 8px;"><strong>Location:</strong> ${shelter.lat}, ${shelter.lng}</div>
+                  <div style="margin-bottom: 8px;"><strong>Description:</strong><br>${shelter.description || 'N/A'}</div>
+                  <div style="margin-bottom: 12px;"></div>
+                  <button class='delete-shelter-btn' data-id='${shelter.id}' style='color:white;background:#dc3545;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:14px;'>Delete shelter</button>
+                </div>`);
+              marker.shelterData = shelter;
+              window.permanentShelterCluster.addLayer(marker);
+            }
+          });
+      });
+  } else {
+    // Doar permanente
+    window.allPermanentShelterMarkers.forEach(marker => {
+      if (marker.shelterData && Number(marker.shelterData.permanent) === Number(permanentValue)) {
+        window.permanentShelterCluster.addLayer(marker);
+      }
+    });
+  }
+}
+window.filterSheltersByPermanent = filterSheltersByPermanent;
+
+// Dropdown pentru filtrare rapidă (dacă există în pagină)
+document.addEventListener('DOMContentLoaded', function() {
+  const shelterTypeFilter = document.getElementById('shelterTypeFilter');
+  if (shelterTypeFilter) {
+    shelterTypeFilter.addEventListener('change', function() {
+      if (this.value === 'permanent') filterSheltersByPermanent(1);
+      else if (this.value === 'emergency') filterSheltersByPermanent(0);
+      else filterSheltersByPermanent();
+    });
+  }
+});
