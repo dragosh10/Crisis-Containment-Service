@@ -1056,13 +1056,72 @@ function renderRecentAlerts() {
         list.innerHTML = '<li style="color:#fff;opacity:0.7;font-size:14px;">No recent alerts</li>';
         return;
     }
-    alerts.forEach(alert => {
+    const lastSeen = parseInt(localStorage.getItem('lastSeenAlert') || '0', 10);
+
+    alerts.forEach((alert, idx) => {
         const li = document.createElement('li');
         li.style.padding = '8px 0';
         li.style.borderBottom = '1px solid #fff2';
-        li.innerHTML = `<strong>${encodeHTML(alert.event || 'Alert')}</strong><br><span style='font-size:12px;'>${encodeHTML(alert.instruction || '')}</span>`;
+        li.style.cursor = 'pointer';
+
+        // Detectează dacă e „missed”
+        let isMissed = false;
+        if (alert.created_at && new Date(alert.created_at).getTime() > lastSeen) {
+            isMissed = true;
+        }
+
+        li.innerHTML = `
+            <strong>${encodeHTML(alert.event || 'Alert')}</strong>
+            ${isMissed ? '<span style="color: #ffd700; font-size: 12px; margin-left: 8px; background: #c00; padding: 2px 6px; border-radius: 4px;">MISSED!</span>' : ''}
+            <br>
+            <span style='font-size:12px;'>${encodeHTML(alert.instruction || '')}</span>
+        `;
+
+        // Click pentru detalii
+        li.addEventListener('click', () => showAlertDetailsModal(alert));
         list.appendChild(li);
     });
+}
+
+// Modal pentru detalii alertă
+function showAlertDetailsModal(alert) {
+    // Elimină orice modal vechi
+    const oldModal = document.getElementById('alert-details-modal');
+    if (oldModal) oldModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'alert-details-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.background = '#fff';
+    modal.style.color = '#222';
+    modal.style.padding = '24px 32px';
+    modal.style.borderRadius = '10px';
+    modal.style.boxShadow = '0 8px 32px rgba(0,0,0,0.25)';
+    modal.style.zIndex = '10001';
+    modal.style.minWidth = '260px';
+    modal.style.maxWidth = '90vw';
+
+    // Formatăm data fără T și Z
+    let formattedDate = '-';
+    if (alert.created_at) {
+        // Înlocuiește T cu spațiu și elimină Z dacă există
+        formattedDate = alert.created_at.replace('T', ' ').replace('Z', '');
+        // Dacă există milisecunde, le eliminăm
+        formattedDate = formattedDate.replace(/\.[0-9]+/, '');
+    }
+
+    modal.innerHTML = `
+        <h3 style="margin-top:0;">${encodeHTML(alert.event || 'Alert details')}</h3>
+        <div style="margin-bottom:8px;"><strong>Location:</strong> ${alert.lat ? encodeHTML(alert.lat.toString()) : '-'}, ${alert.lon ? encodeHTML(alert.lon.toString()) : '-'}</div>
+        <div style="margin-bottom:8px;"><strong>Date:</strong> ${formattedDate}</div>
+        <div style="margin-bottom:8px;"><strong>Gravity:</strong> ${encodeHTML(alert.gravity || '-')}</div>
+        <button id="close-alert-details" style="margin-top:12px;padding:6px 18px;background:#c00;color:#fff;border:none;border-radius:4px;cursor:pointer;">Close</button>
+    `;
+    document.body.appendChild(modal);
+    document.getElementById('close-alert-details').onclick = () => modal.remove();
 }
 
 // Dropdown logic for alerts section
@@ -1133,7 +1192,32 @@ window.addEventListener('DOMContentLoaded', () => {
     renderRecentAlerts();
 });
 
-// Fetch alerts from backend and populate localStorage + sidebar
+// Salvează timestamp la logout sau când utilizatorul închide pagina
+window.addEventListener('beforeunload', () => {
+    localStorage.setItem('lastSeenAlert', Date.now());
+});
+
+// Banner pentru alerte ratate
+function showMissedAlertsBanner(n) {
+    if (document.getElementById('missed-alerts-banner')) return; // nu dubla bannerul
+    let banner = document.createElement('div');
+    banner.id = 'missed-alerts-banner';
+    banner.style.position = 'fixed';
+    banner.style.top = '0';
+    banner.style.left = '0';
+    banner.style.width = '100%';
+    banner.style.background = '#c00';
+    banner.style.color = 'white';
+    banner.style.padding = '16px';
+    banner.style.zIndex = '9999';
+    banner.style.textAlign = 'center';
+    banner.style.fontSize = '1.2em';
+    banner.innerHTML = `<strong>Missed ${n} alert${n > 1 ? 's' : ''}!</strong> Check the ALERTS section. <button id="close-missed-alerts" style="margin-left:24px;padding:4px 12px;background:#fff;color:#c00;border:none;border-radius:4px;cursor:pointer;">Close</button>`;
+    document.body.appendChild(banner);
+    document.getElementById('close-missed-alerts').onclick = () => banner.remove();
+}
+
+// Modific fetchAndRenderRecentAlerts pentru a detecta alertele ratate
 async function fetchAndRenderRecentAlerts() {
     try {
         const response = await fetch('/api/user-alerts');
@@ -1143,8 +1227,18 @@ async function fetchAndRenderRecentAlerts() {
         }
         const data = await response.json();
         if (data.alerts && Array.isArray(data.alerts)) {
-            // Salvează în localStorage pentru compatibilitate cu restul codului
             localStorage.setItem('recentAlerts', JSON.stringify(data.alerts));
+            // --- Missed alerts logic ---
+            const lastSeen = parseInt(localStorage.getItem('lastSeenAlert') || '0', 10);
+            let missedCount = 0;
+            data.alerts.forEach(alert => {
+                if (alert.created_at && new Date(alert.created_at).getTime() > lastSeen) {
+                    missedCount++;
+                }
+            });
+            if (missedCount > 0) {
+                showMissedAlertsBanner(missedCount);
+            }
         }
         renderRecentAlerts();
     } catch (e) {
