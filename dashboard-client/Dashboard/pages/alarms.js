@@ -1,4 +1,3 @@
-
 let clientId = null; // Will be fetched dynamically
 let clientPins = [];
 let clientPinCluster = null;
@@ -675,4 +674,452 @@ function showTemporaryAlert(message) {
 window.initializeClientAlarms = initializeClientAlarms;
 window.loadClientPins = loadClientPins;
 window.updatePinCountDisplay = updatePinCountDisplay;
+
+//SQL Injection Prevention
+
+
+function sanitizeForSQL(input) {
+    if (typeof input !== 'string') {
+        return input;
+    }
+    
+    return input
+        .replace(/'/g, "''")           
+        .replace(/"/g, '""')           
+        .replace(/;/g, '')            
+        .replace(/--/g, '')          
+        .replace(/\/\*/g, '')         
+        .replace(/\*\//g, '')         
+        .replace(/\bOR\b/gi, '')      
+        .replace(/\bAND\b/gi, '')      
+        .replace(/\bUNION\b/gi, '')    
+        .replace(/\bSELECT\b/gi, '')   
+        .replace(/\bINSERT\b/gi, '')   
+        .replace(/\bUPDATE\b/gi, '')  
+        .replace(/\bDELETE\b/gi, '')   
+        .replace(/\bDROP\b/gi, '')     
+        .replace(/\bEXEC\b/gi, '')     
+        .replace(/\bALTER\b/gi, '');   
+}
+
+
+function validateSQLSafety(input) {
+    if (typeof input !== 'string') {
+        return true;
+    }
+    
+    const dangerousPatterns = [
+        /'.*OR.*'/i,
+        /'.*AND.*'/i,
+        /UNION.*SELECT/i,
+        /DROP.*TABLE/i,
+        /DELETE.*FROM/i,
+        /INSERT.*INTO/i,
+        /UPDATE.*SET/i,
+        /--/,
+        /\/\*.*\*\//,
+        /;\s*$/
+    ];
+    
+    return !dangerousPatterns.some(pattern => pattern.test(input));
+}
+
+//XSS Prevention
+
+function encodeHTML(input) {
+    if (typeof input !== 'string') {
+        return input;
+    }
+    
+    const entityMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;',
+        '`': '&#x60;',
+        '=': '&#x3D;'
+    };
+    
+    return input.replace(/[&<>"'`=\/]/g, function (s) {
+        return entityMap[s];
+    });
+}
+
+
+function sanitizeHTML(input) {
+    if (typeof input !== 'string') {
+        return input;
+    }
+    
+    
+    input = input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    
+  
+    const dangerousTags = [
+        'script', 'iframe', 'object', 'embed', 'form', 'input', 
+        'textarea', 'button', 'select', 'option', 'meta', 'link'
+    ];
+    
+    dangerousTags.forEach(tag => {
+        const regex = new RegExp(`<${tag}\\b[^>]*>.*?</${tag}>`, 'gi');
+        input = input.replace(regex, '');
+        
+     
+        const selfClosingRegex = new RegExp(`<${tag}\\b[^>]*/>`, 'gi');
+        input = input.replace(selfClosingRegex, '');
+    });
+    
+   
+    const dangerousAttrs = [
+        'onclick', 'onload', 'onerror', 'onmouseover', 'onmouseout',
+        'onfocus', 'onblur', 'onchange', 'onsubmit', 'onkeyup',
+        'onkeydown', 'onkeypress', 'javascript:', 'vbscript:'
+    ];
+    
+    dangerousAttrs.forEach(attr => {
+        const regex = new RegExp(`\\s*${attr}\\s*=\\s*["'][^"']*["']`, 'gi');
+        input = input.replace(regex, '');
+    });
+    
+    return input;
+}
+
+
+function validateXSSSafety(input) {
+    if (typeof input !== 'string') {
+        return true;
+    }
+    
+    const xssPatterns = [
+        /<script/i,
+        /<iframe/i,
+        /javascript:/i,
+        /vbscript:/i,
+        /onload=/i,
+        /onerror=/i,
+        /onclick=/i,
+        /onmouseover=/i,
+        /<img[^>]+src[^>]*>/i,
+        /<svg[^>]*>/i,
+        /eval\(/i,
+        /alert\(/i,
+        /document\.cookie/i,
+        /document\.write/i
+    ];
+    
+    return !xssPatterns.some(pattern => pattern.test(input));
+}
+
+
+function secureInput(input, type = 'general') {
+    
+    if (!input || typeof input !== 'string' || input.trim() === '') {
+        return '';
+    }
+    
+    const trimmedInput = input.trim();
+    
+
+    if (!validateSQLSafety(trimmedInput)) {
+        throw new Error('Potentially dangerous SQL pattern detected');
+    }
+    
+    if (!validateXSSSafety(trimmedInput)) {
+        throw new Error('Potentially dangerous XSS pattern detected');
+    }
+   
+    let sanitized = trimmedInput;
+    
+    switch (type) {
+        case 'zone':
+            
+            sanitized = sanitizeForSQL(sanitized);
+            sanitized = encodeHTML(sanitized);
+       
+            sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,]/g, '');
+            break;
+            
+        case 'pinName':
+        
+            sanitized = sanitizeForSQL(sanitized);
+            sanitized = encodeHTML(sanitized);
+           
+            sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,!]/g, '');
+            break;
+            
+        case 'description':
+           
+            sanitized = sanitizeForSQL(sanitized);
+            sanitized = sanitizeHTML(sanitized);
+            sanitized = encodeHTML(sanitized);
+            break;
+            
+        default:
+         
+            sanitized = sanitizeForSQL(sanitized);
+            sanitized = encodeHTML(sanitized);
+            break;
+    }
+    
+   
+    sanitized = sanitized.trim();
+    
+
+    if (sanitized !== trimmedInput) {
+        console.warn('Input was sanitized for security:', { original: trimmedInput, sanitized: sanitized });
+    }
+    
+    return sanitized;
+}
+
+//Safe DOM Manipulation
+
+function safeSetText(element, text) {
+    if (!element) return;
+    
+    element.textContent = encodeHTML(String(text));
+}
+
+function safeSetHTML(element, html) {
+    if (!element) return;
+    
+    const sanitizedHTML = sanitizeHTML(encodeHTML(String(html)));
+    element.innerHTML = sanitizedHTML;
+}
+
+function safeSetAttribute(element, attribute, value) {
+    if (!element) return;
+    
+   
+    const sanitizedValue = encodeHTML(String(value));
+    element.setAttribute(attribute, sanitizedValue);
+}
+
+// WebSocket pentru alerte în timp real
+function saveRecentAlert(alert) {
+    let alerts = JSON.parse(localStorage.getItem('recentAlerts') || '[]');
+    alerts.unshift(alert);
+    if (alerts.length > 5) alerts = alerts.slice(0, 5);
+    localStorage.setItem('recentAlerts', JSON.stringify(alerts));
+}
+
+function renderRecentAlerts() {
+    const alerts = JSON.parse(localStorage.getItem('recentAlerts') || '[]');
+    const list = document.getElementById('recentAlertsList');
+    if (!list) return;
+    list.innerHTML = '';
+    if (alerts.length === 0) {
+        list.innerHTML = '<li style="color:#fff;opacity:0.7;font-size:14px;">No recent alerts</li>';
+        return;
+    }
+    const lastSeen = parseInt(localStorage.getItem('lastSeenAlert') || '0', 10);
+
+    alerts.forEach((alert, idx) => {
+        const li = document.createElement('li');
+        li.style.padding = '8px 0';
+        li.style.borderBottom = '1px solid #fff2';
+        li.style.cursor = 'pointer';
+
+        // Detectează dacă e „missed”
+        let isMissed = false;
+        if (alert.created_at && new Date(alert.created_at).getTime() > lastSeen) {
+            isMissed = true;
+        }
+
+        li.innerHTML = `
+            <strong>${encodeHTML(alert.event || 'Alert')}</strong>
+            ${isMissed ? '<span style="color: #ffd700; font-size: 12px; margin-left: 8px; background: #c00; padding: 2px 6px; border-radius: 4px;">MISSED!</span>' : ''}
+            <br>
+            <span style='font-size:12px;'>${encodeHTML(alert.instruction || '')}</span>
+        `;
+
+        // Click pentru detalii
+        li.addEventListener('click', () => {
+            // Marchează ca văzută
+            if (alert.created_at) {
+                localStorage.setItem('lastSeenAlert', new Date(alert.created_at).getTime());
+                renderRecentAlerts();
+            }
+            showAlertDetailsModal(alert);
+        });
+        list.appendChild(li);
+    });
+}
+
+// Modal pentru detalii alertă
+function showAlertDetailsModal(alert) {
+    // Elimină orice modal vechi
+    const oldModal = document.getElementById('alert-details-modal');
+    if (oldModal) oldModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'alert-details-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.background = '#fff';
+    modal.style.color = '#222';
+    modal.style.padding = '24px 32px';
+    modal.style.borderRadius = '10px';
+    modal.style.boxShadow = '0 8px 32px rgba(0,0,0,0.25)';
+    modal.style.zIndex = '10001';
+    modal.style.minWidth = '260px';
+    modal.style.maxWidth = '90vw';
+
+    // Formatăm data fără T și Z
+    let formattedDate = '-';
+    if (alert.created_at) {
+        // Înlocuiește T cu spațiu și elimină Z dacă există
+        formattedDate = alert.created_at.replace('T', ' ').replace('Z', '');
+        // Dacă există milisecunde, le eliminăm
+        formattedDate = formattedDate.replace(/\.[0-9]+/, '');
+    }
+
+    modal.innerHTML = `
+        <h3 style="margin-top:0;">${encodeHTML(alert.event || 'Alert details')}</h3>
+        <div style="margin-bottom:8px;"><strong>Location:</strong> ${alert.lat ? encodeHTML(alert.lat.toString()) : '-'}, ${alert.lon ? encodeHTML(alert.lon.toString()) : '-'}</div>
+        <div style="margin-bottom:8px;"><strong>Date:</strong> ${formattedDate}</div>
+        <div style="margin-bottom:8px;"><strong>Gravity:</strong> ${encodeHTML(alert.gravity || '-')}</div>
+        <button id="close-alert-details" style="margin-top:12px;padding:6px 18px;background:#c00;color:#fff;border:none;border-radius:4px;cursor:pointer;">Close</button>
+    `;
+    document.body.appendChild(modal);
+    document.getElementById('close-alert-details').onclick = () => modal.remove();
+}
+
+// Dropdown logic for alerts section
+window.addEventListener('DOMContentLoaded', () => {
+    const alertsHeader = document.querySelector('[data-section="alerts"]');
+    const alertsSection = document.getElementById('alertsSection');
+    if (alertsHeader && alertsSection) {
+        alertsHeader.addEventListener('click', () => {
+            const isOpen = alertsSection.style.display === 'block';
+            alertsSection.style.display = isOpen ? 'none' : 'block';
+        });
+    }
+    renderRecentAlerts();
+});
+
+// La primirea unei alerte personalizate, salvează și actualizează lista
+function handlePersonalAlert(alert) {
+    saveRecentAlert({
+        event: alert.event,
+        instruction: alert.instruction,
+        lat: alert.lat,
+        lon: alert.lon,
+        gravity: alert.gravity,
+        created_at: alert.created_at
+    });
+    renderRecentAlerts();
+}
+
+// Modific setupRealtimeAlerts pentru a apela handlePersonalAlert
+function setupRealtimeAlerts() {
+    let userId = null;
+    fetch('/api/user').then(r => r.json()).then(data => {
+        userId = data.user?.id;
+        if (!userId) return;
+        const ws = new WebSocket('ws://localhost:3001');
+        ws.onopen = () => {
+            ws.send(JSON.stringify({ userId }));
+        };
+        ws.onmessage = (event) => {
+            try {
+                const alert = JSON.parse(event.data);
+                if (alert.refresh) {
+                    if (window.refreshCalamities) {
+                        window.refreshCalamities();
+                    }
+                    return;
+                }
+                // Creează bannerul doar dacă e alertă personalizată
+                if (alert.event || alert.instruction) {
+                    handlePersonalAlert(alert);
+                    let banner = document.createElement('div');
+                    banner.id = 'cap-alert-banner';
+                    banner.style.position = 'fixed';
+                    banner.style.top = '0';
+                    banner.style.left = '0';
+                    banner.style.width = '100%';
+                    banner.style.background = '#c00';
+                    banner.style.color = 'white';
+                    banner.style.padding = '16px';
+                    banner.style.zIndex = '9999';
+                    banner.style.textAlign = 'center';
+                    banner.style.fontSize = '1.2em';
+                    banner.innerHTML = `<strong>${alert.event || 'Alertă'}!</strong> ${alert.instruction || ''} <button id=\"close-cap-alert\" style=\"margin-left:24px;padding:4px 12px;background:#fff;color:#c00;border:none;border-radius:4px;cursor:pointer;\">Închide</button>`;
+                    document.body.appendChild(banner);
+                    document.getElementById('close-cap-alert').onclick = () => banner.remove();
+                }
+            } catch (e) { console.error('Eroare la parsarea alertei WebSocket:', e); }
+        };
+    });
+}
+window.addEventListener('DOMContentLoaded', setupRealtimeAlerts);
+
+// La logare, verifică dacă există alerte noi în raza pinurilor și populează secțiunea de alerts
+window.addEventListener('DOMContentLoaded', () => {
+    renderRecentAlerts();
+});
+
+// Salvează timestamp la logout sau când utilizatorul închide pagina
+window.addEventListener('beforeunload', () => {
+    localStorage.setItem('lastSeenAlert', Date.now());
+});
+
+// Banner pentru alerte ratate
+function showMissedAlertsBanner(n) {
+    if (document.getElementById('missed-alerts-banner')) return; // nu dubla bannerul
+    let banner = document.createElement('div');
+    banner.id = 'missed-alerts-banner';
+    banner.style.position = 'fixed';
+    banner.style.top = '0';
+    banner.style.left = '0';
+    banner.style.width = '100%';
+    banner.style.background = '#c00';
+    banner.style.color = 'white';
+    banner.style.padding = '16px';
+    banner.style.zIndex = '9999';
+    banner.style.textAlign = 'center';
+    banner.style.fontSize = '1.2em';
+    banner.innerHTML = `<strong>Missed ${n} alert${n > 1 ? 's' : ''}!</strong> Check the ALERTS section. <button id="close-missed-alerts" style="margin-left:24px;padding:4px 12px;background:#fff;color:#c00;border:none;border-radius:4px;cursor:pointer;">Close</button>`;
+    document.body.appendChild(banner);
+    document.getElementById('close-missed-alerts').onclick = () => banner.remove();
+}
+
+// Modific fetchAndRenderRecentAlerts pentru a detecta alertele ratate
+async function fetchAndRenderRecentAlerts() {
+    try {
+        const response = await fetch('/api/user-alerts');
+        if (!response.ok) {
+            renderRecentAlerts(); // fallback la localStorage dacă nu merge backendul
+            return;
+        }
+        const data = await response.json();
+        if (data.alerts && Array.isArray(data.alerts)) {
+            localStorage.setItem('recentAlerts', JSON.stringify(data.alerts));
+            // --- Missed alerts logic ---
+            const lastSeen = parseInt(localStorage.getItem('lastSeenAlert') || '0', 10);
+            let missedCount = 0;
+            data.alerts.forEach(alert => {
+                if (alert.created_at && new Date(alert.created_at).getTime() > lastSeen) {
+                    missedCount++;
+                }
+            });
+            if (missedCount > 0) {
+                showMissedAlertsBanner(missedCount);
+            }
+        }
+        renderRecentAlerts();
+    } catch (e) {
+        console.error('Eroare la fetch alerts:', e);
+        renderRecentAlerts();
+    }
+}
+
+// La încărcarea paginii, ia alertele din backend
+window.addEventListener('DOMContentLoaded', fetchAndRenderRecentAlerts);
+
 

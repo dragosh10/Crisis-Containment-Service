@@ -5,13 +5,15 @@ const url = require('url');
 const bcrypt = require('bcrypt');
 const earthquakeApi = require('./earthquakeApi');
 const mysql = require('mysql2/promise');
+const generateCapAlerts = require('./generateCapAlerts');
+const { sendAlertToUser, broadcastAlertToAllClients } = require('./websocket-server');
 
 const saltRounds = 10;
 
 const db = mysql.createPool({
   host: 'localhost',
   user: 'root',
-  password: 'sarah',
+  password: '1234',
   database: 'web',
   port: 3306,
   waitForConnections: true,
@@ -406,6 +408,80 @@ const server = http.createServer(async (req, res) => {
               ]
             );
       
+            // După inserarea calamity (unde ai deja const [result] = await db.query(... pentru calamities))
+            const [calamityRows] = await db.query(
+              'SELECT gravity FROM calamities WHERE lat = ? AND lng = ? ORDER BY added_at DESC LIMIT 1',
+              [lat, lng]
+            );
+            const gravityCalamity = calamityRows[0]?.gravity || null;
+      
+            // Integrare generare alerte CAP dacă există lat/lng
+            if (lat !== undefined && lng !== undefined && lat !== null && lng !== null) {
+              // 1. Ia toți clienții și pin-urile lor din DB
+              const [users] = await db.query('SELECT id FROM users WHERE is_authority = 0');
+              const clients = [];
+              for (const user of users) {
+                const [pinsRows] = await db.query('SELECT * FROM clientPins WHERE id_client = ?', [user.id]);
+                if (pinsRows.length > 0) {
+                  const pins = [];
+                  for (let i = 1; i <= 3; i++) {
+                    const pinLat = pinsRows[0][`pin${i}_lat`];
+                    const pinLon = pinsRows[0][`pin${i}_lng`];
+                    if (pinLat !== null && pinLon !== null) {
+                      pins.push({ lat: parseFloat(pinLat), lon: parseFloat(pinLon), name: pinsRows[0][`pin${i}_name`] });
+                    }
+                  }
+                  if (pins.length > 0) {
+                    clients.push({ userId: user.id, pins });
+                  }
+                }
+              }
+              // 2. Construiește obiectul calamity pentru alertă CAP
+              const capCalamity = {
+                event: type || 'Calamity',
+                urgency: gravity === 'high' ? 'Immediate' : 'Expected',
+                severity: gravity === 'high' ? 'Severe' : 'Moderate',
+                certainty: 'Observed',
+                instruction: description || 'Urmați instrucțiunile autorităților!',
+                areaDesc: description || 'Zonă afectată',
+                lat: lat,
+                lon: lng
+              };
+              // 3. Generează alerte CAP pentru clienții afectați
+              generateCapAlerts(capCalamity, clients);
+              // 4. Trimite alertă în timp real prin WebSocket pentru fiecare client afectat
+              for (const client of clients) {
+                for (const pin of client.pins) {
+                  const dist = Math.round(
+                    Math.acos(
+                      Math.sin(lat * Math.PI / 180) * Math.sin(pin.lat * Math.PI / 180) +
+                      Math.cos(lat * Math.PI / 180) * Math.cos(pin.lat * Math.PI / 180) *
+                      Math.cos((lng - pin.lon) * Math.PI / 180)
+                    ) * 6371
+                  );
+                  if (dist <= 30) {
+                    // 4a. Salvează alerta și în user_alerts
+                    await db.query(
+                      'INSERT INTO user_alerts (user_id, event, instruction, lat, lon, areaDesc, gravity) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                      [client.userId, capCalamity.event, capCalamity.instruction, capCalamity.lat, capCalamity.lon, capCalamity.areaDesc, gravityCalamity]
+                    );
+                    // 4b. Trimite alerta în timp real
+                    sendAlertToUser(client.userId, {
+                      event: capCalamity.event,
+                      instruction: capCalamity.instruction,
+                      lat: capCalamity.lat,
+                      lon: capCalamity.lon,
+                      areaDesc: capCalamity.areaDesc,
+                      gravity: gravityCalamity,
+                      created_at: new Date().toISOString()
+                    });
+                    break;
+                  }
+                }
+              }
+              // 5. Trimite trigger de refresh la toti clientii conectati (pentru update harta in timp real)
+              broadcastAlertToAllClients({ refresh: true });
+            }
             res.writeHead(201, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
             res.end(JSON.stringify({ message: 'Calamity added', id: result.insertId }));
           } catch (err) {
@@ -446,7 +522,7 @@ const server = http.createServer(async (req, res) => {
         }
         return;
     }
-    if (req.method === 'GET' && req.url.startsWith('/authority-app')) {
+    if (req.method === 'GET' && req.url === '/authority-app') {
         let filePath = '.' + req.url;
         if (filePath === './authority-app' || filePath === './authority-app/') {
             filePath = './authority-app/index.html';
@@ -959,6 +1035,49 @@ const server = http.createServer(async (req, res) => {
             res.writeHead(200, { 'Content-Type': contentType });
             res.end(data);
         });
+        return;
+    }
+
+    // ENDPOINT SPECIAL pentru alerte CAP - trebuie să fie înainte de fallback-ul pentru fișiere statice!
+    if (req.method === 'GET' && filePath.startsWith('/alerts/')) {
+        const userId = filePath.split('/').pop();
+        const alertPath = `./alerts/cap_alert_user_${userId}.xml`;
+        fs.readFile(alertPath, (err, data) => {
+            if (err) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'No alert found' }));
+            } else {
+                res.writeHead(200, { 'Content-Type': 'application/xml' });
+                res.end(data);
+            }
+        });
+        return;
+    }
+
+    // Endpoint pentru ultimele 5 alerte personale
+    if (req.method === 'GET' && filePath === '/api/user-alerts') {
+        const user = await requireAuth(req, res);
+        if (!user) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Authentication required' }));
+            return;
+        }
+        if (user.is_authority) {
+            res.writeHead(403, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Client access only' }));
+            return;
+        }
+        try {
+            const [rows] = await db.query(
+                'SELECT event, instruction, lat, lon, areaDesc, gravity, created_at FROM user_alerts WHERE user_id = ? ORDER BY created_at DESC LIMIT 5',
+                [user.id]
+            );
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ alerts: rows }));
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Database error' }));
+        }
         return;
     }
 
