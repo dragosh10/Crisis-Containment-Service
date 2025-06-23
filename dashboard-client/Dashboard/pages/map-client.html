@@ -453,6 +453,10 @@
         document.getElementById('tipImage').src = currentTip.image;
     }
 
+    // Adaug referințe pentru ALERTS
+    const alertsHeader = document.querySelector('[data-section="alerts"]');
+    const alertsSection = document.getElementById('alertsSection');
+
     // Info icon functionality
     document.getElementById('info-icon').addEventListener('click', function() {
         const body = document.body;
@@ -473,6 +477,10 @@
         filterSection.style.display = 'none';
         emergencyHeader.style.display = 'none';
         emergencySection.style.display = 'none';
+
+        // Ascunde ALERTS
+        alertsHeader.style.display = 'none';
+        alertsSection.style.display = 'none';
 
         // Show pro tips section
         protipsHeader.style.display = 'block';
@@ -518,6 +526,10 @@
             filterSection.style.display = 'block';
             emergencyHeader.style.display = 'block';
             filterHeader.classList.add('active');
+
+            // Arată ALERTS
+            alertsHeader.style.display = 'block';
+            alertsSection.style.display = 'block';
 
             // Update icon states
             infoIcon.classList.remove('active');
