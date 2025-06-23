@@ -1,20 +1,24 @@
 * {
     font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
     margin: 0;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: #ffffff;
+    padding: 20px;
 }
 
 .container {
     display: flex;
-    width: 1300px;
-    height: 916px;
+    width: min(95vw, 1100px);
+    height: min(90vh, 700px);
     border-radius: 50px;
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -23,10 +27,14 @@ body {
 .half {
     width: 50%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .left-side {
     background-color: #D03C3F;
+    display: flex;
+    flex-direction: column;
 }
 
 .right-side {
@@ -35,23 +43,24 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 30px 20px;
     position: relative;
 }
 
 .input-field {
     background-color: #D9D9D9;
-    width: 300px;
+    width: min(280px, 85%);
     height: 45px;
     border-radius: 50px;
     border: none;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     padding-left: 50px;
-    font-size: 17px;
+    padding-right: 20px;
+    font-size: 16px;
     color: #666;
     outline: none;
     background-repeat: no-repeat;
-    background-position: 10px center;
+    background-position: 15px center;
     background-size: 16px 16px;
 }
 
@@ -60,21 +69,21 @@ body {
 }
 
 .email-input {
-    background-image: url('/public/images/email-icon.png');
+    background-image: url('/images/email-icon.png');
 }
 
 .password-input {
-    background-image: url('/public/images/password-icon.png');
+    background-image: url('/images/password-icon.png');
 }
 
 .signup-button {
     background-color: #c83e3e;
     color: white;
-    width: 105px;
-    height: 29px;
+    width: 120px;
+    height: 40px;
     border-radius: 25px;
     border: none;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     margin-top: 15px;
@@ -90,23 +99,24 @@ body {
 }
 
 .crisis-login-block {
-    padding: 25px 30px;
-    display: inline-block;
+    padding: 20px 20px 30px 20px;
     display: flex;
     align-items: center;
+    text-align: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
 }
 
 .crisis-login-text {
-
-    font-weight: 100;
-    font-size: 30px;
+    font-weight: 300;
+    font-size: clamp(22px, 2.5vw, 28px);
     color: black;
-    font-weight: normal;
 }
 
 .crisis-management-text {
     font-weight: 600;
-    font-size: 30px;
+    font-size: clamp(22px, 2.5vw, 28px);
     color: #d1302b;
     margin-left: 8px;
     letter-spacing: 1px;
@@ -114,18 +124,16 @@ body {
 
 .account-text {
     position: absolute;
-    bottom: 50px;
+    bottom: 25px;
     text-align: center;
-    font-size: 20px;
+    font-size: 18px;
     color: #333;
 }
 
-
 .donthave {
     color: black;
-    font-weight: 200;
-    margin-top: 0;
-    margin-bottom: 0;
+    font-weight: 300;
+    margin-bottom: 5px;
 }
 
 .login-link {
@@ -142,30 +150,29 @@ body {
 }
 
 .confirm-password-input {
-    background-image: url('/public/images/password-icon.png');
+    background-image: url('/images/password-icon.png');
 }
 
-/* =========== PARTEA DREAPTA =========== */
+/* =========== LEFT SIDE (PRO TIPS) =========== */
 .pro-tips-section {
-    margin-left: 80px;
-    margin-right: 80px;
-    margin-top: 100px;
+    padding: 30px;
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 25px;
 }
 
 .emergency-illustration {
-    flex: 0 0 40%;
+  flex: 0 0 auto;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 20px;
+  height: 50%;
 }
 
 .emergency-image {
-    max-width: 80%;
+  max-width: 100%;
     max-height: 100%;
     object-fit: contain;
 }
@@ -174,24 +181,27 @@ body {
     flex: 1;
     color: white;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
 }
 
 .tips-title {
-    font-size: 20px;
+  font-size: clamp(16px, 1.8vw, 20px);
     font-weight: bold;
     margin-bottom: 15px;
-    text-align: center;
 }
-
 
 .tip-text {
-    font-size: 16px;
+  font-size: clamp(12px, 1.4vw, 15px);
     line-height: 1.4;
-    margin-bottom: 20px;
-    text-align: center;
+  margin-bottom: 15px;
 }
 
-
+.tip-text p {
+  margin-bottom: 8px;
+}
 
 .tip-text strong {
     font-weight: bold;
@@ -227,6 +237,245 @@ body {
 
 .nav-arrow:active {
     background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* =========== RESPONSIVE MEDIA QUERIES =========== */
+
+/* Large screens */
+@media (min-width: 1200px) {
+    .container {
+        width: min(90vw, 1200px);
+        height: min(85vh, 750px);
+    }
+}
+
+/* Medium screens - tablets */
+@media (max-width: 1024px) {
+    .container {
+        width: 95vw;
+        height: min(85vh, 650px);
+    }
+    
+    .pro-tips-section {
+        padding: 25px;
+    }
+    
+    .right-side {
+        padding: 25px 15px;
+    }
+    
+    .account-text {
+        bottom: 20px;
+        font-size: 16px;
+    }
+}
+
+/* Small screens - mobile landscape and large phones */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+    }
+    
+    .container {
+        flex-direction: column;
+        width: 95vw;
+        max-width: 400px;
+        height: auto;
+        min-height: 90vh;
+        border-radius: 30px;
+    }
+    
+    .half {
+        width: 100%;
+        height: auto;
+    }
+    
+    .left-side {
+        order: 2;
+        min-height: 40vh;
+    }
+    
+    .right-side {
+        order: 1;
+        padding: 30px 20px;
+        position: static;
+        min-height: 50vh;
+    }
+    
+    .crisis-login-block {
+        padding: 15px 15px 25px 15px;
+        margin-bottom: 20px;
+    }
+    
+    .crisis-login-text, 
+    .crisis-management-text {
+        font-size: clamp(20px, 5vw, 26px);
+    }
+    
+         .input-field {
+         width: 90%;
+         margin-bottom: 18px;
+         height: 42px;
+     }
+     
+     .password-container {
+         width: 90%;
+     }
+    
+    .signup-button {
+        width: 110px;
+        height: 38px;
+        margin-top: 10px;
+    }
+    
+    .account-text {
+        position: static;
+        margin-top: 25px;
+        font-size: 16px;
+    }
+    
+    .pro-tips-section {
+        padding: 20px;
+        height: auto;
+        min-height: 300px;
+        gap: 20px;
+    }
+    
+    .emergency-illustration {
+        height: 180px;
+    }
+    
+    .tips-content {
+        flex: none;
+    }
+    
+    .tip-text {
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .tip-text p {
+        margin-bottom: 6px;
+    }
+    
+    .tips-title {
+        font-size: clamp(14px, 3.5vw, 18px);
+        margin-bottom: 12px;
+    }
+    
+    .navigation-arrows {
+        position: static;
+        margin-top: 20px;
+        justify-content: center;
+        gap: 30px;
+    }
+}
+
+/* Extra small screens - mobile portrait */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        border-radius: 25px;
+        width: 100%;
+    }
+    
+    .right-side {
+        padding: 25px 20px;
+    }
+    
+         .input-field {
+         width: 95%;
+         height: 40px;
+         font-size: 15px;
+     }
+     
+     .password-container {
+         width: 95%;
+     }
+    
+    .signup-button {
+        width: 100px;
+        height: 36px;
+        font-size: 15px;
+    }
+    
+    .pro-tips-section {
+        padding: 15px;
+        min-height: 250px;
+    }
+    
+    .emergency-illustration {
+        height: 160px;
+    }
+    
+    .crisis-login-text, 
+    .crisis-management-text {
+        font-size: clamp(18px, 6vw, 22px);
+    }
+}
+
+/* =========== PASSWORD TOGGLE STYLES =========== */
+.password-container {
+    position: relative;
+    width: min(280px, 85%);
+    margin-bottom: 20px;
+}
+
+.password-container .input-field {
+    width: 100%;
+    margin-bottom: 0;
+    padding-right: 50px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.password-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.password-toggle:focus {
+    outline: none;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.eye-icon {
+    width: 20px;
+    height: 20px;
+    color: #666;
+    transition: color 0.2s ease;
+}
+
+.password-toggle:hover .eye-icon {
+    color: #333;
+}
+
+.eye-icon .eye-closed {
+    display: none;
+}
+
+.eye-icon.show-password .eye-open {
+    display: none;
+}
+
+.eye-icon.show-password .eye-closed {
+    display: block;
 }
 
 

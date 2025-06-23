@@ -3,58 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homepage</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-        }
-
-        .container {
-            text-align: center;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 2rem;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 12px 24px;
-            margin: 0 10px;
-            text-decoration: none;
-            color: white;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .login-btn {
-            background-color: #007bff;
-        }
-
-        .signup-btn {
-            background-color: #28a745;
-        }
-    </style>
+    <title>Crisis Management - Homepage</title>
+    <link rel="stylesheet" href="../css/styles_index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to Crisis Management</h1>
-        <a href="/login.html" class="button login-btn">Log In</a>
-        <a href="/signup.html" class="button signup-btn">Sign Up</a>
+        <div class="half left-side">
+            <div class="crisis-welcome-block">
+                <span class="welcome-text">Welcome to</span>
+                <span class="crisis-management-text">Crisis Management</span>
+            </div>
+            
+            <div class="buttons-section">
+                <a href="/login.html" class="action-button login-btn">Log In</a>
+                <a href="/signup.html" class="action-button signup-btn">Sign Up</a>
+            </div>
+
+            <div class="account-text">
+                <div class="help-text">Need help getting started?</div>
+                <div class="learn-more">
+                    <span>Learn more about our platform</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="half right-side">
+            <div class="info-section">
+                <div class="emergency-illustration">
+                    <img src="../images/firefighter.png" alt="Emergency Response" class="emergency-image">
+                </div>
+                
+                <div class="info-content">
+                    <div class="info-title">Crisis Management System</div>
+                    <div class="info-text">
+                        <p>Stay informed and prepared with real-time disaster monitoring and emergency response coordination.</p>
+                        <p>Access live maps, emergency alerts, and find nearby shelters when you need them most.</p>
+                        <p>Join our community of emergency responders and citizens working together for safety.</p>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <a href="https://www.termsfeed.com/live/fb051983-4ed1-4acd-9f35-2749a4713fce" class="footer-link">Privacy Policy</a>
+                    <a href="#" class="footer-link">Documentation</a>
+                </div>
+            </div>
+        </div>
     </div>
+   
 </body>
 </html>
