@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const earthquakeApi = require('./earthquakeApi');
 const mysql = require('mysql2/promise');
 const generateCapAlerts = require('./generateCapAlerts');
-const { sendAlertToUser } = require('./websocket-server');
+const { sendAlertToUser, broadcastAlertToAllClients } = require('./websocket-server');
 
 const saltRounds = 10;
 
@@ -467,6 +467,8 @@ const server = http.createServer(async (req, res) => {
                   }
                 }
               }
+              // 5. Trimite trigger de refresh la toti clientii conectati (pentru update harta in timp real)
+              broadcastAlertToAllClients({ refresh: true });
             }
             res.writeHead(201, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
             res.end(JSON.stringify({ message: 'Calamity added', id: result.insertId }));

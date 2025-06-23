@@ -1052,22 +1052,30 @@ function setupRealtimeAlerts() {
         ws.onmessage = (event) => {
             try {
                 const alert = JSON.parse(event.data);
-                // Creează bannerul
-                let banner = document.createElement('div');
-                banner.id = 'cap-alert-banner';
-                banner.style.position = 'fixed';
-                banner.style.top = '0';
-                banner.style.left = '0';
-                banner.style.width = '100%';
-                banner.style.background = '#c00';
-                banner.style.color = 'white';
-                banner.style.padding = '16px';
-                banner.style.zIndex = '9999';
-                banner.style.textAlign = 'center';
-                banner.style.fontSize = '1.2em';
-                banner.innerHTML = `<strong>${alert.event || 'Alertă'}!</strong> ${alert.instruction || ''} <button id="close-cap-alert" style="margin-left:24px;padding:4px 12px;background:#fff;color:#c00;border:none;border-radius:4px;cursor:pointer;">Închide</button>`;
-                document.body.appendChild(banner);
-                document.getElementById('close-cap-alert').onclick = () => banner.remove();
+                if (alert.refresh) {
+                    if (window.refreshCalamities) {
+                        window.refreshCalamities();
+                    }
+                    return;
+                }
+                // Creează bannerul doar dacă e alertă personalizată
+                if (alert.event || alert.instruction) {
+                    let banner = document.createElement('div');
+                    banner.id = 'cap-alert-banner';
+                    banner.style.position = 'fixed';
+                    banner.style.top = '0';
+                    banner.style.left = '0';
+                    banner.style.width = '100%';
+                    banner.style.background = '#c00';
+                    banner.style.color = 'white';
+                    banner.style.padding = '16px';
+                    banner.style.zIndex = '9999';
+                    banner.style.textAlign = 'center';
+                    banner.style.fontSize = '1.2em';
+                    banner.innerHTML = `<strong>${alert.event || 'Alertă'}!</strong> ${alert.instruction || ''} <button id=\"close-cap-alert\" style=\"margin-left:24px;padding:4px 12px;background:#fff;color:#c00;border:none;border-radius:4px;cursor:pointer;\">Închide</button>`;
+                    document.body.appendChild(banner);
+                    document.getElementById('close-cap-alert').onclick = () => banner.remove();
+                }
             } catch (e) { console.error('Eroare la parsarea alertei WebSocket:', e); }
         };
     });

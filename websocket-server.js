@@ -26,4 +26,12 @@ function sendAlertToUser(userId, alertData) {
     }
 }
 
-module.exports = { sendAlertToUser }; 
+function broadcastAlertToAllClients(alertData) {
+    for (const ws of Object.values(userSockets)) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify(alertData));
+        }
+    }
+}
+
+module.exports = { sendAlertToUser, broadcastAlertToAllClients }; 

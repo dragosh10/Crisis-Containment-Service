@@ -1,4 +1,9 @@
 function loadEarthquakes(map) {
+    if (!window.earthquakeCluster) {
+        window.earthquakeCluster = L.markerClusterGroup();
+        map.addLayer(window.earthquakeCluster);
+    }
+    window.allEarthquakeMarkers = window.allEarthquakeMarkers || [];
     fetch('/earthquakes')
       .then(res => res.json())
       .then(data => {
@@ -31,8 +36,8 @@ function loadEarthquakes(map) {
             time: time,
             url: url
           };
-          window.allCalamityMarkers.push(marker);
-          window.calamityCluster.addLayer(marker);
+          window.allEarthquakeMarkers.push(marker);
+          window.earthquakeCluster.addLayer(marker);
         });
       })
       .catch(err => {
