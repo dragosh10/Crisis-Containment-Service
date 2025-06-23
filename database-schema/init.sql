@@ -59,5 +59,18 @@ CREATE TABLE IF NOT EXISTS shelters (
     FOREIGN KEY (id_calamity) REFERENCES calamities(id)
 );
 
+CREATE TABLE IF NOT EXISTS user_alerts (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    event VARCHAR(100) NOT NULL,
+    instruction TEXT,
+    lat DOUBLE,
+    lon DOUBLE,
+    areaDesc VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 
 
