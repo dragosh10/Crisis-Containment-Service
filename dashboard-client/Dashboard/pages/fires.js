@@ -1,4 +1,9 @@
 async function loadFires(map) {
+  if (!window.fireCluster) {
+    window.fireCluster = L.markerClusterGroup();
+    map.addLayer(window.fireCluster);
+  }
+  window.allFireMarkers = window.allFireMarkers || [];
   const apiKey = 'b31a89e6d1e64e887e88c555d8210e6b';
   const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${apiKey}/VIIRS_SNPP_NRT/world/7`;
 
@@ -42,7 +47,6 @@ async function loadFires(map) {
     const satIndex = headers.indexOf('satellite');
     const instIndex = headers.indexOf('instrument');
 
-    const markers = L.markerClusterGroup();
     let processedCount = 0;
 
     lines.slice(1).forEach(line => {
@@ -92,28 +96,27 @@ async function loadFires(map) {
       });
 
       marker.calamityData = { type: 'fire', lat: lat, lng: lon, ...{ acq_date, acq_time, brightness, confidence, satellite, instrument } };
-      window.allCalamityMarkers.push(marker);
-      window.calamityCluster.addLayer(marker);
+      window.allFireMarkers.push(marker);
+      window.fireCluster.addLayer(marker);
       processedCount++;
     });
 
-    map.addLayer(markers);
+    map.addLayer(window.fireCluster);
     console.log(`Successfully loaded ${processedCount} fire hotspots from NASA FIRMS`);
     
-  } catch (err) {
-    console.error('Error loading fire data:', err);
+  } catch (error) {
+    console.error('Error loading fire data:', error);
     
-    if (err.name === 'AbortError') {
+    if (error.name === 'AbortError') {
       console.log('NASA FIRMS API request was aborted');
-    } else if (err.message.includes('Failed to fetch')) {
+    } else if (error.message.includes('Failed to fetch')) {
       console.log('NASA FIRMS API is currently unavailable - network connection issue');
-    } else if (err.message.includes('CORS')) {
+    } else if (error.message.includes('CORS')) {
       console.log('NASA FIRMS API CORS issue - may need to use a proxy server');
     } else {
-      console.log('NASA FIRMS API error:', err.message);
+      console.log('NASA FIRMS API error:', error.message);
     }
     
-   
     console.log('Fire data will be unavailable until the NASA FIRMS service is restored');
   }
 }

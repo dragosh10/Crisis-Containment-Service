@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <identifier>cri-1750701628875-2</identifier>
+  <sender>cri@cri.com</sender>
+  <sent>2025-06-23T18:00:28.875Z</sent>
+  <status>Actual</status>
+  <msgType>Alert</msgType>
+  <scope>Public</scope>
+  <info>
+    <category>Met</category>
+    <event>flood</event>
+    <urgency>Expected</urgency>
+    <severity>Moderate</severity>
+    <certainty>Observed</certainty>
+    <instruction>Urmați instrucțiunile autorităților!</instruction>
+    <area>
+      <areaDesc>Zonă afectată</areaDesc>
+      <circle>46.95312,26.932373 30</circle>
+      <pin>46.9324,26.9137</pin>
+    </area>
+  </info>
+</alert>

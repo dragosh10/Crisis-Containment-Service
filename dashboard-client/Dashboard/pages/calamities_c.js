@@ -301,16 +301,39 @@ function loadCalamities(map) {
   window.handleDisasterPinSelection = handleDisasterPinSelection;
 
   function filterCalamitiesByType(type) {
+    // DB
     window.calamityCluster.clearLayers();
     if (!type || type === 'All' || type === '') {
       window.allCalamityMarkers.forEach(marker => window.calamityCluster.addLayer(marker));
-      return;
+    } else {
+      window.allCalamityMarkers.forEach(marker => {
+        if (marker.calamityData && marker.calamityData.type === type) {
+          window.calamityCluster.addLayer(marker);
+        }
+      });
     }
-    window.allCalamityMarkers.forEach(marker => {
-      if (marker.calamityData && marker.calamityData.type === type) {
-        window.calamityCluster.addLayer(marker);
-      }
-    });
+
+    // Earthquakes
+    if (window.earthquakeCluster && window.allEarthquakeMarkers) {
+      window.earthquakeCluster.clearLayers();
+      window.allEarthquakeMarkers.forEach(marker => {
+        if (!type || type === 'All' || type === '' || marker.calamityData?.type === type) {
+          window.earthquakeCluster.addLayer(marker);
+        }
+      });
+    }
+
+    // Fires
+    if (window.fireCluster && window.allFireMarkers) {
+      window.fireCluster.clearLayers();
+      window.allFireMarkers.forEach(marker => {
+        if (!type || type === 'All' || type === '' || marker.calamityData?.type === type) {
+          window.fireCluster.addLayer(marker);
+        }
+      });
+    }
+
+    // Adaugă logică similară pentru alte layere (ex: floods) dacă ai nevoie
   }
 
   // Make filter function available globally
