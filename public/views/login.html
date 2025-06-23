@@ -15,7 +15,17 @@
         <span class="crisis-login-text">Log In to Crisis </span><span class="crisis-management-text">MANAGEMENT</span>
       </span>
     <input class="input-field email-input" type="email" placeholder="Email">
+    <div class="password-container">
     <input class="input-field password-input" type="password" placeholder="Password">
+      <button type="button" class="password-toggle" onclick="togglePassword('password-input')">
+        <svg class="eye-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path class="eye-open" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path class="eye-closed" d="m1 1 22 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"/>
+          <path class="eye-closed" d="m3 3 3 3m6 0 3 3m6 0 3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"/>
+        </svg>
+      </button>
+    </div>
     <button class="login-button" onclick="handleLogin()">LOG IN</button>
     <div class="account-text">
       <p class="donthave">Don't have an account?</p>
@@ -26,7 +36,7 @@
   <div class="half right-side">
     <div class="pro-tips-section">
       <div class="emergency-illustration">
-        <img src="/images/firefighter.png" alt="Emergency Response" class="emergency-image">
+        <img src="/images/firefighter.png" alt="Emergency Response" class="emergency-image" id="tipImage">
       </div>
 
       <div class="tips-content">
@@ -38,6 +48,10 @@
           <p>• Hold on to any sturdy item you can <strong>until the shaking stops</strong></p>
         </div>
 
+        <div class="navigation-arrows">
+          <button class="nav-arrow" id="prevTip" onclick="changeTip(-1)">‹</button>
+          <button class="nav-arrow" id="nextTip" onclick="changeTip(1)">›</button>
+        </div>
       </div>
     </div>
   </div>
