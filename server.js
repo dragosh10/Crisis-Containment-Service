@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const earthquakeApi = require('./earthquakeApi');
 const mysql = require('mysql2/promise');
 const generateCapAlerts = require('./generateCapAlerts');
+const { sendAlertToUser } = require('./websocket-server');
 
 const saltRounds = 10;
 
@@ -444,6 +445,28 @@ const server = http.createServer(async (req, res) => {
               };
               // 3. Generează alerte CAP pentru clienții afectați
               generateCapAlerts(capCalamity, clients);
+              // 4. Trimite alertă în timp real prin WebSocket pentru fiecare client afectat
+              for (const client of clients) {
+                for (const pin of client.pins) {
+                  const dist = Math.round(
+                    Math.acos(
+                      Math.sin(lat * Math.PI / 180) * Math.sin(pin.lat * Math.PI / 180) +
+                      Math.cos(lat * Math.PI / 180) * Math.cos(pin.lat * Math.PI / 180) *
+                      Math.cos((lng - pin.lon) * Math.PI / 180)
+                    ) * 6371
+                  );
+                  if (dist <= 30) {
+                    sendAlertToUser(client.userId, {
+                      event: capCalamity.event,
+                      instruction: capCalamity.instruction,
+                      lat: capCalamity.lat,
+                      lon: capCalamity.lon,
+                      areaDesc: capCalamity.areaDesc
+                    });
+                    break;
+                  }
+                }
+              }
             }
             res.writeHead(201, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
             res.end(JSON.stringify({ message: 'Calamity added', id: result.insertId }));
