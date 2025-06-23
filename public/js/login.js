@@ -93,9 +93,9 @@ async function handleLogin() {
         if (data.success) {
             // Verificăm dacă utilizatorul este autoritate
             if (data.isAuthority) {
-                window.location.href = '/dashboard-autoritati/Dashboard/pages/map-authorities.html';
-            } else {
-                window.location.href = '/dashboard-client/Dashboard/pages/map-client.html';
+                                    window.location.href = '/views/map-authorities.html';
+                } else {
+                    window.location.href = '/views/map-client.html';
             }
         } else {
             alert('Email sau parolă incorectă!');

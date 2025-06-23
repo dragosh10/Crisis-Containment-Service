@@ -220,14 +220,14 @@ const server = http.createServer(async (req, res) => {
                 );
 
                 if (result.length > 0 && result[0].is_authority) {
-                    res.writeHead(302, { 'Location': '/dashboard-autoritati/Dashboard/pages/map-authorities.html' });
+                    res.writeHead(302, { 'Location': '/views/map-authorities.html' });
                 } else {
-                    res.writeHead(302, { 'Location': '/dashboard-client/Dashboard/pages/map-client.html' });
+                    res.writeHead(302, { 'Location': '/views/map-client.html' });
                 }
                 res.end();
                 return;
             } catch (error) {
-                res.writeHead(302, { 'Location': '/dashboard-client/Dashboard/pages/map-client.html' });
+                res.writeHead(302, { 'Location': '/views/map-client.html' });
                 res.end();
                 return;
             }
@@ -879,8 +879,8 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // CRITICAL: Authentication check for dashboard routes - MUST come before ALL other static file serving
-    if (filePath.startsWith('/dashboard-client/') || filePath.startsWith('/dashboard-autoritati/')) {
+    // CRITICAL: Authentication check for protected routes - MUST come before ALL other static file serving
+    if (filePath.startsWith('/views/map-')) {
         console.log('Dashboard access attempt:', filePath);
         const cookies = getCookies(req.headers.cookie);
         console.log('Dashboard access cookies:', cookies);
@@ -914,25 +914,25 @@ const server = http.createServer(async (req, res) => {
             console.log('Dashboard access - user type:', isAuthority ? 'authority' : 'client');
             
             // Check if user is trying to access the wrong dashboard
-            if (filePath.startsWith('/dashboard-autoritati/') && !isAuthority) {
+            if (filePath.startsWith('/views/map-authorities') && !isAuthority) {
                 // Regular user trying to access authority dashboard - redirect to client dashboard
                 console.log('Client user redirected from authority dashboard');
-                res.writeHead(302, { 'Location': '/dashboard-client/Dashboard/pages/map-client.html' });
+                res.writeHead(302, { 'Location': '/views/map-client.html' });
                 res.end();
                 return;
             }
             
-            if (filePath.startsWith('/dashboard-client/') && isAuthority) {
+            if (filePath.startsWith('/views/map-client') && isAuthority) {
                 // Authority trying to access client dashboard - redirect to authority dashboard
                 console.log('Authority user redirected from client dashboard');
-                res.writeHead(302, { 'Location': '/dashboard-autoritati/Dashboard/pages/map-authorities.html' });
+                res.writeHead(302, { 'Location': '/views/map-authorities.html' });
                 res.end();
                 return;
             }
             
             console.log('Dashboard access granted - serving file:', filePath);
            
-            const dashboardFilePath = '.' + filePath;
+            const dashboardFilePath = './public' + filePath;
             
             const extname = path.extname(dashboardFilePath);
             let contentType = 'text/html';
@@ -1004,7 +1004,7 @@ const server = http.createServer(async (req, res) => {
 
 
   
-    if (filePath.startsWith('/css/') || filePath.startsWith('/js/') || filePath.startsWith('/images/')) {
+    if (filePath.startsWith('/css/') || filePath.startsWith('/js/') || filePath.startsWith('/images/') || filePath.startsWith('/views/')) {
         let assetPath = './public' + filePath;
         
         const extname = path.extname(assetPath);
@@ -1083,8 +1083,8 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'GET') {
         
-        if (filePath.startsWith('/dashboard-client/') || filePath.startsWith('/dashboard-autoritati/')) {
-            console.log('SECURITY WARNING: Dashboard file request bypassed authentication check!');
+        if (filePath.startsWith('/views/map-')) {
+            console.log('SECURITY WARNING: Protected file request bypassed authentication check!');
             res.writeHead(302, { 'Location': '/' });
             res.end();
             return;

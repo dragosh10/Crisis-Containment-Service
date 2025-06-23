@@ -1,6 +1,4 @@
-
 const https = require('https');
-
 const USGS_URL = 'https://earthquake.usgs.gov/fdsnws/event/1/query';
 
 function getEarthquakeData(callback, parameters = {}) {
@@ -20,10 +18,14 @@ function getEarthquakeData(callback, parameters = {}) {
 
     const url = `${USGS_URL}?${queryString}`;
 
-    https.get(url, (res) => {
+    https.get(url, (response) => {
         let data = '';
-        res.on('data', (chunk) => data += chunk);
-        res.on('end', () => {
+        
+        response.on('data', (chunk) => {
+            data += chunk;
+        });
+        
+        response.on('end', () => {
             try {
                 const jsonData = JSON.parse(data);
                 callback(jsonData, null);
@@ -31,11 +33,11 @@ function getEarthquakeData(callback, parameters = {}) {
                 callback(null, error);
             }
         });
+        
     }).on('error', (error) => {
         callback(null, error);
     });
 }
 
-module.exports = {
-    getEarthquakeData
-};
+// Export for Node.js use
+module.exports = { getEarthquakeData };

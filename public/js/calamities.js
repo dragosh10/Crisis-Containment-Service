@@ -71,7 +71,7 @@ function createCalamityMarker(calamity, icons) {
             low: '🟢',
             medium: '🟡',
             high: '🟠',
-            critical: '🔴'
+           
           };
   const gravityText = calamity.gravity ? `${gravitySymbols[calamity.gravity] || ''} ${calamity.gravity.charAt(0).toUpperCase() + calamity.gravity.slice(1)}` : 'N/A';
   
@@ -410,10 +410,6 @@ function handleFormSubmission(map) {
               return;
           }
           
-          
-          originalLat = lat;
-          originalLng = lng;
-          
           data = { ...data, lat, lng };
       } 
  
@@ -605,12 +601,7 @@ function loadCalamities(map) {
 
   if (!window.calamityCluster) {
     window.calamityCluster = L.markerClusterGroup({
-      chunkedLoading: true,
-      chunkProgress: function(processed, total, elapsed) {
-        if (processed === total) {
-         
-        }
-      }
+      chunkedLoading: true
     });
  
     map.addLayer(window.calamityCluster);
