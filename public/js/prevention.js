@@ -165,6 +165,14 @@ function secureInput(input, type = 'general') {
             sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,]/g, '');
             break;
             
+        case 'pinName':
+        
+            sanitized = sanitizeForSQL(sanitized);
+            sanitized = encodeHTML(sanitized);
+           
+            sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,!]/g, '');
+            break;
+            
         case 'description':
         
             sanitized = sanitizeForSQL(sanitized);
@@ -213,4 +221,40 @@ function safeSetAttribute(element, attribute, value) {
    
     const sanitizedValue = encodeHTML(String(value));
     element.setAttribute(attribute, sanitizedValue);
+}
+
+function validateEmail(input) {
+    if (typeof input !== 'string') {
+        return true;
+    }
+    
+   
+    return validateSQLSafety(input) && validateXSSSafety(input);
+}
+
+function validatePassword(input) {
+    if (typeof input !== 'string') {
+        return true;
+    }
+    
+ 
+    return validateSQLSafety(input) && validateXSSSafety(input);
+}
+
+function sanitizeEmailInput(input) {
+    if (typeof input !== 'string' || input.trim() === '') {
+        return '';
+    }
+    
+   
+    return input.replace(/[<>"']/g, '');
+}
+
+function sanitizePasswordInput(input) {
+    if (typeof input !== 'string' || input.trim() === '') {
+        return '';
+    }
+    
+   
+    return input.replace(/[<>"']/g, '');
 }

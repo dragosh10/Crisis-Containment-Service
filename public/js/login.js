@@ -1,4 +1,4 @@
-// Enhanced email validation using prevention.js
+
 function validateEmail(email) {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     
@@ -6,19 +6,19 @@ function validateEmail(email) {
         return false;
     }
     
-    // Use prevention.js security checks
+    
     const secureEmail = secureInput(email);
     return secureEmail === email.trim();
 }
 
-// Real-time input sanitization using prevention.js
+
 function setupInputValidation() {
     const emailInput = document.querySelector('.email-input');
     const passwordInput = document.querySelector('.password-input');
     
     if (emailInput) {
         emailInput.addEventListener('input', function(e) {
-            // Use email-specific validation that allows @ symbol
+            
             if (!validateEmail(e.target.value)) {
                 console.warn('Dangerous pattern detected in email');
                 e.target.value = sanitizeEmailInput(e.target.value);
@@ -27,7 +27,7 @@ function setupInputValidation() {
         
         emailInput.addEventListener('paste', function(e) {
             setTimeout(() => {
-                // Use email-specific validation that allows @ symbol
+              
                 if (!validateEmail(e.target.value)) {
                     console.warn('Dangerous pattern detected in pasted email');
                     e.target.value = sanitizeEmailInput(e.target.value);
@@ -38,7 +38,7 @@ function setupInputValidation() {
     
     if (passwordInput) {
         passwordInput.addEventListener('input', function(e) {
-            // Use password-specific validation
+            
             if (!validatePassword(e.target.value)) {
                 console.warn('Dangerous pattern detected in password');
                 e.target.value = sanitizePasswordInput(e.target.value);
@@ -47,7 +47,7 @@ function setupInputValidation() {
     }
 }
 
-// Initialize input validation when DOM is loaded
+
 document.addEventListener('DOMContentLoaded', function() {
     setupInputValidation();
 });
@@ -59,7 +59,7 @@ async function handleLogin() {
     let email = emailInput.value;
     let password = passwordInput.value;
 
-    // Security validation and sanitization using prevention.js
+    
     try {
         email = secureInput(email);
         password = secureInput(password);
@@ -73,7 +73,7 @@ async function handleLogin() {
         return;
     }
 
-    // Enhanced email validation
+    
     if (!validateEmail(email)) {
         alert('Te rugăm să introduci o adresă de email validă!');
         return;
@@ -91,7 +91,7 @@ async function handleLogin() {
         const data = await response.json();
 
         if (data.success) {
-            // Verificăm dacă utilizatorul este autoritate
+           
             if (data.isAuthority) {
                                     window.location.href = '/views/map-authorities.html';
                 } else {
@@ -124,7 +124,7 @@ document.querySelector('.sign-up').addEventListener('click', function() {
     window.location.href = '/signup.html';
 });
 
-// Pro Tips Cycling Functionality
+
 const tips = [
     {
         image: '/images/firefighter.png',

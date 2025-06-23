@@ -32,5 +32,5 @@ function getEarthquakeData(callback, parameters = {}) {
         });
 }
 
-// Make function available globally for browser use
+
 window.getEarthquakeData = getEarthquakeData;

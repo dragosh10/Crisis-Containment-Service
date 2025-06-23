@@ -193,12 +193,12 @@ function setupMarkerClickHandlers(marker, calamity) {
               }
             }
             
-            // Handle disaster pin selection for filter
+            // disaster pin selection for filter
             if (window.isSelectingDisasterPin && window.isSelectingDisasterPin()) {
               e.originalEvent.stopPropagation();
               const wasSelected = window.handleDisasterPinSelection(calamity);
               if (wasSelected) {
-                return; // Stop further processing if disaster was selected for filter
+                return; 
               }
             }
                  
@@ -214,12 +214,12 @@ function refreshCalamities() {
     .then(res => res.json())
     .then(data => {
       
-      // Clear only database calamities from the cluster
+     
       window.calamityCluster.eachLayer(function(layer) {
         if (layer.calamityData && layer.calamityData.id) {
-          // This is a database calamity (has an ID), remove it
+       
           window.calamityCluster.removeLayer(layer);
-          // Remove from allCalamityMarkers array
+          
           const index = window.allCalamityMarkers.indexOf(layer);
           if (index > -1) {
             window.allCalamityMarkers.splice(index, 1);
@@ -227,7 +227,7 @@ function refreshCalamities() {
         }
       });
 
-      // Add new database calamities
+      
       data.filter(c => c.lat != null && c.lng != null).forEach(c => {
         const now = new Date();
         
@@ -243,7 +243,7 @@ function refreshCalamities() {
         setupPopupHandlers(marker, c, description);
         setupMarkerClickHandlers(marker, c);
         
-        // Add marker to global array for filtering
+       
         window.allCalamityMarkers.push(marker);
         window.calamityCluster.addLayer(marker);
       });
