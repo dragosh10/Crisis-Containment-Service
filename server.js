@@ -411,6 +411,13 @@ const server = http.createServer(async (req, res) => {
               ]
             );
       
+            // După inserarea calamity (unde ai deja const [result] = await db.query(... pentru calamities))
+            const [calamityRows] = await db.query(
+              'SELECT gravity FROM calamities WHERE lat = ? AND lng = ? ORDER BY added_at DESC LIMIT 1',
+              [lat, lng]
+            );
+            const gravityCalamity = calamityRows[0]?.gravity || null;
+      
             // Integrare generare alerte CAP dacă există lat/lng
             if (lat !== undefined && lng !== undefined && lat !== null && lng !== null) {
               // 1. Ia toți clienții și pin-urile lor din DB
@@ -458,8 +465,8 @@ const server = http.createServer(async (req, res) => {
                   if (dist <= 30) {
                     // 4a. Salvează alerta și în user_alerts
                     await db.query(
-                      'INSERT INTO user_alerts (user_id, event, instruction, lat, lon, areaDesc) VALUES (?, ?, ?, ?, ?, ?)',
-                      [client.userId, capCalamity.event, capCalamity.instruction, capCalamity.lat, capCalamity.lon, capCalamity.areaDesc]
+                      'INSERT INTO user_alerts (user_id, event, instruction, lat, lon, areaDesc, gravity) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                      [client.userId, capCalamity.event, capCalamity.instruction, capCalamity.lat, capCalamity.lon, capCalamity.areaDesc, gravityCalamity]
                     );
                     // 4b. Trimite alerta în timp real
                     sendAlertToUser(client.userId, {
@@ -467,7 +474,9 @@ const server = http.createServer(async (req, res) => {
                       instruction: capCalamity.instruction,
                       lat: capCalamity.lat,
                       lon: capCalamity.lon,
-                      areaDesc: capCalamity.areaDesc
+                      areaDesc: capCalamity.areaDesc,
+                      gravity: gravityCalamity,
+                      created_at: new Date().toISOString()
                     });
                     break;
                   }
@@ -1167,7 +1176,7 @@ const server = http.createServer(async (req, res) => {
         }
         try {
             const [rows] = await db.query(
-                'SELECT event, instruction, lat, lon, areaDesc, created_at FROM user_alerts WHERE user_id = ? ORDER BY created_at DESC LIMIT 5',
+                'SELECT event, instruction, lat, lon, areaDesc, gravity, created_at FROM user_alerts WHERE user_id = ? ORDER BY created_at DESC LIMIT 5',
                 [user.id]
             );
             res.writeHead(200, { 'Content-Type': 'application/json' });
