@@ -1078,7 +1078,14 @@ function renderRecentAlerts() {
         `;
 
         // Click pentru detalii
-        li.addEventListener('click', () => showAlertDetailsModal(alert));
+        li.addEventListener('click', () => {
+            // Marchează ca văzută
+            if (alert.created_at) {
+                localStorage.setItem('lastSeenAlert', new Date(alert.created_at).getTime());
+                renderRecentAlerts();
+            }
+            showAlertDetailsModal(alert);
+        });
         list.appendChild(li);
     });
 }
@@ -1139,7 +1146,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // La primirea unei alerte personalizate, salvează și actualizează lista
 function handlePersonalAlert(alert) {
-    saveRecentAlert({ event: alert.event, instruction: alert.instruction });
+    saveRecentAlert({
+        event: alert.event,
+        instruction: alert.instruction,
+        lat: alert.lat,
+        lon: alert.lon,
+        gravity: alert.gravity,
+        created_at: alert.created_at
+    });
     renderRecentAlerts();
 }
 
