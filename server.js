@@ -456,6 +456,12 @@ const server = http.createServer(async (req, res) => {
                     ) * 6371
                   );
                   if (dist <= 30) {
+                    // 4a. Salvează alerta și în user_alerts
+                    await db.query(
+                      'INSERT INTO user_alerts (user_id, event, instruction, lat, lon, areaDesc) VALUES (?, ?, ?, ?, ?, ?)',
+                      [client.userId, capCalamity.event, capCalamity.instruction, capCalamity.lat, capCalamity.lon, capCalamity.areaDesc]
+                    );
+                    // 4b. Trimite alerta în timp real
                     sendAlertToUser(client.userId, {
                       event: capCalamity.event,
                       instruction: capCalamity.instruction,
@@ -1143,6 +1149,33 @@ const server = http.createServer(async (req, res) => {
                 res.end(data);
             }
         });
+        return;
+    }
+
+    // Endpoint pentru ultimele 5 alerte personale
+    if (req.method === 'GET' && filePath === '/api/user-alerts') {
+        const user = await requireAuth(req, res);
+        if (!user) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Authentication required' }));
+            return;
+        }
+        if (user.is_authority) {
+            res.writeHead(403, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Client access only' }));
+            return;
+        }
+        try {
+            const [rows] = await db.query(
+                'SELECT event, instruction, lat, lon, areaDesc, created_at FROM user_alerts WHERE user_id = ? ORDER BY created_at DESC LIMIT 5',
+                [user.id]
+            );
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ alerts: rows }));
+        } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Database error' }));
+        }
         return;
     }
 

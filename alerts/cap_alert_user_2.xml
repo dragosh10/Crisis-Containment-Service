@@ -1,22 +1,22 @@
 <?xml version="1.0"?>
 <alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
-  <identifier>cri-1750695409937-2</identifier>
+  <identifier>cri-1750699745811-2</identifier>
   <sender>cri@cri.com</sender>
-  <sent>2025-06-23T16:16:49.937Z</sent>
+  <sent>2025-06-23T17:29:05.811Z</sent>
   <status>Actual</status>
   <msgType>Alert</msgType>
   <scope>Public</scope>
   <info>
     <category>Met</category>
-    <event>fire</event>
-    <urgency>Immediate</urgency>
-    <severity>Severe</severity>
+    <event>earthquake</event>
+    <urgency>Expected</urgency>
+    <severity>Moderate</severity>
     <certainty>Observed</certainty>
     <instruction>Urmați instrucțiunile autorităților!</instruction>
     <area>
       <areaDesc>Zonă afectată</areaDesc>
-      <circle>46.924883,26.929925 30</circle>
-      <pin>46.9324,26.9137</pin>
+      <circle>47.166905,27.577964 30</circle>
+      <pin>47.1877,27.5633</pin>
     </area>
   </info>
 </alert>

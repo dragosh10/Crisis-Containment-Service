@@ -1040,6 +1040,51 @@ function safeSetAttribute(element, attribute, value) {
 }
 
 // WebSocket pentru alerte în timp real
+function saveRecentAlert(alert) {
+    let alerts = JSON.parse(localStorage.getItem('recentAlerts') || '[]');
+    alerts.unshift(alert);
+    if (alerts.length > 5) alerts = alerts.slice(0, 5);
+    localStorage.setItem('recentAlerts', JSON.stringify(alerts));
+}
+
+function renderRecentAlerts() {
+    const alerts = JSON.parse(localStorage.getItem('recentAlerts') || '[]');
+    const list = document.getElementById('recentAlertsList');
+    if (!list) return;
+    list.innerHTML = '';
+    if (alerts.length === 0) {
+        list.innerHTML = '<li style="color:#fff;opacity:0.7;font-size:14px;">No recent alerts</li>';
+        return;
+    }
+    alerts.forEach(alert => {
+        const li = document.createElement('li');
+        li.style.padding = '8px 0';
+        li.style.borderBottom = '1px solid #fff2';
+        li.innerHTML = `<strong>${encodeHTML(alert.event || 'Alert')}</strong><br><span style='font-size:12px;'>${encodeHTML(alert.instruction || '')}</span>`;
+        list.appendChild(li);
+    });
+}
+
+// Dropdown logic for alerts section
+window.addEventListener('DOMContentLoaded', () => {
+    const alertsHeader = document.querySelector('[data-section="alerts"]');
+    const alertsSection = document.getElementById('alertsSection');
+    if (alertsHeader && alertsSection) {
+        alertsHeader.addEventListener('click', () => {
+            const isOpen = alertsSection.style.display === 'block';
+            alertsSection.style.display = isOpen ? 'none' : 'block';
+        });
+    }
+    renderRecentAlerts();
+});
+
+// La primirea unei alerte personalizate, salvează și actualizează lista
+function handlePersonalAlert(alert) {
+    saveRecentAlert({ event: alert.event, instruction: alert.instruction });
+    renderRecentAlerts();
+}
+
+// Modific setupRealtimeAlerts pentru a apela handlePersonalAlert
 function setupRealtimeAlerts() {
     let userId = null;
     fetch('/api/user').then(r => r.json()).then(data => {
@@ -1060,6 +1105,7 @@ function setupRealtimeAlerts() {
                 }
                 // Creează bannerul doar dacă e alertă personalizată
                 if (alert.event || alert.instruction) {
+                    handlePersonalAlert(alert);
                     let banner = document.createElement('div');
                     banner.id = 'cap-alert-banner';
                     banner.style.position = 'fixed';
@@ -1081,5 +1127,33 @@ function setupRealtimeAlerts() {
     });
 }
 window.addEventListener('DOMContentLoaded', setupRealtimeAlerts);
+
+// La logare, verifică dacă există alerte noi în raza pinurilor și populează secțiunea de alerts
+window.addEventListener('DOMContentLoaded', () => {
+    renderRecentAlerts();
+});
+
+// Fetch alerts from backend and populate localStorage + sidebar
+async function fetchAndRenderRecentAlerts() {
+    try {
+        const response = await fetch('/api/user-alerts');
+        if (!response.ok) {
+            renderRecentAlerts(); // fallback la localStorage dacă nu merge backendul
+            return;
+        }
+        const data = await response.json();
+        if (data.alerts && Array.isArray(data.alerts)) {
+            // Salvează în localStorage pentru compatibilitate cu restul codului
+            localStorage.setItem('recentAlerts', JSON.stringify(data.alerts));
+        }
+        renderRecentAlerts();
+    } catch (e) {
+        console.error('Eroare la fetch alerts:', e);
+        renderRecentAlerts();
+    }
+}
+
+// La încărcarea paginii, ia alertele din backend
+window.addEventListener('DOMContentLoaded', fetchAndRenderRecentAlerts);
 
 
