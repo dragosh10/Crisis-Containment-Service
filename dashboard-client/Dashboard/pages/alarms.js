@@ -48,34 +48,7 @@ function ensureClientId(showUserMessage = false) {
 }
 
 
-async function ensureClientExists() {
-    if (!ensureClientId()) return false;
-    
-    try {       
-        const zoneResponse = await fetch('/client-zone/ensure', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id_client: clientId
-            })
-        });
 
-       
-        const pinsResponse = await fetch('/client-pins/ensure', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id_client: clientId
-            })
-        });
-
-        console.log(`Client ${clientId} records ensured in both tables`);
-        return true;
-    } catch (error) {
-        console.error('Error ensuring client exists:', error);
-        return false;
-    }
-}
 
 async function initializeClientAlarms(map, createCustomIcon) {
     // Always set up the form handlers first, regardless of authentication status
@@ -117,13 +90,11 @@ async function initializeClientAlarms(map, createCustomIcon) {
     }
 
     // Now that clientId is set, proceed with loading data
-    ensureClientExists().then(() => {
-        loadClientPins();
-    });
+    loadClientPins();
 }
 
 
-
+/*
 async function displayClientZoneStatus() {
     if (!ensureClientId()) return;
     
@@ -229,7 +200,7 @@ async function saveClientZoneData(country, county, town) {
     }
 }
 
-
+*/
 
 async function loadClientPins() {
     if (!ensureClientId()) return;
@@ -480,62 +451,7 @@ function setupAlarmMethodHandlers(map, createCustomIcon) {
     }
 
     
-    const zoneFields = ['zoneCountry', 'zoneCounty', 'zoneTown'];
-    zoneFields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        const counterId = `${fieldId}-count`;
-        
-       
-        let counter = document.getElementById(counterId);
-        if (!counter && field) {
-            counter = document.createElement('div');
-            counter.id = counterId;
-            counter.style.cssText = 'font-size: 12px; color: #ccc; margin-top: 4px;';
-            field.parentNode.insertBefore(counter, field.nextSibling);
-        }
-
-        if (field && counter) {
-            field.maxLength = 50;
-            counter.textContent = '50 characters remaining';
-            
-            field.addEventListener('input', function(e) {
-                try {
-                    const maxLength = 50;
-                    let value = e.target.value;
-                    
-                    // Apply security validation
-                    if (!validateSQLSafety(value)) {
-                        e.target.value = sanitizeForSQL(value);
-                        value = e.target.value;
-                        alert('Potentially dangerous SQL characters removed');
-                    }
-                    
-                    if (!validateXSSSafety(value)) {
-                        e.target.value = encodeHTML(value);
-                        value = e.target.value;
-                        alert('Input sanitized for XSS protection');
-                    }
-                    
-                    // Remove non-allowed characters for zone input
-                    const cleanValue = value.replace(/[^a-zA-Z0-9\s\-\.,]/g, '');
-                    if (cleanValue !== value) {
-                        e.target.value = cleanValue;
-                        value = cleanValue;
-                        alert('Special characters removed - only letters, numbers, spaces, hyphens, dots and commas allowed');
-                    }
-                    
-                    const remaining = maxLength - value.length;
-                    counter.textContent = `${remaining} characters remaining`;
-                    counter.style.color = remaining < 10 ? '#ff4444' : '#ccc';
-                } catch (error) {
-                    console.error('Security validation error:', error);
-                    e.target.value = '';
-                    counter.textContent = '50 characters remaining';
-                    alert('Input rejected for security reasons');
-                }
-            });
-        }
-    });
+  
 
     const pinMethodSelect = document.getElementById('pinMethod');
     if (!pinMethodSelect) {
@@ -641,48 +557,7 @@ function setupAlarmMethodHandlers(map, createCustomIcon) {
                 });
             });
 
-        } else if (e.target.value === 'select-zone') {
-            pinPlacementForm.style.display = 'block';
-            pinFields.style.display = 'none';
-            zoneFields.style.display = 'block';
-            submitButton.textContent = 'Save Zone Alarm';
-            coordDisplay.style.display = 'none';
-
-          
-            const pinCountDisplay = document.getElementById('pin-count-display');
-            if (pinCountDisplay) {
-                pinCountDisplay.style.display = 'none';
-            }
-
-        
-            const countryField = document.getElementById('zoneCountry');
-            const countyField = document.getElementById('zoneCounty');
-            const townField = document.getElementById('zoneTown');
-            
-            if (countryField) countryField.value = '';
-            if (countyField) countyField.value = '';
-            if (townField) townField.value = '';
-
-          
-            displayClientZoneStatus();
-
-          
-            const cancelBtn = document.createElement('button');
-            cancelBtn.id = 'cancelAlarmButton';
-            cancelBtn.textContent = 'Cancel';
-            cancelBtn.className = 'filter-input';
-            cancelBtn.style.cssText = 'background-color: #666; color: white; cursor: pointer; margin-top: 8px;';
-            submitButton.parentNode.insertBefore(cancelBtn, submitButton.nextSibling);
-
-            cancelBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                clearAlarmForm();
-                pinPlacementForm.style.display = 'none';
-                pinMethodSelect.value = '';
-                removeAllAlarmCancelButtons();
-            });
-
-        } else {
+        }  else {
             pinPlacementForm.style.display = 'none';
             removeAllAlarmCancelButtons();
             
@@ -749,18 +624,7 @@ function setupAlarmFormSubmission(map) {
                     clearAlarmForm();
                 }
 
-            } else if (method === 'select-zone') {
-                const country = document.getElementById('zoneCountry').value.trim();
-                const county = document.getElementById('zoneCounty').value.trim();
-                const town = document.getElementById('zoneTown').value.trim();
-
-                // No validation required since all fields are optional
-                await saveClientZoneData(country, county, town);
-                formMessage.textContent = 'Zone alarm saved successfully!';
-                formMessage.style.color = 'lightgreen';
-                clearAlarmForm();
-            }
-
+            } 
          
             setTimeout(() => {
                 formMessage.textContent = '';
@@ -776,7 +640,7 @@ function setupAlarmFormSubmission(map) {
 }
 
 function clearAlarmForm() {
-    const fields = ['description', 'lat', 'lng', 'zoneCountry', 'zoneCounty', 'zoneTown'];
+    const fields = ['description', 'lat', 'lng'];
     fields.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) field.value = '';
@@ -788,13 +652,7 @@ function clearAlarmForm() {
                 charCount.textContent = '15 characters remaining';
                 charCount.style.color = '#ccc';
             }
-        } else if (fieldId.startsWith('zone')) {
-            const zoneCounter = document.getElementById(`${fieldId}-count`);
-            if (zoneCounter) {
-                zoneCounter.textContent = '50 characters remaining';
-                zoneCounter.style.color = '#ccc';
-            }
-        }
+        } 
     });
 
     const coordDisplay = document.querySelector('.coordinates-display');
@@ -817,227 +675,4 @@ function showTemporaryAlert(message) {
 window.initializeClientAlarms = initializeClientAlarms;
 window.loadClientPins = loadClientPins;
 window.updatePinCountDisplay = updatePinCountDisplay;
-
-//SQL Injection Prevention
-
-
-function sanitizeForSQL(input) {
-    if (typeof input !== 'string') {
-        return input;
-    }
-    
-    return input
-        .replace(/'/g, "''")           
-        .replace(/"/g, '""')           
-        .replace(/;/g, '')            
-        .replace(/--/g, '')          
-        .replace(/\/\*/g, '')         
-        .replace(/\*\//g, '')         
-        .replace(/\bOR\b/gi, '')      
-        .replace(/\bAND\b/gi, '')      
-        .replace(/\bUNION\b/gi, '')    
-        .replace(/\bSELECT\b/gi, '')   
-        .replace(/\bINSERT\b/gi, '')   
-        .replace(/\bUPDATE\b/gi, '')  
-        .replace(/\bDELETE\b/gi, '')   
-        .replace(/\bDROP\b/gi, '')     
-        .replace(/\bEXEC\b/gi, '')     
-        .replace(/\bALTER\b/gi, '');   
-}
-
-
-function validateSQLSafety(input) {
-    if (typeof input !== 'string') {
-        return true;
-    }
-    
-    const dangerousPatterns = [
-        /'.*OR.*'/i,
-        /'.*AND.*'/i,
-        /UNION.*SELECT/i,
-        /DROP.*TABLE/i,
-        /DELETE.*FROM/i,
-        /INSERT.*INTO/i,
-        /UPDATE.*SET/i,
-        /--/,
-        /\/\*.*\*\//,
-        /;\s*$/
-    ];
-    
-    return !dangerousPatterns.some(pattern => pattern.test(input));
-}
-
-//XSS Prevention
-
-function encodeHTML(input) {
-    if (typeof input !== 'string') {
-        return input;
-    }
-    
-    const entityMap = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-        '/': '&#x2F;',
-        '`': '&#x60;',
-        '=': '&#x3D;'
-    };
-    
-    return input.replace(/[&<>"'`=\/]/g, function (s) {
-        return entityMap[s];
-    });
-}
-
-
-function sanitizeHTML(input) {
-    if (typeof input !== 'string') {
-        return input;
-    }
-    
-    
-    input = input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-    
-  
-    const dangerousTags = [
-        'script', 'iframe', 'object', 'embed', 'form', 'input', 
-        'textarea', 'button', 'select', 'option', 'meta', 'link'
-    ];
-    
-    dangerousTags.forEach(tag => {
-        const regex = new RegExp(`<${tag}\\b[^>]*>.*?</${tag}>`, 'gi');
-        input = input.replace(regex, '');
-        
-     
-        const selfClosingRegex = new RegExp(`<${tag}\\b[^>]*/>`, 'gi');
-        input = input.replace(selfClosingRegex, '');
-    });
-    
-   
-    const dangerousAttrs = [
-        'onclick', 'onload', 'onerror', 'onmouseover', 'onmouseout',
-        'onfocus', 'onblur', 'onchange', 'onsubmit', 'onkeyup',
-        'onkeydown', 'onkeypress', 'javascript:', 'vbscript:'
-    ];
-    
-    dangerousAttrs.forEach(attr => {
-        const regex = new RegExp(`\\s*${attr}\\s*=\\s*["'][^"']*["']`, 'gi');
-        input = input.replace(regex, '');
-    });
-    
-    return input;
-}
-
-
-function validateXSSSafety(input) {
-    if (typeof input !== 'string') {
-        return true;
-    }
-    
-    const xssPatterns = [
-        /<script/i,
-        /<iframe/i,
-        /javascript:/i,
-        /vbscript:/i,
-        /onload=/i,
-        /onerror=/i,
-        /onclick=/i,
-        /onmouseover=/i,
-        /<img[^>]+src[^>]*>/i,
-        /<svg[^>]*>/i,
-        /eval\(/i,
-        /alert\(/i,
-        /document\.cookie/i,
-        /document\.write/i
-    ];
-    
-    return !xssPatterns.some(pattern => pattern.test(input));
-}
-
-
-function secureInput(input, type = 'general') {
-    
-    if (!input || typeof input !== 'string' || input.trim() === '') {
-        return '';
-    }
-    
-    const trimmedInput = input.trim();
-    
-
-    if (!validateSQLSafety(trimmedInput)) {
-        throw new Error('Potentially dangerous SQL pattern detected');
-    }
-    
-    if (!validateXSSSafety(trimmedInput)) {
-        throw new Error('Potentially dangerous XSS pattern detected');
-    }
-   
-    let sanitized = trimmedInput;
-    
-    switch (type) {
-        case 'zone':
-            
-            sanitized = sanitizeForSQL(sanitized);
-            sanitized = encodeHTML(sanitized);
-       
-            sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,]/g, '');
-            break;
-            
-        case 'pinName':
-        
-            sanitized = sanitizeForSQL(sanitized);
-            sanitized = encodeHTML(sanitized);
-           
-            sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,!]/g, '');
-            break;
-            
-        case 'description':
-           
-            sanitized = sanitizeForSQL(sanitized);
-            sanitized = sanitizeHTML(sanitized);
-            sanitized = encodeHTML(sanitized);
-            break;
-            
-        default:
-         
-            sanitized = sanitizeForSQL(sanitized);
-            sanitized = encodeHTML(sanitized);
-            break;
-    }
-    
-   
-    sanitized = sanitized.trim();
-    
-
-    if (sanitized !== trimmedInput) {
-        console.warn('Input was sanitized for security:', { original: trimmedInput, sanitized: sanitized });
-    }
-    
-    return sanitized;
-}
-
-//Safe DOM Manipulation
-
-function safeSetText(element, text) {
-    if (!element) return;
-    
-    element.textContent = encodeHTML(String(text));
-}
-
-function safeSetHTML(element, html) {
-    if (!element) return;
-    
-    const sanitizedHTML = sanitizeHTML(encodeHTML(String(html)));
-    element.innerHTML = sanitizedHTML;
-}
-
-function safeSetAttribute(element, attribute, value) {
-    if (!element) return;
-    
-   
-    const sanitizedValue = encodeHTML(String(value));
-    element.setAttribute(attribute, sanitizedValue);
-}
-
 

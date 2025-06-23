@@ -1,10 +1,81 @@
-async function handleLogin() {
-    const email = document.querySelector('.email-input').value;
-    const password = document.querySelector('.password-input').value;
+// Enhanced email validation using prevention.js
+function validateEmail(email) {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
+    if (!emailRegex.test(email)) {
+        return false;
+    }
+    
+    // Use prevention.js security checks
+    const secureEmail = secureInput(email);
+    return secureEmail === email.trim();
+}
 
- 
+// Real-time input sanitization using prevention.js
+function setupInputValidation() {
+    const emailInput = document.querySelector('.email-input');
+    const passwordInput = document.querySelector('.password-input');
+    
+    if (emailInput) {
+        emailInput.addEventListener('input', function(e) {
+            // Use email-specific validation that allows @ symbol
+            if (!validateEmail(e.target.value)) {
+                console.warn('Dangerous pattern detected in email');
+                e.target.value = sanitizeEmailInput(e.target.value);
+            }
+        });
+        
+        emailInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                // Use email-specific validation that allows @ symbol
+                if (!validateEmail(e.target.value)) {
+                    console.warn('Dangerous pattern detected in pasted email');
+                    e.target.value = sanitizeEmailInput(e.target.value);
+                }
+            }, 0);
+        });
+    }
+    
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function(e) {
+            // Use password-specific validation
+            if (!validatePassword(e.target.value)) {
+                console.warn('Dangerous pattern detected in password');
+                e.target.value = sanitizePasswordInput(e.target.value);
+            }
+        });
+    }
+}
+
+// Initialize input validation when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setupInputValidation();
+});
+
+async function handleLogin() {
+    const emailInput = document.querySelector('.email-input');
+    const passwordInput = document.querySelector('.password-input');
+    
+    let email = emailInput.value;
+    let password = passwordInput.value;
+
+    // Security validation and sanitization using prevention.js
+    try {
+        email = secureInput(email);
+        password = secureInput(password);
+    } catch (error) {
+        alert('Invalid characters detected in input fields!');
+        return;
+    }
+
     if (!email || !password) {
         alert('Te rugăm să completezi toate câmpurile!');
+        return;
+    }
+
+    // Enhanced email validation
+    if (!validateEmail(email)) {
+        alert('Te rugăm să introduci o adresă de email validă!');
         return;
     }
 

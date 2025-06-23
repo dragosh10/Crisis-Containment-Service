@@ -1,34 +1,126 @@
-async function handleSignup() {
-    const email = document.querySelector('.email-input').value;
-    const password = document.querySelector('.password-input').value;
-    const confirmPassword = document.querySelector('.confirm-password-input').value;
+// Enhanced email validation using prevention.js
+function validateEmail(email) {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
+    if (!emailRegex.test(email)) {
+        return false;
+    }
+    
+    // Use prevention.js security checks
+    const secureEmail = secureInput(email);
+    return secureEmail === email.trim();
+}
 
-   
+// Enhanced password validation using prevention.js
+function validatePassword(password) {
+    // Length check
+    if (password.length < 8) {
+        return { valid: false, message: 'Parola trebuie să aibă cel puțin 8 caractere!' };
+    }
+    
+    // Complexity check
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    
+    if (!hasLowerCase || !hasUpperCase || !hasNumbers) {
+        return { 
+            valid: false, 
+            message: 'Parola trebuie să conțină cel puțin:\n- O literă mare\n- O literă mică\n- Un număr' 
+        };
+    }
+    
+    // Security checks using prevention.js
+    if (!validatePassword(password)) {
+        return { valid: false, message: 'Parola conține caractere periculoase!' };
+    }
+    
+    return { valid: true, message: '' };
+}
+
+// Real-time input sanitization using prevention.js
+function setupInputValidation() {
+    const emailInput = document.querySelector('.email-input');
+    const passwordInput = document.querySelector('.password-input');
+    const confirmPasswordInput = document.querySelector('.confirm-password-input');
+    
+    if (emailInput) {
+        emailInput.addEventListener('input', function(e) {
+            // Use email-specific validation that allows @ symbol
+            if (!validateEmail(e.target.value)) {
+                console.warn('Dangerous pattern detected in email');
+                e.target.value = sanitizeEmailInput(e.target.value);
+            }
+        });
+        
+        emailInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                // Use email-specific validation that allows @ symbol
+                if (!validateEmail(e.target.value)) {
+                    console.warn('Dangerous pattern detected in pasted email');
+                    e.target.value = sanitizeEmailInput(e.target.value);
+                }
+            }, 0);
+        });
+    }
+    
+    [passwordInput, confirmPasswordInput].forEach(input => {
+        if (input) {
+            input.addEventListener('input', function(e) {
+                // Use password-specific validation
+                if (!validatePassword(e.target.value)) {
+                    console.warn('Dangerous pattern detected in password');
+                    e.target.value = sanitizePasswordInput(e.target.value);
+                }
+            });
+        }
+    });
+}
+
+// Initialize input validation when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setupInputValidation();
+});
+
+async function handleSignup() {
+    const emailInput = document.querySelector('.email-input');
+    const passwordInput = document.querySelector('.password-input');
+    const confirmPasswordInput = document.querySelector('.confirm-password-input');
+
+    let email = emailInput.value;
+    let password = passwordInput.value;
+    let confirmPassword = confirmPasswordInput.value;
+
+    // Security validation and sanitization using prevention.js
+    if (!validateEmail(email)) {
+        email = sanitizeEmailInput(email);
+    }
+    if (!validatePassword(password)) {
+        password = sanitizePasswordInput(password);
+    }
+    if (!validatePassword(confirmPassword)) {
+        confirmPassword = sanitizePasswordInput(confirmPassword);
+    }
+
     if (!email || !password || !confirmPassword) {
         alert('Te rugăm să completezi toate câmpurile!');
         return;
     }
 
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Enhanced email validation
+    if (!validateEmail(email)) {
         alert('Te rugăm să introduci o adresă de email validă!');
         return;
     }
 
-   
-    if (password.length < 8) {
-        alert('Parola trebuie să aibă cel puțin 8 caractere!');
+    // Enhanced password validation
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+        alert(passwordValidation.message);
         return;
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]/;
-    if (!passwordRegex.test(password)) {
-        alert('Parola trebuie să conțină cel puțin:\n- O literă mare\n- O literă mică\n- Un număr');
-        return;
-    }
-
-   
+    // Password confirmation check
     if (password !== confirmPassword) {
         alert('Parolele nu coincid!');
         return;

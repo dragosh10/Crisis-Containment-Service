@@ -376,10 +376,10 @@ const server = http.createServer(async (req, res) => {
             }
             const data = JSON.parse(body);
             console.log('Parsed data:', data);
-            const { lat, lng, type, description, county, town, startdate, enddate, gravity, country } = data;
+            const { lat, lng, type, description, startdate, enddate, gravity } = data;
       
             if (!type) {
-              console.log('Missing required fields:', { lat, lng, type, description, county, town, startdate, enddate, gravity, country });
+              console.log('Missing required fields:', { lat, lng, type, description,  startdate, enddate, gravity });
               res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
               res.end(JSON.stringify({ error: 'Missing required fields' }));
               return;
@@ -389,22 +389,19 @@ const server = http.createServer(async (req, res) => {
             const now = new Date();
             const added_at = now.toISOString().slice(0, 19).replace('T', ' '); 
       
-            console.log('Inserting into database:', { lat, lng, type, description, county, town, startdate, enddate, gravity, country, added_at });
+            console.log('Inserting into database:', { lat, lng, type, description,  startdate, enddate, gravity, added_at });
             const [result] = await db.query(
               `INSERT INTO calamities
-              (lat, lng, type, description, county, town, startdate, enddate, gravity, country, added_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              (lat, lng, type, description, startdate, enddate, gravity, added_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?,  ?)`,
               [
                 lat || null,
                 lng || null,
                 type,
                 description || null,
-                county || null,
-                town || null,
                 startdate || null,
                 enddate || null,
                 gravity || null,
-                country || null,
                 added_at
               ]
             );
@@ -643,114 +640,10 @@ const server = http.createServer(async (req, res) => {
     }
 
     //client zone si pins     
-    if (req.method === 'GET' && req.url.startsWith('/client-zone/')) {
-        // Require client authentication
-        const user = await requireAuth(req, res);
-        if (!user) {
-            res.writeHead(401, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-            res.end(JSON.stringify({ error: 'Authentication required' }));
-            return;
-        }
-        
-        if (user.is_authority) {
-            res.writeHead(403, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-            res.end(JSON.stringify({ error: 'Client access only' }));
-            return;
-        }
-        
-        const clientId = req.url.split('/').pop();
-        if (!clientId) {
-            res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-            res.end(JSON.stringify({ error: 'Missing client id' }));
-            return;
-        }
-        
-        // Ensure user can only access their own data
-        if (parseInt(clientId) !== user.id) {
-            res.writeHead(403, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-            res.end(JSON.stringify({ error: 'Access denied - can only access your own data' }));
-            return;
-        }
-        
-        db.query('SELECT * FROM clientZone WHERE id_client = ?', [clientId])
-            .then(([rows, fields]) => {
-                const zoneData = rows.length > 0 ? rows[0] : null;
-                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-                res.end(JSON.stringify(zoneData));
-            })
-            .catch(err => {
-                console.error('Error fetching client zone:', err);
-                res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-                res.end(JSON.stringify({ error: 'Database error' }));
-            });
-        return;
-    }
+   
 
     
-    if (req.method === 'POST' && req.url === '/client-zone') {
-        // Require client authentication
-        const user = await requireAuth(req, res);
-        if (!user) {
-            res.writeHead(401, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-            res.end(JSON.stringify({ error: 'Authentication required' }));
-            return;
-        }
-        
-        if (user.is_authority) {
-            res.writeHead(403, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-            res.end(JSON.stringify({ error: 'Client access only' }));
-            return;
-        }
-        
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                const { id_client, Country, County, Town } = data;
-
-                if (!id_client || !Country) {
-                    res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-                    res.end(JSON.stringify({ error: 'Missing required fields: id_client, Country' }));
-                    return;
-                }
-                
-                // Ensure user can only modify their own data
-                if (parseInt(id_client) !== user.id) {
-                    res.writeHead(403, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-                    res.end(JSON.stringify({ error: 'Access denied - can only modify your own data' }));
-                    return;
-                }
-
-                
-                const [existing] = await db.query('SELECT id FROM clientZone WHERE id_client = ?', [id_client]);
-                
-                if (existing.length > 0) {
-                   
-                    await db.query(
-                        'UPDATE clientZone SET Country = ?, County = ?, Town = ? WHERE id_client = ?',
-                        [Country, County || null, Town || null, id_client]
-                    );
-                    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-                    res.end(JSON.stringify({ message: 'Zone updated successfully' }));
-                } else {
-                   
-                    const [result] = await db.query(
-                        'INSERT INTO clientZone (id_client, Country, County, Town) VALUES (?, ?, ?, ?)',
-                        [id_client, Country, County || null, Town || null]
-                    );
-                    res.writeHead(201, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-                    res.end(JSON.stringify({ message: 'Zone created successfully', id: result.insertId }));
-                }
-            } catch (err) {
-                console.error('Error saving client zone:', err);
-                res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-                res.end(JSON.stringify({ error: 'Failed to save zone: ' + err.message }));
-            }
-        });
-        return;
-    }
-
+   
     
     if (req.method === 'GET' && req.url.startsWith('/client-pins/')) {
         // Require client authentication

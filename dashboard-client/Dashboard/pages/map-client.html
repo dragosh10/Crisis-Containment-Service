@@ -107,7 +107,6 @@
             <select class="filter-input" id="pinMethod">
                 <option value="" disabled selected>How to set...</option>
                 <option value="place-pin">Place Pin</option>
-                <option value="select-zone">Select Zone</option>
             </select>
         </div>
 
@@ -130,21 +129,7 @@
             </div>
 
 
-            <div class="zone-fields" style="display: none;">
-                <div class="form-field">
-                    <label>Country</label>
-                    <input type="text" class="filter-input" id="zoneCountry" placeholder="Country..." maxlength="50">
-                </div>
-                <div class="form-field">
-                    <label>County</label>
-                    <input type="text" class="filter-input" id="zoneCounty" placeholder="County..." maxlength="50">
-                </div>
-                <div class="form-field">
-                    <label>Town</label>
-                    <input type="text" class="filter-input" id="zoneTown" placeholder="Town..." maxlength="50">
-                </div>
-            </div>
-
+           
 
 
 
@@ -185,7 +170,8 @@
         Click on map to set coordinates
     </div>
 </div>
-
+<script src="prevention.js"></script>
+<script src="earthquakeApi.js"></script>
 <script src="fires.js"></script>
 <script src="calamities_c.js"></script>
 <script src="shelters_c.js"></script>
