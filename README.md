@@ -312,16 +312,16 @@ DB_PORT=3306
 
 # Server Configuration
 PORT=3000
-WEBSOCKET_PORT=3001
+
 
 # Security
 BCRYPT_SALT_ROUNDS=10
-SESSION_SECRET=your_session_secret
 
 # External APIs (Optional - for custom endpoints)
-USGS_API_KEY=your_usgs_key
-NASA_API_KEY=your_nasa_key
-UK_ENV_API_KEY=your_uk_env_key
+USGS_API
+NASA_API
+NASA_API_KEY=b31a89e6d1e64e887e88c555d8210e6b
+UK_ENV_API
 ```
 
 ## 📱 Screenshots

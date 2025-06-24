@@ -43,60 +43,84 @@ async function loadFires(map) {
     const instIndex = headers.indexOf('instrument');
 
     let processedCount = 0;
+    const fireData = lines.slice(1); 
+    const batchSize = 50; 
+    let currentIndex = 0;
 
-    lines.slice(1).forEach(line => {
-      const cols = line.split(',');
-
-      const lat = parseFloat(cols[latIndex]);
-      const lon = parseFloat(cols[lonIndex]);
+  
+    console.log(`Starting to process ${fireData.length} fire hotspots in batches of ${batchSize}...`);
+    
+   
+    const processBatch = async () => {
+      const batch = fireData.slice(currentIndex, currentIndex + batchSize);
       
-     
-      if (isNaN(lat) || isNaN(lon)) {
-        return;
-      }
+      batch.forEach(line => {
+        const cols = line.split(',');
+
+        const lat = parseFloat(cols[latIndex]);
+        const lon = parseFloat(cols[lonIndex]);
+        
       
-      const brightness = cols[brightIndex] || '';
-      const confidence = cols[confIndex] || '';
-      const acq_date = cols[dateIndex] || '';
-      const acq_time = cols[timeIndex] || '';
-      const satellite = cols[satIndex] || '';
-      const instrument = cols[instIndex] || '';
+        if (isNaN(lat) || isNaN(lon)) {
+          return;
+        }
+        
+        const brightness = cols[brightIndex] || '';
+        const confidence = cols[confIndex] || '';
+        const acq_date = cols[dateIndex] || '';
+        const acq_time = cols[timeIndex] || '';
+        const satellite = cols[satIndex] || '';
+        const instrument = cols[instIndex] || '';
 
+        const marker = L.circleMarker([lat, lon], {
+          radius: 6,
+          fillColor: 'orange',
+          color: 'red',
+          weight: 1,
+          fillOpacity: 0.7
+        })
+        .bindPopup(`
+          <strong>Fire Hotspot</strong><br>
+          Latitude: ${lat}<br>
+          Longitude: ${lon}<br>
+          Date: ${acq_date} ${acq_time}<br>
+          Brightness: ${brightness}<br>
+          Confidence: ${confidence}%<br>
+          Satellite: ${satellite}<br>
+          Instrument: ${instrument}
+        `)
+        .bindTooltip(`
+          🔥 Fire Hotspot
+          ${acq_date}
+        `, {
+          permanent: false,
+          direction: 'top',
+          offset: [0, -8],
+          sticky: true
+        });
 
-      const marker = L.circleMarker([lat, lon], {
-        radius: 6,
-        fillColor: 'orange',
-        color: 'red',
-        weight: 1,
-        fillOpacity: 0.7
-      })
-      .bindPopup(`
-        <strong>Fire Hotspot</strong><br>
-        Latitude: ${lat}<br>
-        Longitude: ${lon}<br>
-        Date: ${acq_date} ${acq_time}<br>
-        Brightness: ${brightness}<br>
-        Confidence: ${confidence}%<br>
-        Satellite: ${satellite}<br>
-        Instrument: ${instrument}
-      `)
-      .bindTooltip(`
-        🔥 Fire Hotspot
-        ${acq_date}
-      `, {
-        permanent: false,
-        direction: 'top',
-        offset: [0, -8],
-        sticky: true
+        marker.calamityData = { type: 'fire', lat: lat, lng: lon, ...{ acq_date, acq_time, brightness, confidence, satellite, instrument } };
+        window.allCalamityMarkers.push(marker);
+        window.calamityCluster.addLayer(marker);
+        processedCount++;
       });
 
-      marker.calamityData = { type: 'fire', lat: lat, lng: lon, ...{ acq_date, acq_time, brightness, confidence, satellite, instrument } };
-      window.allCalamityMarkers.push(marker);
-      window.calamityCluster.addLayer(marker);
-      processedCount++;
-    });
+      currentIndex += batchSize;
+      
+     
+      console.log(`Processed ${Math.min(currentIndex, fireData.length)}/${fireData.length} fire hotspots...`);
+      
+     
+      if (currentIndex < fireData.length) {
+       
+        setTimeout(processBatch, 10); 
+      } else {
+        console.log(`Successfully loaded ${processedCount} fire hotspots from NASA FIRMS`);
+      }
+    };
 
-    console.log(`Successfully loaded ${processedCount} fire hotspots from NASA FIRMS`);
+      
+    processBatch();
     
   } catch (err) {
     console.error('Error loading fire data:', err);
