@@ -327,11 +327,11 @@ UK_ENV_API_KEY=your_uk_env_key
 ## 📱 Screenshots
 
 ### Civilian Dashboard
-![Civilian Dashboard](public/images/screenshot-civilian.png)
+![Civilian Dashboard](public/images/dashboardAut.jpg)
 *Interactive map showing disasters, shelters, and personal alert pins*
 
 ### Authority Dashboard
-![Authority Dashboard](public/images/screenshot-authority.png)
+![Authority Dashboard](public/images/dashboardC.png)
 *Administrative interface for disaster and shelter management*
 
 ### Real-time Alerts
@@ -339,7 +339,7 @@ UK_ENV_API_KEY=your_uk_env_key
 *WebSocket-based real-time alert notifications*
 
 ### Mobile Responsive
-![Mobile View](public/images/screenshot-mobile.png)
+![Mobile View](public/images/mobile.jpg)
 *Fully responsive design for mobile devices*
 
 ## 🤝 Contributing
@@ -360,11 +360,7 @@ Contributions are welcome! Please follow these steps:
 - Test thoroughly before submitting
 - Update documentation as needed
 
-### Code Style
-- Use camelCase for variables and functions
-- Use PascalCase for constructors and classes
-- Indent with 2 spaces
-- Use semicolons consistently
+
 
 ## 📄 License
 
@@ -397,8 +393,8 @@ SOFTWARE.
 ## 📞 Contact
 
 **Project Maintainer**: Your Name
-- Email: sarahbuligamarga@example.com
-- Email: dragos.martinas@example.com
+- Email: sarahbuligamarga@gmail.com
+- Email: dragos.martinas@gmail.com
 
 
 
@@ -408,7 +404,7 @@ SOFTWARE.
 
 - **[USGS](https://earthquake.usgs.gov/)** - Real-time earthquake data
 - **[UK Environment Agency](https://environment.data.gov.uk/)** - Flood monitoring data
-- **[NASA](https://firms.modaps.eosdis.nasa.gov/)** - Fire and thermal anomaly data
+- **[NASA](https://firms.modaps.eosdis.nasa.gov/api/)** - Fire and thermal anomaly data
 - **[Leaflet.js](https://leafletjs.com/)** - Interactive mapping library
 - **[Common Alerting Protocol (CAP)](https://docs.oasis-open.org/emergency/cap/v1.2/)** - Emergency alert standards
 - **[XMLBuilder2](https://github.com/oozcitak/xmlbuilder2)** - XML generation library
