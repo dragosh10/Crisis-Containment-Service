@@ -1,10 +1,10 @@
-let clientId = null; // Will be fetched dynamically
+let clientId = null; 
 let clientPins = [];
 let clientPinCluster = null;
 let tempAlarmPin = null;
 let currentPinCount = 0;
 
-// Function to get current user info and set clientId
+
 async function initializeClientId() {
     try {
         const response = await fetch('/api/user');
@@ -34,7 +34,7 @@ async function initializeClientId() {
     }
 }
 
-// Utility function to ensure clientId is available
+
 function ensureClientId(showUserMessage = false) {
     if (clientId === null) {
         console.error('Client ID not initialized. Make sure initializeClientAlarms was called first.');
@@ -50,12 +50,12 @@ function ensureClientId(showUserMessage = false) {
 
 
 async function initializeClientAlarms(map, createCustomIcon) {
-    // Always set up the form handlers first, regardless of authentication status
+    
     setTimeout(() => {
         setupAlarmMethodHandlers(map, createCustomIcon);
     }, 100);
     
-    // Then try to initialize the client ID
+   
     const clientIdInitialized = await initializeClientId();
     if (!clientIdInitialized) {
         console.error('Failed to initialize client ID. User may not be logged in or may not be a client.');
@@ -88,118 +88,10 @@ async function initializeClientAlarms(map, createCustomIcon) {
         map.addLayer(window.clientPinCluster);
     }
 
-    // Now that clientId is set, proceed with loading data
+   
     loadClientPins();
 }
 
-
-/*
-async function displayClientZoneStatus() {
-    if (!ensureClientId()) return;
-    
-    try {
-        const response = await fetch(`/client-zone/${clientId}`);
-        let statusMessage = '';
-        
-        if (response.ok) {
-            const zoneData = await response.json();
-            if (zoneData && (zoneData.Country || zoneData.County || zoneData.Town)) {
-                // Build status message from existing data with security sanitization
-                const zoneParts = [];
-                if (zoneData.Town) zoneParts.push(encodeHTML(String(zoneData.Town)));
-                if (zoneData.County) zoneParts.push(encodeHTML(String(zoneData.County)));
-                if (zoneData.Country) zoneParts.push(encodeHTML(String(zoneData.Country)));
-                
-                if (zoneParts.length > 0) {
-                    statusMessage = `The zone you selected is: ${zoneParts.join(', ')}`;
-                } else {
-                    statusMessage = "You haven not selected a zone yet";
-                }
-            } else {
-                statusMessage = "You haven not selected a zone yet";
-            }
-        } else if (response.status === 404) {
-            statusMessage = "You haven not selected a zone yet";
-        } else {
-            statusMessage = "Error loading zone information";
-        }
-        
-      
-        let statusDiv = document.getElementById('zone-status-message');
-        if (!statusDiv) {
-            statusDiv = document.createElement('div');
-            statusDiv.id = 'zone-status-message';
-            statusDiv.style.cssText = 'margin: 10px 0; padding: 8px; background-color: rgba(255,255,255,0.1); border-radius: 4px; font-size: 14px; color: #ccc;';
-            
-           
-            const zoneFields = document.querySelector('.zone-fields');
-            if (zoneFields) {
-                zoneFields.parentNode.insertBefore(statusDiv, zoneFields.nextSibling);
-            }
-        }
-        
-        // Use safe text setting to prevent XSS
-        safeSetText(statusDiv, statusMessage);
-        
-    } catch (error) {
-        console.error('Error loading client zone status:', error);
-        let statusDiv = document.getElementById('zone-status-message');
-        if (statusDiv) {
-            safeSetText(statusDiv, "Error loading zone information");
-        }
-    }
-}
-
-async function saveClientZoneData(country, county, town) {
-    if (!ensureClientId()) return;
-    
-    try {
-      
-        const secureCountry = country ? secureInput(country.trim(), 'zone') : '';
-        const secureCounty = county ? secureInput(county.trim(), 'zone') : '';
-        const secureTown = town ? secureInput(town.trim(), 'zone') : '';
-        
-        // Validate optional fields only if they are provided
-        if (secureCountry && secureCountry.length < 2) {
-            throw new Error('Country must be at least 2 characters long if provided');
-        }
-         
-        if (secureCounty && secureCounty.length < 2) {
-            throw new Error('County must be at least 2 characters long if provided');
-        }
-         
-        if (secureTown && secureTown.length < 2) {
-            throw new Error('Town must be at least 2 characters long if provided');
-        }
-        
-        const response = await fetch('/client-zone', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id_client: clientId,
-                Country: secureCountry || null,
-                County: secureCounty || null, 
-                Town: secureTown || null    
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to save zone data: ${response.status}`);
-        }
-
-        const result = await response.json();
-        console.log('Zone data saved:', result);
-         
-        displayClientZoneStatus();
-        
-        return result;
-    } catch (error) {
-        console.error('Error saving zone data:', error);
-        throw error;
-    }
-}
-
-*/
 
 async function loadClientPins() {
     if (!ensureClientId()) return;
@@ -283,23 +175,23 @@ async function saveClientPin(lat, lng, name) {
     }
 
     try {
-        // Apply security sanitization to pin name (with explicit empty check)
+       
         let secureName = '';
         if (name && name.trim()) {
             secureName = secureInput(name.trim(), 'pinName');
             
-            // Validate pin name length
+           
             if (secureName.length > 15) {
                 throw new Error('Pin name must be 15 characters or less');
             }
             
-            // Additional security check for pin names
+           
             if (secureName.length < 1) {
-                secureName = ''; // Reset to empty if sanitization removed everything
+                secureName = ''; 
             }
         }
         
-        // Validate coordinates (prevent injection through numeric fields)
+       
         if (typeof lat !== 'number' || typeof lng !== 'number') {
             throw new Error('Invalid coordinates provided');
         }
@@ -308,7 +200,7 @@ async function saveClientPin(lat, lng, name) {
             throw new Error('Coordinates out of valid range');
         }
         
-        // Find next available pin slot
+       
         let pinSlot = 1;
         const existingPins = clientPins.map(p => p.id);
         while (existingPins.includes(pinSlot) && pinSlot <= 3) {
@@ -328,7 +220,7 @@ async function saveClientPin(lat, lng, name) {
                 pin_slot: pinSlot,
                 lat: lat,
                 lng: lng,
-                name: secureName || `Pin ${pinSlot}` // Use default name if empty
+                name: secureName || `Pin ${pinSlot}` 
             })
         });
 
@@ -339,7 +231,7 @@ async function saveClientPin(lat, lng, name) {
         const result = await response.json();
         console.log('Pin saved with security validation:', result);
 
-        // Add to local array and create marker
+       
         const newPin = {
             id: pinSlot,
             lat: lat,
@@ -424,7 +316,7 @@ function setupAlarmMethodHandlers(map, createCustomIcon) {
                 const maxLength = 15;
                 let value = e.target.value;
                 
-                // Apply security validation
+              
                 if (!validateSQLSafety(value)) {
                     e.target.value = value.replace(/['";\-\-\/\*]/g, '');
                     value = e.target.value;
@@ -675,7 +567,7 @@ window.updatePinCountDisplay = updatePinCountDisplay;
 
 
 
-// WebSocket pentru alerte în timp real
+
 function saveRecentAlert(alert) {
     let alerts = JSON.parse(localStorage.getItem('recentAlerts') || '[]');
     alerts.unshift(alert);
@@ -700,7 +592,7 @@ function renderRecentAlerts() {
         li.style.borderBottom = '1px solid #fff2';
         li.style.cursor = 'pointer';
 
-        // Detectează dacă e „missed”
+       
         let isMissed = false;
         if (alert.created_at && new Date(alert.created_at).getTime() > lastSeen) {
             isMissed = true;
@@ -713,9 +605,9 @@ function renderRecentAlerts() {
             <span style='font-size:12px;'>${encodeHTML(alert.instruction || '')}</span>
         `;
 
-        // Click pentru detalii
+       
         li.addEventListener('click', () => {
-            // Marchează ca văzută
+           
             if (alert.created_at) {
                 localStorage.setItem('lastSeenAlert', new Date(alert.created_at).getTime());
                 renderRecentAlerts();
@@ -726,9 +618,9 @@ function renderRecentAlerts() {
     });
 }
 
-// Modal pentru detalii alertă
+
 function showAlertDetailsModal(alert) {
-    // Elimină orice modal vechi
+   
     const oldModal = document.getElementById('alert-details-modal');
     if (oldModal) oldModal.remove();
 
@@ -747,12 +639,12 @@ function showAlertDetailsModal(alert) {
     modal.style.minWidth = '260px';
     modal.style.maxWidth = '90vw';
 
-    // Formatăm data fără T și Z
+   
     let formattedDate = '-';
     if (alert.created_at) {
-        // Înlocuiește T cu spațiu și elimină Z dacă există
+       
         formattedDate = alert.created_at.replace('T', ' ').replace('Z', '');
-        // Dacă există milisecunde, le eliminăm
+      
         formattedDate = formattedDate.replace(/\.[0-9]+/, '');
     }
 
@@ -767,7 +659,7 @@ function showAlertDetailsModal(alert) {
     document.getElementById('close-alert-details').onclick = () => modal.remove();
 }
 
-// Dropdown logic for alerts section
+
 window.addEventListener('DOMContentLoaded', () => {
     const alertsHeader = document.querySelector('[data-section="alerts"]');
     const alertsSection = document.getElementById('alertsSection');
@@ -780,7 +672,7 @@ window.addEventListener('DOMContentLoaded', () => {
     renderRecentAlerts();
 });
 
-// La primirea unei alerte personalizate, salvează și actualizează lista
+
 function handlePersonalAlert(alert) {
     saveRecentAlert({
         event: alert.event,
@@ -793,7 +685,7 @@ function handlePersonalAlert(alert) {
     renderRecentAlerts();
 }
 
-// Modific setupRealtimeAlerts pentru a apela handlePersonalAlert
+
 function setupRealtimeAlerts() {
     let userId = null;
     fetch('/api/user').then(r => r.json()).then(data => {
@@ -812,7 +704,7 @@ function setupRealtimeAlerts() {
                     }
                     return;
                 }
-                // Creează bannerul doar dacă e alertă personalizată
+              
                 if (alert.event || alert.instruction) {
                     handlePersonalAlert(alert);
                     let banner = document.createElement('div');
@@ -837,19 +729,19 @@ function setupRealtimeAlerts() {
 }
 window.addEventListener('DOMContentLoaded', setupRealtimeAlerts);
 
-// La logare, verifică dacă există alerte noi în raza pinurilor și populează secțiunea de alerts
+
 window.addEventListener('DOMContentLoaded', () => {
     renderRecentAlerts();
 });
 
-// Salvează timestamp la logout sau când utilizatorul închide pagina
+
 window.addEventListener('beforeunload', () => {
     localStorage.setItem('lastSeenAlert', Date.now());
 });
 
-// Banner pentru alerte ratate
+
 function showMissedAlertsBanner(n) {
-    if (document.getElementById('missed-alerts-banner')) return; // nu dubla bannerul
+    if (document.getElementById('missed-alerts-banner')) return; 
     let banner = document.createElement('div');
     banner.id = 'missed-alerts-banner';
     banner.style.position = 'fixed';
@@ -867,18 +759,18 @@ function showMissedAlertsBanner(n) {
     document.getElementById('close-missed-alerts').onclick = () => banner.remove();
 }
 
-// Modific fetchAndRenderRecentAlerts pentru a detecta alertele ratate
+
 async function fetchAndRenderRecentAlerts() {
     try {
         const response = await fetch('/api/user-alerts');
         if (!response.ok) {
-            renderRecentAlerts(); // fallback la localStorage dacă nu merge backendul
+            renderRecentAlerts(); 
             return;
         }
         const data = await response.json();
         if (data.alerts && Array.isArray(data.alerts)) {
             localStorage.setItem('recentAlerts', JSON.stringify(data.alerts));
-            // --- Missed alerts logic ---
+          
             const lastSeen = parseInt(localStorage.getItem('lastSeenAlert') || '0', 10);
             let missedCount = 0;
             data.alerts.forEach(alert => {
@@ -897,7 +789,7 @@ async function fetchAndRenderRecentAlerts() {
     }
 }
 
-// La încărcarea paginii, ia alertele din backend
+
 window.addEventListener('DOMContentLoaded', fetchAndRenderRecentAlerts);
 
 

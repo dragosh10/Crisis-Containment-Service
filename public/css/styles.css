@@ -80,9 +80,9 @@
     color: white;
 }
 
-/* Stil pentru al doilea h2 (ADD AN EMERGENCY) */
+
 .sidebar-secondary h2:nth-of-type(2) {
-    margin-top: 100px; /* Mărim spațiul deasupra secțiunii */
+    margin-top: 100px; 
 }
 
 .filter-group {
@@ -171,12 +171,12 @@
 
 .main-content {
     position: fixed;
-    left: 369px; /* 80px (sidebar) + 289px (sidebar-secondary) */
+    left: 369px; 
     top: 0;
     background-color: white;
-    width: calc(100% - 369px); /* Ocupă restul lățimii ecranului */
-    height: 100vh; /* Întinde div-ul pe toată înălțimea ecranului */
-    overflow-y: auto; /* Permite scroll vertical dacă conținutul depășește înălțimea */
+    width: calc(100% - 369px); 
+    height: 100vh; 
+    overflow-y: auto; 
     transition: left 0.3s ease, width 0.3s ease;
 }
 
@@ -314,7 +314,7 @@
     overflow-y: auto;
 }
 
-/* Custom scrollbar for section content */
+
 .section-content::-webkit-scrollbar {
     width: 6px;
 }
@@ -493,7 +493,7 @@
             border: none !important;
         }
 
-        /* Custom shelter cluster styling */
+        
         .marker-cluster-permanent-shelter {
             background: linear-gradient(135deg, #28a745, #20c997);
             border: 3px solid #ffffff;
@@ -568,7 +568,7 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
-        /* Hover effects */
+        
         .marker-cluster-permanent-shelter:hover {
             transform: scale(1.1);
             transition: transform 0.2s ease;
@@ -581,7 +581,7 @@
             box-shadow: 0 6px 16px rgba(0, 123, 255, 0.6);
         }
 
-        /* Animation for emergency shelters */
+        
         .marker-cluster-emergency-shelter {
             animation: emergencyPulse 2s infinite;
         }
@@ -592,7 +592,7 @@
             100% { box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4); }
         }
 
-/* Large screens (desktops) */
+
 @media (min-width: 1200px) {
     .sidebar {
         width: 80px;
@@ -611,7 +611,7 @@
     }
 }
 
-/* Medium screens (tablets) */
+
 @media (max-width: 1199px) and (min-width: 769px) {
     .sidebar {
         width: 70px;
@@ -701,7 +701,7 @@
     }
 }
 
-/* Small screens (mobile landscape) */
+
 @media (max-width: 768px) and (min-width: 481px) {
     
     .section-content {
@@ -869,7 +869,7 @@
     }
 }
 
-/* Extra small screens (mobile portrait) */
+
 @media (max-width: 480px) {
     
     .section-content {
@@ -1052,7 +1052,7 @@
     }
 }
 
-/* Landscape orientation adjustments for mobile */
+
 @media (max-height: 500px) and (orientation: landscape) {
     .sidebar {
         gap: 8px;
@@ -1081,7 +1081,7 @@
     }
         }
 
-/* =========== PRO TIPS STYLES =========== */
+            
 .pro-tips-container {
     display: flex;
     flex-direction: column;

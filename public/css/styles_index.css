@@ -47,7 +47,7 @@ body {
   flex-direction: column;
 }
 
-/* =========== LEFT SIDE (WELCOME & BUTTONS) =========== */
+
 .crisis-welcome-block {
   padding: 20px 20px 30px 20px;
   display: flex;
@@ -173,7 +173,7 @@ body {
   font-weight: 600;
 }
 
-/* =========== RIGHT SIDE (INFO SECTION) =========== */
+
 .info-section {
   padding: 30px;
   height: 100%;
@@ -247,9 +247,8 @@ body {
   transform: translateY(-1px);
 }
 
-/* =========== RESPONSIVE DESIGN =========== */
 
-/* Large screens */
+
 @media (min-width: 1200px) {
   .container {
     width: min(90vw, 1200px);
@@ -257,7 +256,7 @@ body {
   }
 }
 
-/* Medium screens */
+
 @media (max-width: 1024px) {
   .container {
     width: min(90vw, 900px);
@@ -277,7 +276,7 @@ body {
   }
 }
 
-/* Tablet and mobile landscape */
+
 @media (max-width: 768px) {
   body {
     padding: 15px;
@@ -363,7 +362,7 @@ body {
   }
 }
 
-/* Mobile portrait */
+    
 @media (max-width: 480px) {
   body {
     padding: 10px;

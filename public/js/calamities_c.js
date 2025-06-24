@@ -66,7 +66,6 @@ function createCalamityMarker(calamity, icons) {
     low: '🟢',
     medium: '🟡',
     high: '🟠',
-    critical: '🔴'
   };
   const gravityText = calamity.gravity ? `${gravitySymbols[calamity.gravity] || ''} ${calamity.gravity.charAt(0).toUpperCase() + calamity.gravity.slice(1)}` : 'N/A';
   
@@ -148,12 +147,12 @@ function setupMarkerClickHandlers(marker, calamity) {
       }
     }
     
-    // Handle disaster pin selection for filter
+   
     if (window.isSelectingDisasterPin && window.isSelectingDisasterPin()) {
       e.originalEvent.stopPropagation();
       const wasSelected = window.handleDisasterPinSelection(calamity);
       if (wasSelected) {
-        return; // Stop further processing if disaster was selected for filter
+        return; 
       }
     }
   });
@@ -247,31 +246,30 @@ function loadCalamities(map) {
 
   window.isSelectingDisasterPin = () => isSelectingDisasterPin;
 
-  // Function to apply disaster filter
+  
   function applyDisasterFilter() {
     if (selectedDisasterPin && selectedDisasterPin.type) {
-      // Filter calamities to show only the selected type and nearby ones
+    
       window.calamityCluster.eachLayer(function(layer) {
         if (layer.calamityData) {
           if (layer.calamityData.type === selectedDisasterPin.type) {
             layer.setOpacity(1.0);
           } else {
-            layer.setOpacity(0.3); // Dim other types
+            layer.setOpacity(0.3); 
           }
         }
       });
     }
   }
 
-  // Function to reset disaster filter
+ 
   function resetDisasterFilter() {
-    // Restore full opacity to all markers
     window.calamityCluster.eachLayer(function(layer) {
       layer.setOpacity(1.0);
     });
   }
 
-  // Function to handle disaster pin selection for filter
+  
   function handleDisasterPinSelection(calamity) {
     if (isSelectingDisasterPin) {
       selectedDisasterPin = {
@@ -281,27 +279,27 @@ function loadCalamities(map) {
         lng: calamity.lng
       };
       
-      // Update UI to show selected disaster
+      
       document.getElementById('selected-disaster-type').innerHTML = `<strong>Type:</strong> ${calamity.type}`;
       document.getElementById('selected-disaster-coords').innerHTML = `<strong>Coordinates:</strong> ${calamity.lat}, ${calamity.lng}`;
       document.getElementById('selected-disaster-info').style.display = 'block';
       
-      // Reset the confirmation checkbox when a new disaster is selected
+     
       const confirmCheckbox = document.getElementById('confirmDisasterPin');
       if (confirmCheckbox) {
         confirmCheckbox.checked = false;
       }
       
-      return true; // Indicate that disaster was selected for filter
+      return true; 
     }
-    return false; // Normal behavior
-  }
+      return false; 
+    }
 
-  // Make disaster filter function available globally
+  
   window.handleDisasterPinSelection = handleDisasterPinSelection;
 
   function filterCalamitiesByType(type) {
-    // DB
+    
     window.calamityCluster.clearLayers();
     if (!type || type === 'All' || type === '') {
       window.allCalamityMarkers.forEach(marker => window.calamityCluster.addLayer(marker));
@@ -313,7 +311,7 @@ function loadCalamities(map) {
       });
     }
 
-    // Earthquakes
+   
     if (window.earthquakeCluster && window.allEarthquakeMarkers) {
       window.earthquakeCluster.clearLayers();
       window.allEarthquakeMarkers.forEach(marker => {
@@ -323,7 +321,7 @@ function loadCalamities(map) {
       });
     }
 
-    // Fires
+    
     if (window.fireCluster && window.allFireMarkers) {
       window.fireCluster.clearLayers();
       window.allFireMarkers.forEach(marker => {
@@ -333,9 +331,9 @@ function loadCalamities(map) {
       });
     }
 
-    // Adaugă logică similară pentru alte layere (ex: floods) dacă ai nevoie
+   
   }
 
-  // Make filter function available globally
+  
   window.filterCalamitiesByType = filterCalamitiesByType;
 }

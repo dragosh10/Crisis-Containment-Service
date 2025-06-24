@@ -1,4 +1,4 @@
-// Shelter functionality
+
 window.allPermanentShelterMarkers = window.allPermanentShelterMarkers || [];
 
 function loadShelters(map, createCustomIcon) {
@@ -116,7 +116,7 @@ function loadShelters(map, createCustomIcon) {
             icon: shelterIcon
         }).bindPopup(popupHtml);
 
-        // Add shelter data to marker for filtering
+       
         marker.shelterData = shelter;
 
        
@@ -162,12 +162,12 @@ function loadShelters(map, createCustomIcon) {
     window.toggleEmergencyShelters = toggleEmergencyShelters;
     window.refreshShelters = refreshShelters;
 
-    // Filtrare sheltere după permanent (1 = permanent, 0 = emergency)
+   
     function filterSheltersByPermanent(permanentValue) {
         if (!window.permanentShelterCluster || !window.allPermanentShelterMarkers) return;
         window.permanentShelterCluster.clearLayers();
         if (typeof permanentValue === 'undefined') {
-            // Toate: permanente + toate emergency
+           
             window.allPermanentShelterMarkers.forEach(marker => {
                 window.permanentShelterCluster.addLayer(marker);
             });
@@ -195,7 +195,7 @@ function loadShelters(map, createCustomIcon) {
                         });
                 });
         } else if (Number(permanentValue) === 0) {
-            // Doar emergency
+           
             fetch('/shelters_c')
                 .then(res => res.json())
                 .then(data => {
@@ -220,7 +220,7 @@ function loadShelters(map, createCustomIcon) {
                         });
                 });
         } else {
-            // Doar permanente
+           
             window.allPermanentShelterMarkers.forEach(marker => {
                 if (marker.shelterData && Number(marker.shelterData.permanent) === Number(permanentValue)) {
                     window.permanentShelterCluster.addLayer(marker);
@@ -230,7 +230,7 @@ function loadShelters(map, createCustomIcon) {
     }
     window.filterSheltersByPermanent = filterSheltersByPermanent;
 
-    // Dropdown pentru filtrare rapidă (dacă există în pagină)
+    
     document.addEventListener('DOMContentLoaded', function() {
         const shelterTypeFilter = document.getElementById('shelterTypeFilter');
         if (shelterTypeFilter) {

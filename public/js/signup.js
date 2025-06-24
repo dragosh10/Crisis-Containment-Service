@@ -6,19 +6,19 @@ function validateEmail(email) {
         return false;
     }
     
-    // Use prevention.js security checks
+    
     const secureEmail = secureInput(email);
     return secureEmail === email.trim();
 }
 
-// Enhanced password validation using prevention.js
+
 function validatePassword(password) {
-    // Length check
+    
     if (password.length < 8) {
         return { valid: false, message: 'Parola trebuie să aibă cel puțin 8 caractere!' };
     }
     
-    // Complexity check
+    
     const hasLowerCase = /[a-z]/.test(password);
     const hasUpperCase = /[A-Z]/.test(password);
     const hasNumbers = /\d/.test(password);
@@ -30,15 +30,20 @@ function validatePassword(password) {
         };
     }
     
-    // Security checks using prevention.js
-    if (!validatePassword(password)) {
+    
+    try {
+        const securePassword = secureInput(password, 'password');
+        if (securePassword !== password) {
+            return { valid: false, message: 'Parola conține caractere periculoase!' };
+        }
+    } catch (error) {
         return { valid: false, message: 'Parola conține caractere periculoase!' };
     }
     
     return { valid: true, message: '' };
 }
 
-// Real-time input sanitization using prevention.js
+
 function setupInputValidation() {
     const emailInput = document.querySelector('.email-input');
     const passwordInput = document.querySelector('.password-input');
@@ -46,7 +51,7 @@ function setupInputValidation() {
     
     if (emailInput) {
         emailInput.addEventListener('input', function(e) {
-            // Use email-specific validation that allows @ symbol
+            
             if (!validateEmail(e.target.value)) {
                 console.warn('Dangerous pattern detected in email');
                 e.target.value = sanitizeEmailInput(e.target.value);
@@ -55,7 +60,7 @@ function setupInputValidation() {
         
         emailInput.addEventListener('paste', function(e) {
             setTimeout(() => {
-                // Use email-specific validation that allows @ symbol
+                
                 if (!validateEmail(e.target.value)) {
                     console.warn('Dangerous pattern detected in pasted email');
                     e.target.value = sanitizeEmailInput(e.target.value);
@@ -67,8 +72,14 @@ function setupInputValidation() {
     [passwordInput, confirmPasswordInput].forEach(input => {
         if (input) {
             input.addEventListener('input', function(e) {
-                // Use password-specific validation
-                if (!validatePassword(e.target.value)) {
+                
+                try {
+                    const securePassword = secureInput(e.target.value, 'password');
+                    if (securePassword !== e.target.value) {
+                        console.warn('Dangerous pattern detected in password');
+                        e.target.value = sanitizePasswordInput(e.target.value);
+                    }
+                } catch (error) {
                     console.warn('Dangerous pattern detected in password');
                     e.target.value = sanitizePasswordInput(e.target.value);
                 }
@@ -77,7 +88,7 @@ function setupInputValidation() {
     });
 }
 
-// Initialize input validation when DOM is loaded
+
 document.addEventListener('DOMContentLoaded', function() {
     setupInputValidation();
 });
@@ -91,14 +102,24 @@ async function handleSignup() {
     let password = passwordInput.value;
     let confirmPassword = confirmPasswordInput.value;
 
-    // Security validation and sanitization using prevention.js
+    
     if (!validateEmail(email)) {
         email = sanitizeEmailInput(email);
     }
-    if (!validatePassword(password)) {
+    try {
+        const securePassword = secureInput(password, 'password');
+        if (securePassword !== password) {
+            password = sanitizePasswordInput(password);
+        }
+    } catch (error) {
         password = sanitizePasswordInput(password);
     }
-    if (!validatePassword(confirmPassword)) {
+    try {
+        const secureConfirmPassword = secureInput(confirmPassword, 'password');
+        if (secureConfirmPassword !== confirmPassword) {
+            confirmPassword = sanitizePasswordInput(confirmPassword);
+        }
+    } catch (error) {
         confirmPassword = sanitizePasswordInput(confirmPassword);
     }
 
@@ -107,20 +128,20 @@ async function handleSignup() {
         return;
     }
 
-    // Enhanced email validation
+    
     if (!validateEmail(email)) {
         alert('Te rugăm să introduci o adresă de email validă!');
         return;
     }
 
-    // Enhanced password validation
+    
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.valid) {
         alert(passwordValidation.message);
         return;
     }
 
-    // Password confirmation check
+    
     if (password !== confirmPassword) {
         alert('Parolele nu coincid!');
         return;
@@ -167,7 +188,7 @@ document.querySelector('.login-link').addEventListener('click', function() {
     window.location.href = '/login.html';
 });
 
-// Pro Tips Cycling Functionality
+
 const tips = [
     {
         image: '/images/firefighter.png',

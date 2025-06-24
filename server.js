@@ -10,20 +10,31 @@ const { sendAlertToUser, broadcastAlertToAllClients } = require('./websocket-ser
 
 const saltRounds = 10;
 
-const db = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'sarah',
-  database: 'web',
-  port: 3306,
-  waitForConnections: true,
-  connectionLimit: 10
-});
+const dbConfig = process.env.DB_HOST && process.env.DB_HOST.startsWith('/cloudsql/')
+  ? {
+      socketPath: process.env.DB_HOST,
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASS || '1234',
+      database: process.env.DB_NAME || 'web',
+      port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
+      waitForConnections: true,
+      connectionLimit: 10
+    }
+  : {
+      host: process.env.DB_HOST || '35.205.50.78',
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASS || '1234',
+      database: process.env.DB_NAME || 'web',
+      port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
+      waitForConnections: true,
+      connectionLimit: 10
+    };
+const db = mysql.createPool(dbConfig);
 module.exports = db;
 
 const PORT = 3000;
 
-// Helper function to parse cookies
+
 const getCookies = (cookieString) => {
     if (!cookieString) return {};
     return cookieString.split(';')
@@ -34,11 +45,11 @@ const getCookies = (cookieString) => {
         }), {});
 };
 
-// Authentication middleware
+
 const requireAuth = async (req, res) => {
     const cookies = getCookies(req.headers.cookie);
     if (!cookies.userEmail) {
-        return null; // Not authenticated
+        return null; 
     }
     
     try {
@@ -48,9 +59,9 @@ const requireAuth = async (req, res) => {
         );
         
         if (result.length > 0) {
-            return result[0]; // Return user data
+            return result[0]; 
         }
-        return null; // User not found
+        return null; 
     } catch (error) {
         console.error('Auth error:', error);
         return null;
@@ -61,7 +72,7 @@ const server = http.createServer(async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
     let filePath = parsedUrl.pathname;
     
-    // Debug logging
+  
     console.log(`${req.method} ${filePath}`);
 
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -73,7 +84,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // Authentication routes
+    
     if (req.method === 'POST' && filePath === '/api/signup') {
         let body = '';
         req.on('data', chunk => body += chunk.toString());
@@ -158,7 +169,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // GET logout route for easy access
+   
     if (req.method === 'GET' && filePath === '/logout') {
         res.writeHead(302, {
             'Location': '/',
@@ -168,7 +179,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // API endpoint to get current user info
+   
     if (req.method === 'GET' && filePath === '/api/user') {
         console.log('API /api/user endpoint accessed');
         const cookies = getCookies(req.headers.cookie);
@@ -207,7 +218,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // Root route - serve index.html and handle redirects based on login status
+   
     if (filePath === '/') {
         const cookies = getCookies(req.headers.cookie);
         console.log('Root route accessed. Cookies:', cookies);
@@ -220,14 +231,14 @@ const server = http.createServer(async (req, res) => {
                 );
 
                 if (result.length > 0 && result[0].is_authority) {
-                    res.writeHead(302, { 'Location': '/dashboard-autoritati/Dashboard/pages/map-authorities.html' });
+                    res.writeHead(302, { 'Location': '/views/map-authorities.html' });
                 } else {
-                    res.writeHead(302, { 'Location': '/dashboard-client/Dashboard/pages/map-client.html' });
+                    res.writeHead(302, { 'Location': '/views/map-client.html' });
                 }
                 res.end();
                 return;
             } catch (error) {
-                res.writeHead(302, { 'Location': '/dashboard-client/Dashboard/pages/map-client.html' });
+                res.writeHead(302, { 'Location': '/views/map-client.html' });
                 res.end();
                 return;
             }
@@ -249,7 +260,7 @@ const server = http.createServer(async (req, res) => {
         }
     }
     if (req.method === 'GET' && req.url === '/earthquakes') {
-        // Require authentication for earthquake data
+        
         const user = await requireAuth(req, res);
         if (!user) {
             res.writeHead(401, { 'Content-Type': 'application/json' });
@@ -270,7 +281,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && req.url === '/floods') {
-        // Require authentication for flood data
+        
         const user = await requireAuth(req, res);
         if (!user) {
             res.writeHead(401, { 'Content-Type': 'application/json' });
@@ -305,7 +316,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && req.url === '/calamities') {
-        // Require authentication for calamities data
+       
         const user = await requireAuth(req, res);
         if (!user) {
             res.writeHead(401, { 'Content-Type': 'application/json' });
@@ -337,7 +348,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
     if (req.method === 'POST' && req.url === '/calamities') {
-        // Require authority authentication for adding calamities
+       
         const user = await requireAuth(req, res);
         console.log('POST /calamities - User from requireAuth:', user);
         
@@ -408,16 +419,16 @@ const server = http.createServer(async (req, res) => {
               ]
             );
       
-            // După inserarea calamity (unde ai deja const [result] = await db.query(... pentru calamities))
+          
             const [calamityRows] = await db.query(
               'SELECT gravity FROM calamities WHERE lat = ? AND lng = ? ORDER BY added_at DESC LIMIT 1',
               [lat, lng]
             );
             const gravityCalamity = calamityRows[0]?.gravity || null;
       
-            // Integrare generare alerte CAP dacă există lat/lng
+            // alerte CAP dacă există lat/lng
             if (lat !== undefined && lng !== undefined && lat !== null && lng !== null) {
-              // 1. Ia toți clienții și pin-urile lor din DB
+              
               const [users] = await db.query('SELECT id FROM users WHERE is_authority = 0');
               const clients = [];
               for (const user of users) {
@@ -436,7 +447,7 @@ const server = http.createServer(async (req, res) => {
                   }
                 }
               }
-              // 2. Construiește obiectul calamity pentru alertă CAP
+              
               const capCalamity = {
                 event: type || 'Calamity',
                 urgency: gravity === 'high' ? 'Immediate' : 'Expected',
@@ -447,9 +458,9 @@ const server = http.createServer(async (req, res) => {
                 lat: lat,
                 lon: lng
               };
-              // 3. Generează alerte CAP pentru clienții afectați
+             
               generateCapAlerts(capCalamity, clients);
-              // 4. Trimite alertă în timp real prin WebSocket pentru fiecare client afectat
+              // trimitere alertă în timp real prin WebSocket pentru fiecare client afectat
               for (const client of clients) {
                 for (const pin of client.pins) {
                   const dist = Math.round(
@@ -460,12 +471,13 @@ const server = http.createServer(async (req, res) => {
                     ) * 6371
                   );
                   if (dist <= 30) {
-                    // 4a. Salvează alerta și în user_alerts
+                    // salvare alerta și în user_alerts
                     await db.query(
                       'INSERT INTO user_alerts (user_id, event, instruction, lat, lon, areaDesc, gravity) VALUES (?, ?, ?, ?, ?, ?, ?)',
                       [client.userId, capCalamity.event, capCalamity.instruction, capCalamity.lat, capCalamity.lon, capCalamity.areaDesc, gravityCalamity]
                     );
-                    // 4b. Trimite alerta în timp real
+                   
+                    //in timp real
                     sendAlertToUser(client.userId, {
                       event: capCalamity.event,
                       instruction: capCalamity.instruction,
@@ -479,7 +491,7 @@ const server = http.createServer(async (req, res) => {
                   }
                 }
               }
-              // 5. Trimite trigger de refresh la toti clientii conectati (pentru update harta in timp real)
+              // trimitere trigger de refresh la toti clientii conectati 
               broadcastAlertToAllClients({ refresh: true });
             }
             res.writeHead(201, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
@@ -492,6 +504,8 @@ const server = http.createServer(async (req, res) => {
         });
         return;
       }
+
+
     if (req.method === 'DELETE' && req.url.startsWith('/calamities/')) {
         const id = req.url.split('/').pop();
         if (!id) {
@@ -554,7 +568,7 @@ const server = http.createServer(async (req, res) => {
 
     
     if (req.method === 'GET' && req.url === '/shelters') {
-        // Require authentication for shelter data
+       
         const user = await requireAuth(req, res);
         if (!user) {
             res.writeHead(401, { 'Content-Type': 'application/json' });
@@ -577,7 +591,7 @@ const server = http.createServer(async (req, res) => {
 
    
     if (req.method === 'POST' && req.url === '/shelters') {
-        // Require authority authentication for adding shelters
+      
         const user = await requireAuth(req, res);
         if (!user) {
             res.writeHead(401, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
@@ -694,7 +708,7 @@ const server = http.createServer(async (req, res) => {
 
     
     if (req.method === 'GET' && req.url === '/shelters_c') {
-        // Require authentication for client shelter data
+      
         const user = await requireAuth(req, res);
         if (!user) {
             res.writeHead(401, { 'Content-Type': 'application/json' });
@@ -714,15 +728,14 @@ const server = http.createServer(async (req, res) => {
             });
         return;
     }
-
-    //client zone si pins     
+  
    
 
     
    
     
     if (req.method === 'GET' && req.url.startsWith('/client-pins/')) {
-        // Require client authentication
+       
         const user = await requireAuth(req, res);
         if (!user) {
             res.writeHead(401, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
@@ -879,8 +892,8 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // CRITICAL: Authentication check for dashboard routes - MUST come before ALL other static file serving
-    if (filePath.startsWith('/dashboard-client/') || filePath.startsWith('/dashboard-autoritati/')) {
+    // Autentificare check pentru protected routes 
+    if (filePath.startsWith('/views/map-')) {
         console.log('Dashboard access attempt:', filePath);
         const cookies = getCookies(req.headers.cookie);
         console.log('Dashboard access cookies:', cookies);
@@ -889,7 +902,7 @@ const server = http.createServer(async (req, res) => {
         console.log('UserEmail cookie exists:', !!cookies.userEmail);
         
         if (!cookies.userEmail) {
-            // User not logged in - redirect to login page instead of root
+           
             console.log('Dashboard access denied - no authentication');
             res.writeHead(302, { 'Location': '/login.html' });
             res.end();
@@ -903,7 +916,7 @@ const server = http.createServer(async (req, res) => {
             );
 
             if (result.length === 0) {
-                // Invalid user - redirect to index
+              
                 console.log('Dashboard access denied - user not found');
                 res.writeHead(302, { 'Location': '/' });
                 res.end();
@@ -913,26 +926,26 @@ const server = http.createServer(async (req, res) => {
             const isAuthority = result[0].is_authority;
             console.log('Dashboard access - user type:', isAuthority ? 'authority' : 'client');
             
-            // Check if user is trying to access the wrong dashboard
-            if (filePath.startsWith('/dashboard-autoritati/') && !isAuthority) {
-                // Regular user trying to access authority dashboard - redirect to client dashboard
+           
+            if (filePath.startsWith('/views/map-authorities') && !isAuthority) {
+                
                 console.log('Client user redirected from authority dashboard');
-                res.writeHead(302, { 'Location': '/dashboard-client/Dashboard/pages/map-client.html' });
+                res.writeHead(302, { 'Location': '/views/map-client.html' });
                 res.end();
                 return;
             }
             
-            if (filePath.startsWith('/dashboard-client/') && isAuthority) {
-                // Authority trying to access client dashboard - redirect to authority dashboard
+            if (filePath.startsWith('/views/map-client') && isAuthority) {
+               
                 console.log('Authority user redirected from client dashboard');
-                res.writeHead(302, { 'Location': '/dashboard-autoritati/Dashboard/pages/map-authorities.html' });
+                res.writeHead(302, { 'Location': '/views/map-authorities.html' });
                 res.end();
                 return;
             }
             
             console.log('Dashboard access granted - serving file:', filePath);
            
-            const dashboardFilePath = '.' + filePath;
+            const dashboardFilePath = './public' + filePath;
             
             const extname = path.extname(dashboardFilePath);
             let contentType = 'text/html';
@@ -1004,7 +1017,7 @@ const server = http.createServer(async (req, res) => {
 
 
   
-    if (filePath.startsWith('/css/') || filePath.startsWith('/js/') || filePath.startsWith('/images/')) {
+    if (filePath.startsWith('/css/') || filePath.startsWith('/js/') || filePath.startsWith('/images/') || filePath.startsWith('/views/')) {
         let assetPath = './public' + filePath;
         
         const extname = path.extname(assetPath);
@@ -1038,7 +1051,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // ENDPOINT SPECIAL pentru alerte CAP - trebuie să fie înainte de fallback-ul pentru fișiere statice!
+    // endpoint pentru alerte CAP 
     if (req.method === 'GET' && filePath.startsWith('/alerts/')) {
         const userId = filePath.split('/').pop();
         const alertPath = `./alerts/cap_alert_user_${userId}.xml`;
@@ -1054,7 +1067,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // Endpoint pentru ultimele 5 alerte personale
+    // endpoint pentru ultimele 5 alerte personale
     if (req.method === 'GET' && filePath === '/api/user-alerts') {
         const user = await requireAuth(req, res);
         if (!user) {
@@ -1083,8 +1096,8 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'GET') {
         
-        if (filePath.startsWith('/dashboard-client/') || filePath.startsWith('/dashboard-autoritati/')) {
-            console.log('SECURITY WARNING: Dashboard file request bypassed authentication check!');
+        if (filePath.startsWith('/views/map-')) {
+            console.log('SECURITY WARNING: Protected file request bypassed authentication check!');
             res.writeHead(302, { 'Location': '/' });
             res.end();
             return;

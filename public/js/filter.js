@@ -1,12 +1,8 @@
-// Filtrare pentru calamități și adăposturi pe baza tipului de calamitate
-(function() {
-  // Asumăm că aceste funcții/variabile există global din calamities.js și shelters.js
-  // - filterCalamitiesByType(type)
-  // - window.permanentShelterCluster, window.emergencyShelterCluster
-  // - fiecare marker de shelter are shelter.calamity_type
 
+(function() {
+ 
   function filterSheltersByCalamityType(type) {
-    // Permanent shelters
+   
     if (window.permanentShelterCluster) {
       window.permanentShelterCluster.clearLayers();
       window.allPermanentShelterMarkers = window.allPermanentShelterMarkers || [];
@@ -20,10 +16,10 @@
         });
       }
     }
-    // Emergency shelters (dacă vrei să filtrezi și aici, adaugă logică similară)
+   
   }
 
-  // Hook pentru dropdown
+ 
   document.addEventListener('DOMContentLoaded', function() {
     const disasterTypeSelect = document.getElementById('disasterTypeSelect');
     const everythingCheckbox = document.getElementById('locationFilter');
@@ -46,6 +42,6 @@
     }
   });
 
-  // Expun funcția global dacă vrei să o folosești din alte scripturi
+ 
   window.filterSheltersByCalamityType = filterSheltersByCalamityType;
 })(); 

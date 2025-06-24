@@ -1,8 +1,11 @@
+
+//SQL injection
 function sanitizeForSQL(input) {
     if (typeof input !== 'string') {
         return input;
     }
     
+   
     return input
         .replace(/'/g, "''")           
         .replace(/"/g, '""')           
@@ -21,7 +24,6 @@ function sanitizeForSQL(input) {
         .replace(/\bEXEC\b/gi, '')     
         .replace(/\bALTER\b/gi, '');   
 }
-
 
 function validateSQLSafety(input) {
     if (typeof input !== 'string') {
@@ -44,8 +46,8 @@ function validateSQLSafety(input) {
     return !dangerousPatterns.some(pattern => pattern.test(input));
 }
 
-//XSS Prevention
-
+ //XSS Prevention
+ 
 function encodeHTML(input) {
     if (typeof input !== 'string') {
         return input;
@@ -73,10 +75,10 @@ function sanitizeHTML(input) {
         return input;
     }
     
-    
+  
     input = input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
     
-  
+    
     const dangerousTags = [
         'script', 'iframe', 'object', 'embed', 'form', 'input', 
         'textarea', 'button', 'select', 'option', 'meta', 'link'
@@ -86,12 +88,12 @@ function sanitizeHTML(input) {
         const regex = new RegExp(`<${tag}\\b[^>]*>.*?</${tag}>`, 'gi');
         input = input.replace(regex, '');
         
-     
+       
         const selfClosingRegex = new RegExp(`<${tag}\\b[^>]*/>`, 'gi');
         input = input.replace(selfClosingRegex, '');
     });
     
-   
+    
     const dangerousAttrs = [
         'onclick', 'onload', 'onerror', 'onmouseover', 'onmouseout',
         'onfocus', 'onblur', 'onchange', 'onsubmit', 'onkeyup',
@@ -134,32 +136,28 @@ function validateXSSSafety(input) {
 
 
 function secureInput(input, type = 'general') {
-    
+    // Handle null, undefined, or empty string
     if (!input || typeof input !== 'string' || input.trim() === '') {
         return '';
     }
     
     const trimmedInput = input.trim();
     
-
+   
     if (!validateSQLSafety(trimmedInput)) {
         throw new Error('Potentially dangerous SQL pattern detected');
     }
     
+   
     if (!validateXSSSafety(trimmedInput)) {
         throw new Error('Potentially dangerous XSS pattern detected');
     }
-   
+    
+ 
     let sanitized = trimmedInput;
     
     switch (type) {
-        case 'zone':
-            
-            sanitized = sanitizeForSQL(sanitized);
-            sanitized = encodeHTML(sanitized);
-       
-            sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,]/g, '');
-            break;
+      
             
         case 'pinName':
         
@@ -170,14 +168,14 @@ function secureInput(input, type = 'general') {
             break;
             
         case 'description':
-           
+        
             sanitized = sanitizeForSQL(sanitized);
             sanitized = sanitizeHTML(sanitized);
             sanitized = encodeHTML(sanitized);
             break;
             
         default:
-         
+          
             sanitized = sanitizeForSQL(sanitized);
             sanitized = encodeHTML(sanitized);
             break;
@@ -186,7 +184,7 @@ function secureInput(input, type = 'general') {
    
     sanitized = sanitized.trim();
     
-
+    
     if (sanitized !== trimmedInput) {
         console.warn('Input was sanitized for security:', { original: trimmedInput, sanitized: sanitized });
     }
@@ -199,11 +197,13 @@ function secureInput(input, type = 'general') {
 function safeSetText(element, text) {
     if (!element) return;
     
+   
     element.textContent = encodeHTML(String(text));
 }
 
 function safeSetHTML(element, html) {
     if (!element) return;
+    
     
     const sanitizedHTML = sanitizeHTML(encodeHTML(String(html)));
     element.innerHTML = sanitizedHTML;
@@ -216,7 +216,6 @@ function safeSetAttribute(element, attribute, value) {
     const sanitizedValue = encodeHTML(String(value));
     element.setAttribute(attribute, sanitizedValue);
 }
-
 
 function validateEmail(input) {
     if (typeof input !== 'string') {
@@ -253,5 +252,3 @@ function sanitizePasswordInput(input) {
    
     return input.replace(/[<>"']/g, '');
 }
-
-

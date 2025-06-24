@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Client</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+
+</head>
+
+<body>
+<div class="sidebar">
+    <button class="hamburger-toggle" id="sidebarToggle">
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+    </button>
+    
+    <a href="#">
+        <div class="icon-container active" id="map-icon">
+                            <img src="/images/map.png" alt="Map Icon">
+        </div>
+    </a>
+    <div class="icon-container" id="info-icon">
+                        <img src="/images/info.png" alt="Info Icon">
+    </div>
+    
+    <div class="icon-container" id="logout-icon" style="cursor: pointer;">
+                        <img src="/images/logout.png" alt="Logout Icon">
+    </div>
+</div>
+<div class="sidebar-secondary">
+    <div class="section-header" data-section="filter">
+        <h2>FILTER <i class="fas fa-chevron-down"></i></h2>
+    </div>
+    <div class="section-content" id="filterSection">
+        <div class="filter-group">
+            <label class="filter-label">
+                <input type="checkbox" class="filter-bullet" id="locationFilter">
+                Everything
+            </label>
+
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">
+                <input type="checkbox" class="filter-bullet" id="disasterFilter">
+                Disaster Type
+            </label>
+            <select class="filter-input" id="disasterTypeSelect" disabled>
+                <option value="" disabled selected>Select...</option>
+                <option value="flood">Flood</option>
+                <option value="earthquake">Earthquake</option>
+                <option value="wildfire">Wildfire</option>
+                <option value="fire">Fire</option>
+                <option value="heatwave">Heatwave</option>
+                <option value="hurricane">Hurricane</option>
+                <option value="hailstorm">Hail Storm</option>
+
+                <option value="tsunami">Tsunami</option>
+                <option value="volcanic eruption">Volcanic Eruption</option>
+                <option value="landslide">Landslide</option>
+
+            </select>
+
+
+            <div id="disasterCoordinatesSection" style="display: none; margin-top: 8px;">
+                <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 4px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <input type="checkbox" id="confirmDisasterPin" style="margin-right: 8px; transform: scale(1.2);">
+                        <label for="confirmDisasterPin" style="margin: 0; font-weight: bold; font-size: 12px;">Confirm pin selection</label>
+                    </div>
+                    <div id="selected-disaster-info" style="display: none;">
+                        <div id="selected-disaster-type" style="margin-bottom: 4px; font-size: 12px;"></div>
+                        <div id="selected-disaster-coords" style="margin-bottom: 4px; font-size: 12px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">
+                <input type="checkbox" class="filter-bullet" id="shelterFilter">
+                Shelter
+            </label>
+            <select class="filter-input" id="shelterTypeFilter" disabled>
+                <option value="" disabled selected>Select...</option>
+                <option value="all">All Shelters</option>
+                <option value="permanent">Permanent</option>
+                <option value="emergency">Emergency</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="section-header" data-section="emergency">
+        <h2>SET ALARMS<i class="fas fa-chevron-down"></i></h2>
+    </div>
+    <div class="section-content" id="emergencySection" style="display: none;">
+        <div class="filter-group">
+            <select class="filter-input" id="pinMethod">
+                <option value="" disabled selected>How to set...</option>
+                <option value="place-pin">Place Pin</option>
+            </select>
+        </div>
+
+        <div class="filter-group" id="pinPlacementForm" style="display: none;">
+            <div class="pin-fields">
+                <div class="form-field">
+                    <label>Latitude</label>
+                    <input type="number" step="any" class="filter-input" id="lat" placeholder="Latitude" readonly>
+                </div>
+                <div class="form-field">
+                    <label>Longitude</label>
+                    <input type="number" step="any" class="filter-input" id="lng" placeholder="Longitude" readonly>
+                </div>
+                <div class="form-field">
+                    <label>Name pin</label>
+                    <input type="text" class="filter-input" id="description" placeholder="Home.." maxlength="15">
+                    <div id="char-count" style="font-size: 12px; color: #ccc; margin-top: 4px;">15 characters remaining</div>
+                    <div id="description-error" style="font-size: 12px; color: #ff4444; margin-top: 4px; display: none;"></div>
+                </div>
+            </div>
+
+
+           
+
+
+
+            <button class="filter-input submit-btn" id="addPinButton" style="background-color: #9E1717; color: white; cursor: pointer;">
+                Add Alarm Pin
+            </button>
+            <div id="form-message" style="color: white; text-align: center; margin-top: 10px;"></div>
+        </div>
+    </div>
+
+
+    <div class="section-header" data-section="alerts">
+        <h2>ALERTS <i class="fas fa-chevron-down"></i></h2>
+    </div>
+    <div class="section-content" id="alertsSection" style="display: none;">
+        <ul id="recentAlertsList" style="list-style:none;padding:0;margin:0;"></ul>
+    </div>
+    <div class="section-header" data-section="protips" style="display: none;">
+        <h2>PRO TIPS <i class="fas fa-chevron-down"></i></h2>
+    </div>
+    <div class="section-content" id="protipsSection" style="display: none;">
+        <div class="pro-tips-container">
+            <div class="emergency-illustration">
+                <img src="/images/firefighter.png" alt="Emergency Illustration" class="emergency-image" id="tipImage">
+            </div>
+            <div class="tips-content">
+                <div class="tips-title" id="tipTitle">Earthquake Preparedness</div>
+                <div class="tip-text" id="tipText">
+                    <p><strong>Drop, Cover, and Hold On</strong> - The best protection during an earthquake.</p>
+                    <p><strong>Stay away from glass</strong> - Windows and mirrors can shatter.</p>
+                    <p><strong>Have an emergency kit</strong> - Water, food, flashlight, and first aid supplies.</p>
+                </div>
+                <div class="navigation-arrows">
+                    <button class="nav-arrow" onclick="changeTip(-1)">‹</button>
+                    <button class="nav-arrow" onclick="changeTip(1)">›</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+<div class="main-content">
+    <div id="map"></div>
+    <div class="coordinates-display">
+        Click on map to set coordinates
+    </div>
+</div>
+    <script src="/js/prevention.js"></script>
+    <script src="/js/earthquakeApi.js"></script>
+    <script src="/js/fires.js"></script>
+    <script src="/js/calamities_c.js"></script>
+    <script src="/js/shelters_c.js"></script>
+    <script src="/js/earthquake.js"></script>
+    <script src="/js/floods.js"></script>
+    <script src="/js/alarms.js"></script>
+    <script src="/js/filter.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+
+<script src="/js/map-client.js"></script>
+</body>
+
+</html>
