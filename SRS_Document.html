@@ -455,7 +455,7 @@
             <h3 id="product-perspective">2.1 Product Perspective</h3>
             <p>The CRI system is a standalone web application that integrates with external APIs and services:</p>
             <ul>
-                <li><strong>External APIs:</strong> USGS Earthquake API, UK Environment Agency Flood API, Fire data sources</li>
+                <li><strong>External APIs:</strong> USGS Earthquake API, UK Environment Agency Flood API, Nasa Fires API</li>
                 <li><strong>Database:</strong> MySQL database for storing user data, disasters, and alerts</li>
                 <li><strong>Real-time Communication:</strong> WebSocket server for live alerts</li>
                 <li><strong>Alert Generation:</strong> CAP XML alert generation system</li>
@@ -559,7 +559,7 @@
             
             <h4>Dependencies</h4>
             <ul>
-                <li>External disaster data APIs (USGS, UK Environment Agency)</li>
+                <li>External disaster data APIs (USGS, UK Environment Agency, Nasa)</li>
                 <li>MySQL database server availability</li>
                 <li>Node.js runtime environment</li>
                 <li>Third-party JavaScript libraries (Leaflet.js)</li>
@@ -903,6 +903,7 @@
             <h4>External Integrations</h4>
             <ul>
                 <li><strong>USGS Earthquake API:</strong> Real-time earthquake data</li>
+                <li><strong>Nasa Fires Api:</strong> Real-time fires data</li>
                 <li><strong>UK Environment Agency API:</strong> Flood monitoring data</li>
                 <li><strong>WebSocket Server:</strong> Real-time alert delivery</li>
                 <li><strong>CAP Alert Generator:</strong> Standard emergency alert format</li>
@@ -912,33 +913,41 @@
         <div class="section" id="appendices">
             <h2>5. Appendices</h2>
             
-            <h3>5.1 Glossary</h3>
-            <table>
-                <tr>
-                    <th>Term</th>
-                    <th>Definition</th>
-                </tr>
-                <tr>
-                    <td>Disaster Pin</td>
-                    <td>A location marker set by users to receive alerts for nearby disasters</td>
-                </tr>
-                <tr>
-                    <td>Authority Dashboard</td>
-                    <td>Administrative interface for managing disasters and shelters</td>
-                </tr>
-                <tr>
-                    <td>Civilian Dashboard</td>
-                    <td>User interface for viewing disasters and managing alert preferences</td>
-                </tr>
-                <tr>
-                    <td>CAP Alert</td>
-                    <td>Common Alerting Protocol formatted emergency notification</td>
-                </tr>
-                <tr>
-                    <td>Real-time Alert</td>
-                    <td>Immediate notification delivered via WebSocket connection</td>
-                </tr>
-            </table>
+                         <h3>5.1 Glossary</h3>
+             <table>
+                 <tr>
+                     <th>Term</th>
+                     <th>Definition</th>
+                 </tr>
+                 <tr>
+                     <td>Disaster Pin</td>
+                     <td>A location marker set by users to receive alerts for nearby disasters</td>
+                 </tr>
+                 <tr>
+                     <td>Personal Pin</td>
+                     <td>User-defined location markers (up to 3 per civilian user) for receiving personalized disaster alerts based on proximity to important locations such as home, work, or family</td>
+                 </tr>
+                 <tr>
+                     <td>Shelter Pin</td>
+                     <td>Location markers indicating emergency shelter facilities managed by authorities, displaying shelter type, capacity, and availability for disaster response</td>
+                 </tr>
+                 <tr>
+                     <td>Authority Dashboard</td>
+                     <td>Administrative interface for managing disasters and shelters</td>
+                 </tr>
+                 <tr>
+                     <td>Civilian Dashboard</td>
+                     <td>User interface for viewing disasters and managing alert preferences</td>
+                 </tr>
+                 <tr>
+                     <td>CAP Alert</td>
+                     <td>Common Alerting Protocol formatted emergency notification</td>
+                 </tr>
+                 <tr>
+                     <td>Real-time Alert</td>
+                     <td>Immediate notification delivered via WebSocket connection</td>
+                 </tr>
+             </table>
             
             <h3>5.2 Technology Stack Details</h3>
             
