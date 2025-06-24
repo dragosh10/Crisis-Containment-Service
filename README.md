@@ -78,10 +78,11 @@ Crisis Containment Service (CRI) is a comprehensive disaster management platform
 
 ### Backend
 - **Node.js**: Server-side JavaScript runtime
-- **HTTP Module**: Native Node.js web server
+- **HTTP Module**: Native Node.js web server (not Express)
 - **MySQL**: Relational database management
-- **WebSocket**: Real-time bidirectional communication
+- **WebSocket**: Real-time bidirectional communication server
 - **BCrypt**: Password hashing and security
+- **CAP Alert Generator**: Custom module for emergency alerts
 
 ### External Integrations
 - **USGS Earthquake API**: Real-time earthquake data
@@ -106,12 +107,13 @@ The system follows a **three-tier architecture** with clear separation of concer
 │ • HTML/CSS/JS   │◄──►│ • Node.js Server │◄──►│ • MySQL Database│
 │ • Leaflet Maps  │    │ • WebSocket      │    │ • CAP XML Files │
 │ • WebSocket     │    │ • API Endpoints  │    │ • External APIs │
-│ • Responsive UI │    │ • Authentication │    │ • File System   │
+│ • Responsive UI │    │ • Authentication │    │                 │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
 ### C4 Architecture Diagrams
-Detailed C4 model diagrams are available in the [SRS Documentation](SRS_Document.html).
+Detailed C4 model diagrams are available in the [C4Diagrams](./C4Diagrams/).
+Detailed documentation is in [SRS_Document](./SRS_Document.html).
 
 ## 🚀 Installation
 
@@ -144,8 +146,8 @@ Detailed C4 model diagrams are available in the [SRS Documentation](SRS_Document
    // Update database credentials in server.js
    const db = mysql.createPool({
      host: 'localhost',
-     user: 'your_username',
-     password: 'your_password',
+     user: 'root',
+     password: '1234',
      database: 'web',
      port: 3306
    });
@@ -155,13 +157,29 @@ Detailed C4 model diagrams are available in the [SRS Documentation](SRS_Document
    ```bash
    # Start main server (port 3000)
    node server.js
+
+5. **Deploy to Google Cloud Run**
    
-   # Start WebSocket server (port 3001) - in another terminal
-   node websocket-server.js
+   Build and push the Docker image:
+   ```bash
+   gcloud builds submit --tag gcr.io/cogent-range-463901-a8/web
    ```
+   
+   Deploy to Cloud Run:
+   ```bash
+   gcloud run deploy cri-service \
+     --image gcr.io/cogent-range-463901-a8/web \
+     --platform managed \
+     --region europe-west1 \
+     --allow-unauthenticated \
+     --port 3000 \
+     --set-env-vars DB_HOST=35.205.50.78,DB_USER=root,DB_PASS=1234,DB_NAME=web,DB_PORT=3306
+   ```
+   
 
 6. **Access the application**
-   - Open your browser and navigate to `http://localhost:3000`
+   - **Local**: Open your browser and navigate to `http://localhost:3000`
+   - **Production**: Navigate to `https://cri-service-615568581212.europe-west1.run.app/`
    - Create an account or log in with existing credentials
 
 ## 💻 Usage
@@ -318,10 +336,10 @@ PORT=3000
 BCRYPT_SALT_ROUNDS=10
 
 # External APIs (Optional - for custom endpoints)
-USGS_API
-NASA_API
-NASA_API_KEY=b31a89e6d1e64e887e88c555d8210e6b
-UK_ENV_API
+USGS_API_URL=https://earthquake.usgs.gov/fdsnws/event/1/query
+NASA_API_URL=https://firms.modaps.eosdis.nasa.gov/api/area/csv
+NASA_API_KEY=your_nasa_api_key_here
+UK_ENV_API_URL=https://environment.data.gov.uk/flood-monitoring/id/floods
 ```
 
 ## 📱 Screenshots
@@ -335,12 +353,19 @@ UK_ENV_API
 *Administrative interface for disaster and shelter management*
 
 ### Real-time Alerts
-![Alert System](public/images/screenshot-alerts.png)
+![Alert System](public/images/alerts.png)
 *WebSocket-based real-time alert notifications*
 
 ### Mobile Responsive
 ![Mobile View](public/images/mobile.jpg)
 *Fully responsive design for mobile devices*
+
+
+### System Architecture
+The application consists of multiple components working together:
+- **Main Server** (`server.js`) - HTTP server on port 3000
+- **CAP Alert Generator** (`generateCapAlerts.js`) - Emergency alert creation
+- **Database Schema** (`database-schema/init.sql`) - MySQL table structure
 
 ## 🤝 Contributing
 
