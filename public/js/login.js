@@ -18,29 +18,22 @@ function setupInputValidation() {
     
     if (emailInput) {
         emailInput.addEventListener('input', function(e) {
-            try {
-                const secureEmail = secureInput(e.target.value, 'email');
-                if (secureEmail !== e.target.value) {
-                    console.warn('Dangerous pattern detected in email');
-                    e.target.value = sanitizeEmailInput(e.target.value);
+           
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailPattern.test(e.target.value)) {
+               
+                if (e.target.value.length > 0 && !e.target.value.includes('@')) {
+                    console.warn('Invalid email format');
                 }
-            } catch (error) {
-                console.warn('Dangerous pattern detected in email');
-                e.target.value = sanitizeEmailInput(e.target.value);
             }
         });
         
         emailInput.addEventListener('paste', function(e) {
             setTimeout(() => {
-                try {
-                    const secureEmail = secureInput(e.target.value, 'email');
-                    if (secureEmail !== e.target.value) {
-                        console.warn('Dangerous pattern detected in pasted email');
-                        e.target.value = sanitizeEmailInput(e.target.value);
-                    }
-                } catch (error) {
-                    console.warn('Dangerous pattern detected in pasted email');
-                    e.target.value = sanitizeEmailInput(e.target.value);
+               
+                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (e.target.value && !emailPattern.test(e.target.value)) {
+                    console.warn('Invalid email format in pasted content');
                 }
             }, 0);
         });

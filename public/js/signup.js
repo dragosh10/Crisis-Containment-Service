@@ -48,35 +48,7 @@ function setupInputValidation() {
     const passwordInput = document.querySelector('.password-input');
     const confirmPasswordInput = document.querySelector('.confirm-password-input');
     
-    if (emailInput) {
-        emailInput.addEventListener('input', function(e) {
-            try {
-                const secureEmail = secureInput(e.target.value, 'email');
-                if (secureEmail !== e.target.value) {
-                    console.warn('Dangerous pattern detected in email');
-                    e.target.value = sanitizeEmailInput(e.target.value);
-                }
-            } catch (error) {
-                console.warn('Dangerous pattern detected in email');
-                e.target.value = sanitizeEmailInput(e.target.value);
-            }
-        });
-        
-        emailInput.addEventListener('paste', function(e) {
-            setTimeout(() => {
-                try {
-                    const secureEmail = secureInput(e.target.value, 'email');
-                    if (secureEmail !== e.target.value) {
-                        console.warn('Dangerous pattern detected in pasted email');
-                        e.target.value = sanitizeEmailInput(e.target.value);
-                    }
-                } catch (error) {
-                    console.warn('Dangerous pattern detected in pasted email');
-                    e.target.value = sanitizeEmailInput(e.target.value);
-                }
-            }, 0);
-        });
-    }
+       
     
     [passwordInput, confirmPasswordInput].forEach(input => {
         if (input) {
@@ -102,7 +74,8 @@ document.addEventListener('DOMContentLoaded', function() {
     setupInputValidation();
 });
 
-async function handleSignup() {
+
+window.handleSignup = async function handleSignup() {
     const emailInput = document.querySelector('.email-input');
     const passwordInput = document.querySelector('.password-input');
     const confirmPasswordInput = document.querySelector('.confirm-password-input');
@@ -112,11 +85,7 @@ async function handleSignup() {
     let confirmPassword = confirmPasswordInput.value;
 
     
-    try {
-        email = secureInput(email, 'email');
-    } catch (error) {
-        email = sanitizeEmailInput(email);
-    }
+    
     try {
         const securePassword = secureInput(password, 'general');
         if (securePassword !== password) {
@@ -179,7 +148,7 @@ async function handleSignup() {
         alert('A apărut o eroare la înregistrare!');
         console.error('Error:', error);
     }
-}
+};
 
 function togglePassword(inputClass) {
     const passwordInput = document.querySelector('.' + inputClass);
@@ -195,9 +164,13 @@ function togglePassword(inputClass) {
     }
 }
 
-document.querySelector('.login-link').addEventListener('click', function() {
-    window.location.href = '/login.html';
-});
+
+const loginLink = document.querySelector('.login-link');
+if (loginLink) {
+    loginLink.addEventListener('click', function() {
+        window.location.href = '/login.html';
+    });
+}
 
 
 const tips = [
