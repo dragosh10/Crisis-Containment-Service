@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS user_alerts (
     instruction TEXT,
     lat DOUBLE,
     lon DOUBLE,
+    gravity VARCHAR(20),
     areaDesc VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_user_id (user_id),
