@@ -39,7 +39,13 @@ function setupInputValidation() {
     if (passwordInput) {
         passwordInput.addEventListener('input', function(e) {
             
-            if (!validatePassword(e.target.value)) {
+            try {
+                const securePassword = secureInput(e.target.value, 'password');
+                if (securePassword !== e.target.value) {
+                    console.warn('Dangerous pattern detected in password');
+                    e.target.value = sanitizePasswordInput(e.target.value);
+                }
+            } catch (error) {
                 console.warn('Dangerous pattern detected in password');
                 e.target.value = sanitizePasswordInput(e.target.value);
             }

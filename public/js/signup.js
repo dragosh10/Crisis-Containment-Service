@@ -1,4 +1,4 @@
-// Enhanced email validation using prevention.js
+
 function validateEmail(email) {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     
@@ -31,7 +31,12 @@ function validatePassword(password) {
     }
     
     
-    if (!validatePassword(password)) {
+    try {
+        const securePassword = secureInput(password, 'password');
+        if (securePassword !== password) {
+            return { valid: false, message: 'Parola conține caractere periculoase!' };
+        }
+    } catch (error) {
         return { valid: false, message: 'Parola conține caractere periculoase!' };
     }
     
@@ -68,7 +73,13 @@ function setupInputValidation() {
         if (input) {
             input.addEventListener('input', function(e) {
                 
-                if (!validatePassword(e.target.value)) {
+                try {
+                    const securePassword = secureInput(e.target.value, 'password');
+                    if (securePassword !== e.target.value) {
+                        console.warn('Dangerous pattern detected in password');
+                        e.target.value = sanitizePasswordInput(e.target.value);
+                    }
+                } catch (error) {
                     console.warn('Dangerous pattern detected in password');
                     e.target.value = sanitizePasswordInput(e.target.value);
                 }
@@ -95,10 +106,20 @@ async function handleSignup() {
     if (!validateEmail(email)) {
         email = sanitizeEmailInput(email);
     }
-    if (!validatePassword(password)) {
+    try {
+        const securePassword = secureInput(password, 'password');
+        if (securePassword !== password) {
+            password = sanitizePasswordInput(password);
+        }
+    } catch (error) {
         password = sanitizePasswordInput(password);
     }
-    if (!validatePassword(confirmPassword)) {
+    try {
+        const secureConfirmPassword = secureInput(confirmPassword, 'password');
+        if (secureConfirmPassword !== confirmPassword) {
+            confirmPassword = sanitizePasswordInput(confirmPassword);
+        }
+    } catch (error) {
         confirmPassword = sanitizePasswordInput(confirmPassword);
     }
 
