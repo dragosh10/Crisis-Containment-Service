@@ -608,7 +608,7 @@
                 <strong>Priority:</strong> High<br>
                 <strong>Input:</strong> External API data (earthquakes, floods, fires)<br>
                 <strong>Output:</strong> Visual markers on map with disaster information<br>
-                <strong>Processing:</strong> Fetch API data, parse JSON, render map markers
+                <strong>Processing:</strong> Fetch API data, render map markers
             </div>
             
             <div class="requirement priority-high">
@@ -695,7 +695,7 @@
             
             <div class="requirement priority-high">
                 <strong>NFR-001:</strong> Response Time<br>
-                <strong>Description:</strong> The system shall respond to user requests within 3 seconds<br>
+                <strong>Description:</strong> The system shall respond to user requests within 10 seconds<br>
                 <strong>Priority:</strong> High<br>
                 <strong>Measurement:</strong> Average response time for API calls and page loads
             </div>
@@ -707,12 +707,7 @@
                 <strong>Measurement:</strong> Time from disaster creation to alert delivery
             </div>
             
-            <div class="requirement priority-medium">
-                <strong>NFR-003:</strong> Concurrent Users<br>
-                <strong>Description:</strong> The system shall support at least 1000 concurrent users<br>
-                <strong>Priority:</strong> Medium<br>
-                <strong>Measurement:</strong> Load testing with 1000 simultaneous connections
-            </div>
+           
             
             <h4>3.2.2 Security Requirements</h4>
             
@@ -792,7 +787,7 @@
             
             <h5>Server Software</h5>
             <ul>
-                <li>Operating System: Linux/Windows/macOS</li>
+                <li>Operating System: Linux/Windows</li>
                 <li>Node.js: Version 16.x or higher</li>
                 <li>MySQL: Version 8.0 or higher</li>
                 <li>npm: Latest version</li>
@@ -800,7 +795,7 @@
             
             <h5>Client Software</h5>
             <ul>
-                <li>Web Browser: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+</li>
+                <li>Web Browser: Chrome 90+, Firefox 88+, Edge 90+</li>
                 <li>JavaScript: ES6 support required</li>
             </ul>
         </div>
@@ -921,7 +916,7 @@
                  </tr>
                  <tr>
                      <td>Disaster Pin</td>
-                     <td>A location marker set by users to receive alerts for nearby disasters</td>
+                     <td>A location marker set by users (authorities) to send alerts for disasters</td>
                  </tr>
                  <tr>
                      <td>Personal Pin</td>
