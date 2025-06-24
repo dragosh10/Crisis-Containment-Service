@@ -10,15 +10,26 @@ const { sendAlertToUser, broadcastAlertToAllClients } = require('./websocket-ser
 
 const saltRounds = 10;
 
-const db = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'sarah',
-  database: 'web',
-  port: 3306,
-  waitForConnections: true,
-  connectionLimit: 10
-});
+const dbConfig = process.env.DB_HOST && process.env.DB_HOST.startsWith('/cloudsql/')
+  ? {
+      socketPath: process.env.DB_HOST,
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASS || '1234',
+      database: process.env.DB_NAME || 'web',
+      port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
+      waitForConnections: true,
+      connectionLimit: 10
+    }
+  : {
+      host: process.env.DB_HOST || '35.205.50.78',
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASS || '1234',
+      database: process.env.DB_NAME || 'web',
+      port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
+      waitForConnections: true,
+      connectionLimit: 10
+    };
+const db = mysql.createPool(dbConfig);
 module.exports = db;
 
 const PORT = 3000;
