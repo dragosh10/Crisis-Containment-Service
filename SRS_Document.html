@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRI - Crisis Containment Service - Software Requirements Specification</title>
+    <style>
+        /* IEEE Scholar Style Document */
+        body {
+            font-family: 'Times New Roman', 'Times', serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #000000;
+        }
+        
+        .container {
+            max-width: 8.5in;
+            margin: 1in auto;
+            background-color: white;
+            padding: 1in;
+            min-height: 11in;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        /* IEEE Standard Headers */
+        h1 {
+            font-size: 18pt;
+            font-weight: bold;
+            text-align: center;
+            margin: 24pt 0 12pt 0;
+            color: #000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 18pt 0 12pt 0;
+            color: #000;
+            border-bottom: 1pt solid #000;
+            padding-bottom: 6pt;
+        }
+        
+        h3 {
+            font-size: 12pt;
+            font-weight: bold;
+            margin: 15pt 0 9pt 0;
+            color: #000;
+        }
+        
+        h4 {
+            font-size: 11pt;
+            font-weight: bold;
+            margin: 12pt 0 6pt 0;
+            color: #000;
+            font-style: italic;
+        }
+        
+        h5 {
+            font-size: 10pt;
+            font-weight: bold;
+            margin: 9pt 0 6pt 0;
+            color: #000;
+        }
+        
+        /* Paragraph styling */
+        p {
+            margin: 6pt 0;
+            text-align: justify;
+            text-indent: 0.5in;
+        }
+        
+        p:first-child {
+            text-indent: 0;
+        }
+        
+        /* Lists */
+        ul, ol {
+            margin: 6pt 0;
+            padding-left: 0.5in;
+        }
+        
+        li {
+            margin: 3pt 0;
+        }
+        
+        /* Table of Contents */
+        .toc {
+            background-color: #f8f8f8;
+            border: 1pt solid #ccc;
+            padding: 18pt;
+            margin: 18pt 0;
+            page-break-inside: avoid;
+        }
+        
+        .toc h3 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 14pt;
+        }
+        
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .toc > ul > li {
+            margin: 6pt 0;
+            font-weight: bold;
+        }
+        
+        .toc ul ul li {
+            margin: 3pt 0;
+            font-weight: normal;
+            padding-left: 18pt;
+        }
+        
+        .toc a {
+            text-decoration: none;
+            color: #000;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Tables - IEEE Standard */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12pt 0;
+            font-size: 10pt;
+        }
+        
+        th, td {
+            border: 1pt solid #000;
+            padding: 6pt;
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .revision-table th {
+            background-color: #000;
+            color: white;
+        }
+        
+        /* Requirements boxes */
+        .requirement {
+            border: 1pt solid #666;
+            padding: 12pt;
+            margin: 12pt 0;
+            background-color: #fafafa;
+            page-break-inside: avoid;
+        }
+        
+        .priority-high {
+            border-left: 4pt solid #cc0000;
+            background-color: #fff5f5;
+        }
+        
+        .priority-medium {
+            border-left: 4pt solid #ff8800;
+            background-color: #fffaf0;
+        }
+        
+        .priority-low {
+            border-left: 4pt solid #008800;
+            background-color: #f5fff5;
+        }
+        
+        /* Use cases */
+        .use-case {
+            border: 1pt solid #999;
+            padding: 12pt;
+            margin: 12pt 0;
+            background-color: #f9f9f9;
+            page-break-inside: avoid;
+        }
+        
+        .use-case h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        /* Author and version info */
+        .author-info {
+            text-align: center;
+            margin: 24pt 0;
+            font-style: normal;
+            border-top: 1pt solid #ccc;
+            border-bottom: 1pt solid #ccc;
+            padding: 12pt 0;
+        }
+        
+        .version-info {
+            text-align: right;
+            margin-bottom: 24pt;
+            font-size: 10pt;
+            color: #666;
+            font-style: italic;
+        }
+        
+        /* Section spacing */
+        .section {
+            margin-bottom: 36pt;
+            page-break-inside: avoid;
+        }
+        
+        /* Code formatting */
+        code {
+            font-family: 'Courier New', 'Courier', monospace;
+            font-size: 9pt;
+            background-color: #f5f5f5;
+            padding: 2pt 4pt;
+            border: 1pt solid #ddd;
+        }
+        
+        pre {
+            font-family: 'Courier New', 'Courier', monospace;
+            font-size: 9pt;
+            background-color: #f5f5f5;
+            padding: 12pt;
+            border: 1pt solid #ddd;
+            overflow-x: auto;
+            margin: 12pt 0;
+        }
+        
+        /* Technology stack */
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6pt;
+            margin: 12pt 0;
+        }
+        
+        .tech-item {
+            background-color: #e8e8e8;
+            border: 1pt solid #ccc;
+            padding: 3pt 8pt;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+            }
+            
+            h1, h2 {
+                page-break-after: avoid;
+            }
+            
+            .requirement, .use-case {
+                page-break-inside: avoid;
+            }
+        }
+        
+        /* IEEE Footer */
+        .ieee-footer {
+            border-top: 2pt solid #000;
+            padding-top: 12pt;
+            margin-top: 36pt;
+            text-align: center;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+        
+        /* Abstract style */
+        .abstract {
+            margin: 24pt 0;
+            padding: 18pt;
+            border: 1pt solid #000;
+            background-color: #f8f8f8;
+            font-style: italic;
+        }
+        
+        .abstract h3 {
+            text-align: center;
+            margin-top: 0;
+            font-style: normal;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="version-info">
+            Version 1.0<br>
+            Date: June 2025
+        </div>
+
+        <h1>Software Requirements Specification</h1>
+        <h2 style="text-align: center; border: none; margin-top: 10px;">Crisis Containment Service (CRI)</h2>
+        
+        <div class="author-info">
+            <p><strong>Prepared by:</strong> Sarah Buliga & Dragoș Mărtinaș</p>
+            <p><strong>Group:</strong> 2E2</p>
+            <p><strong>Course:</strong> Web Technologies</p>
+            <p><strong>Organization:</strong> FII</p>
+        </div>
+
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#revision-history">Revision History</a></li>
+                <li><a href="#introduction">1. Introduction</a>
+                    <ul style="padding-left: 20px;">
+                        <li><a href="#purpose">1.1 Purpose</a></li>
+                        <li><a href="#scope">1.2 Scope</a></li>
+                        <li><a href="#definitions">1.3 Definitions, Acronyms, and Abbreviations</a></li>
+                        <li><a href="#references">1.4 References</a></li>
+                        <li><a href="#overview">1.5 Overview</a></li>
+                    </ul>
+                </li>
+                <li><a href="#overall-description">2. Overall Description</a>
+                    <ul style="padding-left: 20px;">
+                        <li><a href="#product-perspective">2.1 Product Perspective</a></li>
+                        <li><a href="#product-functions">2.2 Product Functions</a></li>
+                        <li><a href="#user-characteristics">2.3 User Characteristics</a></li>
+                        <li><a href="#constraints">2.4 Constraints</a></li>
+                        <li><a href="#assumptions">2.5 Assumptions and Dependencies</a></li>
+                    </ul>
+                </li>
+                <li><a href="#specific-requirements">3. Specific Requirements</a>
+                    <ul style="padding-left: 20px;">
+                        <li><a href="#functional-requirements">3.1 Functional Requirements</a></li>
+                        <li><a href="#non-functional-requirements">3.2 Non-Functional Requirements</a></li>
+                        <li><a href="#system-requirements">3.3 System Requirements</a></li>
+                    </ul>
+                </li>
+                <li><a href="#system-models">4. System Models</a></li>
+                <li><a href="#appendices">5. Appendices</a></li>
+            </ul>
+        </div>
+
+        <div class="section" id="revision-history">
+            <h2>Revision History</h2>
+            <table class="revision-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Reason For Changes</th>
+                        <th>Version</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Sarah Buliga, Dragoș Mărtinaș</td>
+                        <td>December 2024</td>
+                        <td>Initial document creation</td>
+                        <td>1.0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section" id="introduction">
+            <h2>1. Introduction</h2>
+            
+            <h3 id="purpose">1.1 Purpose</h3>
+            <p>This Software Requirements Specification (SRS) document provides a comprehensive description of the Crisis Containment Service (CRI) system. The document is intended for stakeholders including developers, project managers, testers, and end-users to understand the system's functionality, constraints, and requirements.</p>
+            
+            <h3 id="scope">1.2 Scope</h3>
+            <p>The Crisis Containment Service (CRI) is a web-based disaster management and alert system designed to:</p>
+            <ul>
+                <li>Provide real-time disaster monitoring and visualization</li>
+                <li>Enable authorities to manage and report disasters</li>
+                <li>Allow citizens to set up location-based alerts</li>
+                <li>Facilitate emergency shelter management</li>
+                <li>Generate CAP (Common Alerting Protocol) alerts for affected users</li>
+                <li>Provide educational resources for disaster preparedness</li>
+            </ul>
+            
+            <h3 id="definitions">1.3 Definitions, Acronyms, and Abbreviations</h3>
+            <table>
+                <tr>
+                    <th>Term</th>
+                    <th>Definition</th>
+                </tr>
+                <tr>
+                    <td>CRI</td>
+                    <td>Crisis Containment Service - The name of the disaster management system</td>
+                </tr>
+                <tr>
+                    <td>CAP</td>
+                    <td>Common Alerting Protocol - A standard format for emergency alerts</td>
+                </tr>
+                <tr>
+                    <td>SRS</td>
+                    <td>Software Requirements Specification</td>
+                </tr>
+                <tr>
+                    <td>API</td>
+                    <td>Application Programming Interface</td>
+                </tr>
+                <tr>
+                    <td>CRUD</td>
+                    <td>Create, Read, Update, Delete operations</td>
+                </tr>
+                <tr>
+                    <td>WebSocket</td>
+                    <td>Protocol for real-time bidirectional communication</td>
+                </tr>
+                <tr>
+                    <td>Authority User</td>
+                    <td>Government officials or emergency services personnel with disaster management privileges</td>
+                </tr>
+                <tr>
+                    <td>Civilian User</td>
+                    <td>General public users who receive alerts and access information</td>
+                </tr>
+            </table>
+            
+            <h3 id="references">1.4 References</h3>
+            <ul>
+                <li>IEEE Std 830-1998, IEEE Recommended Practice for Software Requirements Specifications</li>
+                <li>Common Alerting Protocol (CAP) v1.2 Specification</li>
+                <li>Leaflet.js Documentation</li>
+                <li>Node.js Documentation</li>
+                <li>MySQL Documentation</li>
+            </ul>
+            
+            <h3 id="overview">1.5 Overview</h3>
+            <p>This document is organized into five main sections:</p>
+            <ul>
+                <li><strong>Introduction:</strong> Provides context and scope of the document</li>
+                <li><strong>Overall Description:</strong> Describes the general factors affecting the product</li>
+                <li><strong>Specific Requirements:</strong> Details functional and non-functional requirements</li>
+                <li><strong>System Models:</strong> Presents system architecture and design models</li>
+                <li><strong>Appendices:</strong> Contains supplementary information</li>
+            </ul>
+        </div>
+
+        <div class="section" id="overall-description">
+            <h2>2. Overall Description</h2>
+            
+            <h3 id="product-perspective">2.1 Product Perspective</h3>
+            <p>The CRI system is a standalone web application that integrates with external APIs and services:</p>
+            <ul>
+                <li><strong>External APIs:</strong> USGS Earthquake API, UK Environment Agency Flood API, Fire data sources</li>
+                <li><strong>Database:</strong> MySQL database for storing user data, disasters, and alerts</li>
+                <li><strong>Real-time Communication:</strong> WebSocket server for live alerts</li>
+                <li><strong>Alert Generation:</strong> CAP XML alert generation system</li>
+            </ul>
+            
+            <h4>System Architecture</h4>
+            <div class="tech-stack">
+                <div class="tech-item">Frontend: HTML5, CSS3, JavaScript</div>
+                <div class="tech-item">Backend: Node.js</div>
+                <div class="tech-item">Database: MySQL</div>
+                <div class="tech-item">Maps: Leaflet.js</div>
+                <div class="tech-item">Real-time: WebSocket</div>
+                <div class="tech-item">Security: bcrypt</div>
+                <div class="tech-item">Alerts: XML Builder</div>
+            </div>
+            
+            <h3 id="product-functions">2.2 Product Functions</h3>
+            <p>The major functions of the CRI system include:</p>
+            
+            <h4>User Management</h4>
+            <ul>
+                <li>User registration and authentication</li>
+                <li>Role-based access control (Authority vs Civilian)</li>
+                <li>Session management</li>
+            </ul>
+            
+            <h4>Disaster Management</h4>
+            <ul>
+                <li>Real-time disaster data visualization</li>
+                <li>Disaster reporting and management by authorities</li>
+                <li>Multi-source disaster data integration</li>
+                <li>Disaster filtering and search capabilities</li>
+            </ul>
+            
+            <h4>Alert System</h4>
+            <ul>
+                <li>Location-based alert subscription</li>
+                <li>Automatic CAP alert generation</li>
+                <li>Real-time alert delivery via WebSocket</li>
+                <li>Alert history and management</li>
+            </ul>
+            
+            <h4>Shelter Management</h4>
+            <ul>
+                <li>Emergency shelter location management</li>
+                <li>Shelter capacity and type tracking</li>
+                <li>Shelter-disaster association</li>
+            </ul>
+            
+            <h3 id="user-characteristics">2.3 User Characteristics</h3>
+            
+            <h4>Authority Users</h4>
+            <ul>
+                <li><strong>Role:</strong> Emergency services, government officials</li>
+                <li><strong>Technical Expertise:</strong> Moderate to high</li>
+                <li><strong>Responsibilities:</strong> Disaster reporting, shelter management, alert coordination</li>
+                <li><strong>Access Level:</strong> Full system access including CRUD operations</li>
+            </ul>
+            
+            <h4>Civilian Users</h4>
+            <ul>
+                <li><strong>Role:</strong> General public</li>
+                <li><strong>Technical Expertise:</strong> Basic to moderate</li>
+                <li><strong>Responsibilities:</strong> Setting alert preferences, viewing disaster information</li>
+                <li><strong>Access Level:</strong> Read-only access with personal alert management</li>
+            </ul>
+            
+            <h3 id="constraints">2.4 Constraints</h3>
+            
+            <h4>Technical Constraints</h4>
+            <ul>
+                <li>Web browser compatibility requirements</li>
+                <li>Internet connectivity dependency</li>
+                <li>External API rate limiting</li>
+                <li>Real-time performance requirements</li>
+            </ul>
+            
+            <h4>Regulatory Constraints</h4>
+            <ul>
+                <li>Data privacy regulations (GDPR compliance)</li>
+                <li>Emergency alert standards (CAP protocol)</li>
+                <li>Accessibility requirements</li>
+            </ul>
+            
+            <h4>Operational Constraints</h4>
+            <ul>
+                <li>24/7 system availability requirement</li>
+                <li>Multi-language support considerations</li>
+                <li>Mobile device compatibility</li>
+            </ul>
+            
+            <h3 id="assumptions">2.5 Assumptions and Dependencies</h3>
+            
+            <h4>Assumptions</h4>
+            <ul>
+                <li>Users have access to modern web browsers</li>
+                <li>Reliable internet connectivity is available</li>
+                <li>External APIs remain accessible and stable</li>
+                <li>Users understand basic web navigation</li>
+            </ul>
+            
+            <h4>Dependencies</h4>
+            <ul>
+                <li>External disaster data APIs (USGS, UK Environment Agency)</li>
+                <li>MySQL database server availability</li>
+                <li>Node.js runtime environment</li>
+                <li>Third-party JavaScript libraries (Leaflet.js)</li>
+            </ul>
+        </div>
+
+        <div class="section" id="specific-requirements">
+            <h2>3. Specific Requirements</h2>
+            
+            <h3 id="functional-requirements">3.1 Functional Requirements</h3>
+            
+            <h4>3.1.1 User Authentication and Authorization</h4>
+            
+            <div class="requirement priority-high">
+                <strong>REQ-001:</strong> User Registration<br>
+                <strong>Description:</strong> The system shall allow users to register with email and password<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Input:</strong> Email address, password<br>
+                <strong>Output:</strong> User account creation confirmation<br>
+                <strong>Processing:</strong> Validate email format, hash password, store in database
+            </div>
+            
+            <div class="requirement priority-high">
+                <strong>REQ-002:</strong> User Authentication<br>
+                <strong>Description:</strong> The system shall authenticate users using email and password<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Input:</strong> Email address, password<br>
+                <strong>Output:</strong> Authentication success/failure, session token<br>
+                <strong>Processing:</strong> Verify credentials, create session cookie
+            </div>
+            
+            <div class="requirement priority-high">
+                <strong>REQ-003:</strong> Role-Based Access Control<br>
+                <strong>Description:</strong> The system shall differentiate between authority and civilian users<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Input:</strong> User role (determined by email domain @cri.com for authorities)<br>
+                <strong>Output:</strong> Appropriate interface and permissions<br>
+                <strong>Processing:</strong> Check user role and redirect to appropriate dashboard
+            </div>
+            
+            <h4>3.1.2 Disaster Data Management</h4>
+            
+            <div class="requirement priority-high">
+                <strong>REQ-004:</strong> Real-time Disaster Data Display<br>
+                <strong>Description:</strong> The system shall display real-time disaster data on an interactive map<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Input:</strong> External API data (earthquakes, floods, fires)<br>
+                <strong>Output:</strong> Visual markers on map with disaster information<br>
+                <strong>Processing:</strong> Fetch API data, parse JSON, render map markers
+            </div>
+            
+            <div class="requirement priority-high">
+                <strong>REQ-005:</strong> Disaster Reporting (Authority Only)<br>
+                <strong>Description:</strong> Authority users shall be able to report new disasters<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Input:</strong> Disaster coordinates, type, description, severity<br>
+                <strong>Output:</strong> Disaster record creation, alert generation<br>
+                <strong>Processing:</strong> Validate input, store in database, trigger alert system
+            </div>
+            
+            <div class="requirement priority-medium">
+                <strong>REQ-006:</strong> Disaster Filtering<br>
+                <strong>Description:</strong> Users shall be able to filter disasters by type and location<br>
+                <strong>Priority:</strong> Medium<br>
+                <strong>Input:</strong> Filter criteria (disaster type, location)<br>
+                <strong>Output:</strong> Filtered disaster display<br>
+                <strong>Processing:</strong> Apply filters to dataset, update map display
+            </div>
+            
+            <h4>3.1.3 Alert System</h4>
+            
+            <div class="requirement priority-high">
+                <strong>REQ-007:</strong> Location-Based Alert Subscription<br>
+                <strong>Description:</strong> Civilian users shall be able to set up to 3 location-based alert pins<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Input:</strong> GPS coordinates, location name<br>
+                <strong>Output:</strong> Alert pin creation confirmation<br>
+                <strong>Processing:</strong> Validate coordinates, store in clientPins table
+            </div>
+            
+            <div class="requirement priority-high">
+                <strong>REQ-008:</strong> Automatic Alert Generation<br>
+                <strong>Description:</strong> The system shall automatically generate CAP alerts for users within 30km of disasters<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Input:</strong> New disaster data, user pin locations<br>
+                <strong>Output:</strong> CAP XML alert files, real-time notifications<br>
+                <strong>Processing:</strong> Calculate distances, generate CAP XML, send WebSocket alerts
+            </div>
+            
+            <div class="requirement priority-high">
+                <strong>REQ-009:</strong> Real-time Alert Delivery<br>
+                <strong>Description:</strong> The system shall deliver alerts in real-time using WebSocket<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Input:</strong> Alert data, user connection<br>
+                <strong>Output:</strong> Real-time alert notification<br>
+                <strong>Processing:</strong> Maintain WebSocket connections, broadcast alerts
+            </div>
+            
+            <h4>3.1.4 Shelter Management</h4>
+            
+            <div class="requirement priority-medium">
+                <strong>REQ-010:</strong> Shelter Location Management<br>
+                <strong>Description:</strong> Authority users shall be able to manage emergency shelter locations<br>
+                <strong>Priority:</strong> Medium<br>
+                <strong>Input:</strong> Shelter coordinates, type, capacity, description<br>
+                <strong>Output:</strong> Shelter record creation/update<br>
+                <strong>Processing:</strong> Validate input, store in shelters table
+            </div>
+            
+            <div class="requirement priority-medium">
+                <strong>REQ-011:</strong> Shelter Visualization<br>
+                <strong>Description:</strong> All users shall be able to view shelter locations on the map<br>
+                <strong>Priority:</strong> Medium<br>
+                <strong>Input:</strong> Shelter data from database<br>
+                <strong>Output:</strong> Shelter markers on map<br>
+                <strong>Processing:</strong> Fetch shelter data, render map markers
+            </div>
+            
+            <h4>3.1.5 Educational Resources</h4>
+            
+            <div class="requirement priority-low">
+                <strong>REQ-012:</strong> Disaster Preparedness Tips<br>
+                <strong>Description:</strong> The system shall provide educational content about disaster preparedness<br>
+                <strong>Priority:</strong> Low<br>
+                <strong>Input:</strong> User request for tips<br>
+                <strong>Output:</strong> Educational content display<br>
+                <strong>Processing:</strong> Display static educational content with navigation
+            </div>
+            
+            <h3 id="non-functional-requirements">3.2 Non-Functional Requirements</h3>
+            
+            <h4>3.2.1 Performance Requirements</h4>
+            
+            <div class="requirement priority-high">
+                <strong>NFR-001:</strong> Response Time<br>
+                <strong>Description:</strong> The system shall respond to user requests within 3 seconds<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Measurement:</strong> Average response time for API calls and page loads
+            </div>
+            
+            <div class="requirement priority-high">
+                <strong>NFR-002:</strong> Real-time Alert Delivery<br>
+                <strong>Description:</strong> Alerts shall be delivered within 5 seconds of disaster reporting<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Measurement:</strong> Time from disaster creation to alert delivery
+            </div>
+            
+            <div class="requirement priority-medium">
+                <strong>NFR-003:</strong> Concurrent Users<br>
+                <strong>Description:</strong> The system shall support at least 1000 concurrent users<br>
+                <strong>Priority:</strong> Medium<br>
+                <strong>Measurement:</strong> Load testing with 1000 simultaneous connections
+            </div>
+            
+            <h4>3.2.2 Security Requirements</h4>
+            
+            <div class="requirement priority-high">
+                <strong>NFR-004:</strong> Password Security<br>
+                <strong>Description:</strong> User passwords shall be hashed using bcrypt with salt rounds ≥ 10<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Measurement:</strong> Code review of password hashing implementation
+            </div>
+            
+            <div class="requirement priority-high">
+                <strong>NFR-005:</strong> Session Management<br>
+                <strong>Description:</strong> User sessions shall expire after 24 hours of inactivity<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Measurement:</strong> Session timeout testing
+            </div>
+            
+            <div class="requirement priority-medium">
+                <strong>NFR-006:</strong> Input Validation<br>
+                <strong>Description:</strong> All user inputs shall be validated and sanitized<br>
+                <strong>Priority:</strong> Medium<br>
+                <strong>Measurement:</strong> Security testing for XSS and SQL injection
+            </div>
+            
+            <h4>3.2.3 Usability Requirements</h4>
+            
+            <div class="requirement priority-medium">
+                <strong>NFR-007:</strong> Responsive Design<br>
+                <strong>Description:</strong> The system shall be usable on devices with screen widths ≥ 320px<br>
+                <strong>Priority:</strong> Medium<br>
+                <strong>Measurement:</strong> Testing on various device sizes
+            </div>
+            
+            <div class="requirement priority-medium">
+                <strong>NFR-008:</strong> Browser Compatibility<br>
+                <strong>Description:</strong> The system shall work on Chrome, Firefox, Safari, and Edge (latest 2 versions)<br>
+                <strong>Priority:</strong> Medium<br>
+                <strong>Measurement:</strong> Cross-browser testing
+            </div>
+            
+            <h4>3.2.4 Reliability Requirements</h4>
+            
+            <div class="requirement priority-high">
+                <strong>NFR-009:</strong> System Availability<br>
+                <strong>Description:</strong> The system shall have 99.5% uptime<br>
+                <strong>Priority:</strong> High<br>
+                <strong>Measurement:</strong> Uptime monitoring over 30-day periods
+            </div>
+            
+            <div class="requirement priority-medium">
+                <strong>NFR-010:</strong> Error Handling<br>
+                <strong>Description:</strong> The system shall gracefully handle API failures and display appropriate error messages<br>
+                <strong>Priority:</strong> Medium<br>
+                <strong>Measurement:</strong> Error scenario testing
+            </div>
+            
+            <h3 id="system-requirements">3.3 System Requirements</h3>
+            
+            <h4>3.3.1 Hardware Requirements</h4>
+            
+            <h5>Server Requirements</h5>
+            <ul>
+                <li>CPU: Minimum 2 cores, 2.4 GHz</li>
+                <li>RAM: Minimum 4 GB</li>
+                <li>Storage: Minimum 20 GB SSD</li>
+                <li>Network: Broadband internet connection</li>
+            </ul>
+            
+            <h5>Client Requirements</h5>
+            <ul>
+                <li>Any device with a modern web browser</li>
+                <li>Internet connection (minimum 1 Mbps)</li>
+                <li>JavaScript enabled</li>
+            </ul>
+            
+            <h4>3.3.2 Software Requirements</h4>
+            
+            <h5>Server Software</h5>
+            <ul>
+                <li>Operating System: Linux/Windows/macOS</li>
+                <li>Node.js: Version 16.x or higher</li>
+                <li>MySQL: Version 8.0 or higher</li>
+                <li>npm: Latest version</li>
+            </ul>
+            
+            <h5>Client Software</h5>
+            <ul>
+                <li>Web Browser: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+</li>
+                <li>JavaScript: ES6 support required</li>
+            </ul>
+        </div>
+
+        <div class="section" id="system-models">
+            <h2>4. System Models</h2>
+            
+            <h3>4.1 Use Case Diagrams</h3>
+            
+            <div class="use-case">
+                <h4>Use Case 1: User Registration and Login</h4>
+                <p><strong>Actors:</strong> Civilian User, Authority User</p>
+                <p><strong>Preconditions:</strong> User has access to the system</p>
+                <p><strong>Main Flow:</strong></p>
+                <ol>
+                    <li>User navigates to registration page</li>
+                    <li>User enters email and password</li>
+                    <li>System validates input and creates account</li>
+                    <li>User logs in with credentials</li>
+                    <li>System authenticates and redirects to appropriate dashboard</li>
+                </ol>
+                <p><strong>Postconditions:</strong> User is authenticated and has access to system features</p>
+            </div>
+            
+            <div class="use-case">
+                <h4>Use Case 2: Disaster Reporting (Authority)</h4>
+                <p><strong>Actors:</strong> Authority User</p>
+                <p><strong>Preconditions:</strong> Authority user is logged in</p>
+                <p><strong>Main Flow:</strong></p>
+                <ol>
+                    <li>Authority user clicks on map to select location</li>
+                    <li>User fills disaster report form</li>
+                    <li>System validates and saves disaster data</li>
+                    <li>System generates alerts for affected users</li>
+                    <li>System displays confirmation message</li>
+                </ol>
+                <p><strong>Postconditions:</strong> Disaster is recorded and alerts are sent</p>
+            </div>
+            
+            <div class="use-case">
+                <h4>Use Case 3: Setting Alert Pins (Civilian)</h4>
+                <p><strong>Actors:</strong> Civilian User</p>
+                <p><strong>Preconditions:</strong> Civilian user is logged in</p>
+                <p><strong>Main Flow:</strong></p>
+                <ol>
+                    <li>User selects "Place Pin" option</li>
+                    <li>User clicks on map to set coordinates</li>
+                    <li>User enters pin name</li>
+                    <li>System validates and saves pin location</li>
+                    <li>System displays pin on map</li>
+                </ol>
+                <p><strong>Postconditions:</strong> User will receive alerts for disasters near this location</p>
+            </div>
+            
+            <h3>4.2 Data Model</h3>
+            
+            <h4>Database Schema</h4>
+            <table>
+                <tr>
+                    <th>Table</th>
+                    <th>Description</th>
+                    <th>Key Fields</th>
+                </tr>
+                <tr>
+                    <td>users</td>
+                    <td>User account information</td>
+                    <td>id, email, password, is_authority</td>
+                </tr>
+                <tr>
+                    <td>calamities</td>
+                    <td>Disaster records</td>
+                    <td>id, lat, lng, type, description, gravity</td>
+                </tr>
+                <tr>
+                    <td>clientPins</td>
+                    <td>User alert locations</td>
+                    <td>id, id_client, pin1_lat, pin1_lng, pin1_name</td>
+                </tr>
+                <tr>
+                    <td>shelters</td>
+                    <td>Emergency shelter locations</td>
+                    <td>id, lat, lng, type_shelter, permanent</td>
+                </tr>
+                <tr>
+                    <td>user_alerts</td>
+                    <td>Generated alerts for users</td>
+                    <td>id, user_id, event, instruction, lat, lon</td>
+                </tr>
+            </table>
+            
+            <h3>4.3 System Architecture</h3>
+            
+            <h4>Three-Tier Architecture</h4>
+            <ul>
+                <li><strong>Presentation Layer:</strong> HTML/CSS/JavaScript frontend with Leaflet.js maps</li>
+                <li><strong>Application Layer:</strong> Node.js server with Express.js framework</li>
+                <li><strong>Data Layer:</strong> MySQL database with connection pooling</li>
+            </ul>
+            
+            <h4>External Integrations</h4>
+            <ul>
+                <li><strong>USGS Earthquake API:</strong> Real-time earthquake data</li>
+                <li><strong>UK Environment Agency API:</strong> Flood monitoring data</li>
+                <li><strong>WebSocket Server:</strong> Real-time alert delivery</li>
+                <li><strong>CAP Alert Generator:</strong> Standard emergency alert format</li>
+            </ul>
+        </div>
+
+        <div class="section" id="appendices">
+            <h2>5. Appendices</h2>
+            
+            <h3>5.1 Glossary</h3>
+            <table>
+                <tr>
+                    <th>Term</th>
+                    <th>Definition</th>
+                </tr>
+                <tr>
+                    <td>Disaster Pin</td>
+                    <td>A location marker set by users to receive alerts for nearby disasters</td>
+                </tr>
+                <tr>
+                    <td>Authority Dashboard</td>
+                    <td>Administrative interface for managing disasters and shelters</td>
+                </tr>
+                <tr>
+                    <td>Civilian Dashboard</td>
+                    <td>User interface for viewing disasters and managing alert preferences</td>
+                </tr>
+                <tr>
+                    <td>CAP Alert</td>
+                    <td>Common Alerting Protocol formatted emergency notification</td>
+                </tr>
+                <tr>
+                    <td>Real-time Alert</td>
+                    <td>Immediate notification delivered via WebSocket connection</td>
+                </tr>
+            </table>
+            
+            <h3>5.2 Technology Stack Details</h3>
+            
+            <h4>Frontend Technologies</h4>
+            <ul>
+                <li><strong>HTML5:</strong> Semantic markup and structure</li>
+                <li><strong>CSS3:</strong> Styling and responsive design</li>
+                <li><strong>JavaScript (ES6+):</strong> Client-side logic and interactivity</li>
+                <li><strong>Leaflet.js:</strong> Interactive map visualization</li>
+                <li><strong>Font Awesome:</strong> Icon library</li>
+            </ul>
+            
+            <h4>Backend Technologies</h4>
+            <ul>
+                <li><strong>Node.js:</strong> Server-side JavaScript runtime</li>
+                <li><strong>HTTP Module:</strong> Web server implementation</li>
+                <li><strong>MySQL2:</strong> Database connectivity with connection pooling</li>
+                <li><strong>bcrypt:</strong> Password hashing and security</li>
+                <li><strong>WebSocket (ws):</strong> Real-time communication</li>
+                <li><strong>XMLBuilder2:</strong> CAP alert generation</li>
+            </ul>
+            
+            <h3>5.3 API Endpoints</h3>
+            
+            <table>
+                <tr>
+                    <th>Endpoint</th>
+                    <th>Method</th>
+                    <th>Description</th>
+                    <th>Access Level</th>
+                </tr>
+                <tr>
+                    <td>/api/signup</td>
+                    <td>POST</td>
+                    <td>User registration</td>
+                    <td>Public</td>
+                </tr>
+                <tr>
+                    <td>/api/login</td>
+                    <td>POST</td>
+                    <td>User authentication</td>
+                    <td>Public</td>
+                </tr>
+                <tr>
+                    <td>/api/logout</td>
+                    <td>POST</td>
+                    <td>User logout</td>
+                    <td>Authenticated</td>
+                </tr>
+                <tr>
+                    <td>/earthquakes</td>
+                    <td>GET</td>
+                    <td>Earthquake data</td>
+                    <td>Authenticated</td>
+                </tr>
+                <tr>
+                    <td>/floods</td>
+                    <td>GET</td>
+                    <td>Flood data</td>
+                    <td>Authenticated</td>
+                </tr>
+                <tr>
+                    <td>/calamities</td>
+                    <td>GET/POST/DELETE</td>
+                    <td>Disaster management</td>
+                    <td>GET: Authenticated, POST/DELETE: Authority</td>
+                </tr>
+                <tr>
+                    <td>/shelters</td>
+                    <td>GET/POST/DELETE</td>
+                    <td>Shelter management</td>
+                    <td>GET: Authenticated, POST/DELETE: Authority</td>
+                </tr>
+                <tr>
+                    <td>/client-pins</td>
+                    <td>GET/POST/DELETE</td>
+                    <td>Alert pin management</td>
+                    <td>Civilian only</td>
+                </tr>
+                <tr>
+                    <td>/api/user-alerts</td>
+                    <td>GET</td>
+                    <td>User alert history</td>
+                    <td>Civilian only</td>
+                </tr>
+            </table>
+            
+            <h3>5.4 File Structure</h3>
+            <pre><code>
+Web-Technologies-Project/
+├── server.js                 # Main server file
+├── websocket-server.js       # WebSocket server
+├── earthquakeApi.js          # Earthquake data integration
+├── generateCapAlerts.js      # CAP alert generation
+├── package.json              # Node.js dependencies
+├── database-schema/
+│   └── init.sql             # Database schema
+├── public/
+│   ├── css/                 # Stylesheets
+│   ├── js/                  # Client-side JavaScript
+│   ├── images/              # Static images
+│   └── views/               # HTML templates
+├── alerts/                  # Generated CAP alerts
+└── README.md               # Project documentation
+            </code></pre>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc;">
+            <p><em>End of Document</em></p>
+            <p>Crisis Containment Service (CRI) - Software Requirements Specification v1.0</p>
+        </div>
+    </div>
+</body>
+</html> 

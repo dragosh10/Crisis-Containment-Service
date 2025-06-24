@@ -567,7 +567,7 @@ window.updatePinCountDisplay = updatePinCountDisplay;
 
 
 
-// WebSocket pentru alerte în timp real
+
 function saveRecentAlert(alert) {
     let alerts = JSON.parse(localStorage.getItem('recentAlerts') || '[]');
     alerts.unshift(alert);
@@ -592,7 +592,7 @@ function renderRecentAlerts() {
         li.style.borderBottom = '1px solid #fff2';
         li.style.cursor = 'pointer';
 
-        // Detectează dacă e „missed”
+       
         let isMissed = false;
         if (alert.created_at && new Date(alert.created_at).getTime() > lastSeen) {
             isMissed = true;
@@ -605,9 +605,9 @@ function renderRecentAlerts() {
             <span style='font-size:12px;'>${encodeHTML(alert.instruction || '')}</span>
         `;
 
-        // Click pentru detalii
+       
         li.addEventListener('click', () => {
-            // Marchează ca văzută
+           
             if (alert.created_at) {
                 localStorage.setItem('lastSeenAlert', new Date(alert.created_at).getTime());
                 renderRecentAlerts();
@@ -618,9 +618,9 @@ function renderRecentAlerts() {
     });
 }
 
-// Modal pentru detalii alertă
+
 function showAlertDetailsModal(alert) {
-    // Elimină orice modal vechi
+   
     const oldModal = document.getElementById('alert-details-modal');
     if (oldModal) oldModal.remove();
 
@@ -639,12 +639,12 @@ function showAlertDetailsModal(alert) {
     modal.style.minWidth = '260px';
     modal.style.maxWidth = '90vw';
 
-    // Formatăm data fără T și Z
+   
     let formattedDate = '-';
     if (alert.created_at) {
-        // Înlocuiește T cu spațiu și elimină Z dacă există
+       
         formattedDate = alert.created_at.replace('T', ' ').replace('Z', '');
-        // Dacă există milisecunde, le eliminăm
+      
         formattedDate = formattedDate.replace(/\.[0-9]+/, '');
     }
 
@@ -659,7 +659,7 @@ function showAlertDetailsModal(alert) {
     document.getElementById('close-alert-details').onclick = () => modal.remove();
 }
 
-// Dropdown logic for alerts section
+
 window.addEventListener('DOMContentLoaded', () => {
     const alertsHeader = document.querySelector('[data-section="alerts"]');
     const alertsSection = document.getElementById('alertsSection');
@@ -672,7 +672,7 @@ window.addEventListener('DOMContentLoaded', () => {
     renderRecentAlerts();
 });
 
-// La primirea unei alerte personalizate, salvează și actualizează lista
+
 function handlePersonalAlert(alert) {
     saveRecentAlert({
         event: alert.event,
@@ -685,7 +685,7 @@ function handlePersonalAlert(alert) {
     renderRecentAlerts();
 }
 
-// Modific setupRealtimeAlerts pentru a apela handlePersonalAlert
+
 function setupRealtimeAlerts() {
     let userId = null;
     fetch('/api/user').then(r => r.json()).then(data => {
@@ -704,7 +704,7 @@ function setupRealtimeAlerts() {
                     }
                     return;
                 }
-                // Creează bannerul doar dacă e alertă personalizată
+              
                 if (alert.event || alert.instruction) {
                     handlePersonalAlert(alert);
                     let banner = document.createElement('div');
@@ -729,19 +729,19 @@ function setupRealtimeAlerts() {
 }
 window.addEventListener('DOMContentLoaded', setupRealtimeAlerts);
 
-// La logare, verifică dacă există alerte noi în raza pinurilor și populează secțiunea de alerts
+
 window.addEventListener('DOMContentLoaded', () => {
     renderRecentAlerts();
 });
 
-// Salvează timestamp la logout sau când utilizatorul închide pagina
+
 window.addEventListener('beforeunload', () => {
     localStorage.setItem('lastSeenAlert', Date.now());
 });
 
-// Banner pentru alerte ratate
+
 function showMissedAlertsBanner(n) {
-    if (document.getElementById('missed-alerts-banner')) return; // nu dubla bannerul
+    if (document.getElementById('missed-alerts-banner')) return; 
     let banner = document.createElement('div');
     banner.id = 'missed-alerts-banner';
     banner.style.position = 'fixed';
@@ -759,18 +759,18 @@ function showMissedAlertsBanner(n) {
     document.getElementById('close-missed-alerts').onclick = () => banner.remove();
 }
 
-// Modific fetchAndRenderRecentAlerts pentru a detecta alertele ratate
+
 async function fetchAndRenderRecentAlerts() {
     try {
         const response = await fetch('/api/user-alerts');
         if (!response.ok) {
-            renderRecentAlerts(); // fallback la localStorage dacă nu merge backendul
+            renderRecentAlerts(); 
             return;
         }
         const data = await response.json();
         if (data.alerts && Array.isArray(data.alerts)) {
             localStorage.setItem('recentAlerts', JSON.stringify(data.alerts));
-            // --- Missed alerts logic ---
+          
             const lastSeen = parseInt(localStorage.getItem('lastSeenAlert') || '0', 10);
             let missedCount = 0;
             data.alerts.forEach(alert => {
@@ -789,7 +789,7 @@ async function fetchAndRenderRecentAlerts() {
     }
 }
 
-// La încărcarea paginii, ia alertele din backend
+
 window.addEventListener('DOMContentLoaded', fetchAndRenderRecentAlerts);
 
 
