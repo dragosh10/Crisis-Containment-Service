@@ -157,13 +157,7 @@ function secureInput(input, type = 'general') {
     let sanitized = trimmedInput;
     
     switch (type) {
-        case 'zone':
-            
-            sanitized = sanitizeForSQL(sanitized);
-            sanitized = encodeHTML(sanitized);
-           
-            sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,]/g, '');
-            break;
+      
             
         case 'pinName':
         

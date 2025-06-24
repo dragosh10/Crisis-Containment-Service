@@ -193,12 +193,12 @@ function setupMarkerClickHandlers(marker, calamity) {
               }
             }
             
-            // disaster pin selection for filter
+            // Handle disaster pin selection for filter
             if (window.isSelectingDisasterPin && window.isSelectingDisasterPin()) {
               e.originalEvent.stopPropagation();
               const wasSelected = window.handleDisasterPinSelection(calamity);
               if (wasSelected) {
-                return; 
+                return; // Stop further processing if disaster was selected for filter
               }
             }
                  
@@ -214,12 +214,12 @@ function refreshCalamities() {
     .then(res => res.json())
     .then(data => {
       
-     
+      
       window.calamityCluster.eachLayer(function(layer) {
         if (layer.calamityData && layer.calamityData.id) {
-       
+         
           window.calamityCluster.removeLayer(layer);
-          
+         
           const index = window.allCalamityMarkers.indexOf(layer);
           if (index > -1) {
             window.allCalamityMarkers.splice(index, 1);
@@ -227,7 +227,7 @@ function refreshCalamities() {
         }
       });
 
-      
+     //adaugare noi calamitati
       data.filter(c => c.lat != null && c.lng != null).forEach(c => {
         const now = new Date();
         
@@ -243,7 +243,7 @@ function refreshCalamities() {
         setupPopupHandlers(marker, c, description);
         setupMarkerClickHandlers(marker, c);
         
-       
+      
         window.allCalamityMarkers.push(marker);
         window.calamityCluster.addLayer(marker);
       });
@@ -626,21 +626,23 @@ function loadCalamities(map) {
 }
 
 
-// Global variables for disaster filter
+//sectiune filtru
+
+
 let selectedDisasterPin = null;
 let isSelectingDisasterPin = false;
 window.allCalamityMarkers = window.allCalamityMarkers || [];
 
-// Function to apply disaster filter
+
 function applyDisasterFilter() {
   if (selectedDisasterPin && selectedDisasterPin.type) {
-    // Filter calamities to show only the selected type and nearby ones
+   
     window.calamityCluster.eachLayer(function(layer) {
       if (layer.calamityData) {
         if (layer.calamityData.type === selectedDisasterPin.type) {
           layer.setOpacity(1.0);
         } else {
-          layer.setOpacity(0.3); // Dim other types
+          layer.setOpacity(0.3); 
         }
       }
     });
