@@ -1,4 +1,3 @@
-
 function validateEmail(email) {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     
@@ -18,19 +17,22 @@ function setupInputValidation() {
     
     if (emailInput) {
         emailInput.addEventListener('input', function(e) {
-            
-            if (!validateEmail(e.target.value)) {
-                console.warn('Dangerous pattern detected in email');
-                e.target.value = sanitizeEmailInput(e.target.value);
+           
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailPattern.test(e.target.value)) {
+               
+                if (e.target.value.length > 0 && !e.target.value.includes('@')) {
+                    console.warn('Invalid email format');
+                }
             }
         });
         
         emailInput.addEventListener('paste', function(e) {
             setTimeout(() => {
-              
-                if (!validateEmail(e.target.value)) {
-                    console.warn('Dangerous pattern detected in pasted email');
-                    e.target.value = sanitizeEmailInput(e.target.value);
+               
+                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (e.target.value && !emailPattern.test(e.target.value)) {
+                    console.warn('Invalid email format in pasted content');
                 }
             }, 0);
         });
@@ -39,7 +41,7 @@ function setupInputValidation() {
     if (passwordInput) {
         passwordInput.addEventListener('input', function(e) {
             try {
-                const securePassword = secureInput(e.target.value, 'password');
+                const securePassword = secureInput(e.target.value, 'general');
                 if (securePassword !== e.target.value) {
                     console.warn('Dangerous pattern detected in password');
                     e.target.value = sanitizePasswordInput(e.target.value);
@@ -66,8 +68,8 @@ async function handleLogin() {
 
     
     try {
-        email = secureInput(email);
-        password = secureInput(password);
+        email = secureInput(email, 'email');
+        password = secureInput(password, 'general');
     } catch (error) {
         alert('Invalid characters detected in input fields!');
         return;

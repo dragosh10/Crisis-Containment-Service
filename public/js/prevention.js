@@ -136,7 +136,7 @@ function validateXSSSafety(input) {
 
 
 function secureInput(input, type = 'general') {
-    // Handle null, undefined, or empty string
+    
     if (!input || typeof input !== 'string' || input.trim() === '') {
         return '';
     }
@@ -157,25 +157,26 @@ function secureInput(input, type = 'general') {
     let sanitized = trimmedInput;
     
     switch (type) {
-      
+        case 'email':
+         
+            sanitized = sanitizeForSQL(sanitized);
+          
+            sanitized = sanitized.replace(/[^a-zA-Z0-9@.\-_+]/g, '');
+            break;
             
         case 'pinName':
-        
             sanitized = sanitizeForSQL(sanitized);
             sanitized = encodeHTML(sanitized);
-           
             sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-\.,!]/g, '');
             break;
             
         case 'description':
-        
             sanitized = sanitizeForSQL(sanitized);
             sanitized = sanitizeHTML(sanitized);
             sanitized = encodeHTML(sanitized);
             break;
             
         default:
-          
             sanitized = sanitizeForSQL(sanitized);
             sanitized = encodeHTML(sanitized);
             break;

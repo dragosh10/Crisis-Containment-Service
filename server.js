@@ -34,7 +34,6 @@ module.exports = db;
 
 const PORT = 3000;
 
-
 const getCookies = (cookieString) => {
     if (!cookieString) return {};
     return cookieString.split(';')
@@ -115,6 +114,7 @@ const server = http.createServer(async (req, res) => {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: true, message: 'Cont creat cu succes!' }));
             } catch (error) {
+                console.error('❌ Eroare la signup:', error);
                 res.writeHead(500, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: false, message: error.message }));
             }
