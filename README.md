@@ -2,9 +2,9 @@
 
 <div align="center">
 
-![Logo](public/images/home.png)
 
-**A comprehensive web-based disaster management and alert system**
+
+**A comprehensive web-based crisis management and alert system**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-18.x-green.svg)](https://nodejs.org/)
