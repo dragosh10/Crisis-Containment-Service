@@ -18,8 +18,13 @@ function setupInputValidation() {
     
     if (emailInput) {
         emailInput.addEventListener('input', function(e) {
-            
-            if (!validateEmail(e.target.value)) {
+            try {
+                const secureEmail = secureInput(e.target.value, 'email');
+                if (secureEmail !== e.target.value) {
+                    console.warn('Dangerous pattern detected in email');
+                    e.target.value = sanitizeEmailInput(e.target.value);
+                }
+            } catch (error) {
                 console.warn('Dangerous pattern detected in email');
                 e.target.value = sanitizeEmailInput(e.target.value);
             }
@@ -27,8 +32,13 @@ function setupInputValidation() {
         
         emailInput.addEventListener('paste', function(e) {
             setTimeout(() => {
-              
-                if (!validateEmail(e.target.value)) {
+                try {
+                    const secureEmail = secureInput(e.target.value, 'email');
+                    if (secureEmail !== e.target.value) {
+                        console.warn('Dangerous pattern detected in pasted email');
+                        e.target.value = sanitizeEmailInput(e.target.value);
+                    }
+                } catch (error) {
                     console.warn('Dangerous pattern detected in pasted email');
                     e.target.value = sanitizeEmailInput(e.target.value);
                 }
@@ -39,7 +49,7 @@ function setupInputValidation() {
     if (passwordInput) {
         passwordInput.addEventListener('input', function(e) {
             try {
-                const securePassword = secureInput(e.target.value, 'password');
+                const securePassword = secureInput(e.target.value, 'general');
                 if (securePassword !== e.target.value) {
                     console.warn('Dangerous pattern detected in password');
                     e.target.value = sanitizePasswordInput(e.target.value);
@@ -66,8 +76,8 @@ async function handleLogin() {
 
     
     try {
-        email = secureInput(email);
-        password = secureInput(password);
+        email = secureInput(email, 'email');
+        password = secureInput(password, 'general');
     } catch (error) {
         alert('Invalid characters detected in input fields!');
         return;

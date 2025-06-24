@@ -439,8 +439,6 @@ SOFTWARE.
 
 <div align="center">
 
-**Made with ❤️ for emergency preparedness and community safety**
 
-[⬆ Back to Top](#crisis-containment-service-cri)
 
 </div>

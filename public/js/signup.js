@@ -11,7 +11,7 @@ function validateEmail(email) {
 }
 
 
-function validatePassword(password) {
+function validatePasswordStrength(password) {
     
     if (password.length < 8) {
         return { valid: false, message: 'Parola trebuie să aibă cel puțin 8 caractere!' };
@@ -31,7 +31,7 @@ function validatePassword(password) {
     
     
     try {
-        const securePassword = secureInput(password, 'password');
+        const securePassword = secureInput(password, 'general');
         if (securePassword !== password) {
             return { valid: false, message: 'Parola conține caractere periculoase!' };
         }
@@ -50,8 +50,13 @@ function setupInputValidation() {
     
     if (emailInput) {
         emailInput.addEventListener('input', function(e) {
-            
-            if (!validateEmail(e.target.value)) {
+            try {
+                const secureEmail = secureInput(e.target.value, 'email');
+                if (secureEmail !== e.target.value) {
+                    console.warn('Dangerous pattern detected in email');
+                    e.target.value = sanitizeEmailInput(e.target.value);
+                }
+            } catch (error) {
                 console.warn('Dangerous pattern detected in email');
                 e.target.value = sanitizeEmailInput(e.target.value);
             }
@@ -59,8 +64,13 @@ function setupInputValidation() {
         
         emailInput.addEventListener('paste', function(e) {
             setTimeout(() => {
-                
-                if (!validateEmail(e.target.value)) {
+                try {
+                    const secureEmail = secureInput(e.target.value, 'email');
+                    if (secureEmail !== e.target.value) {
+                        console.warn('Dangerous pattern detected in pasted email');
+                        e.target.value = sanitizeEmailInput(e.target.value);
+                    }
+                } catch (error) {
                     console.warn('Dangerous pattern detected in pasted email');
                     e.target.value = sanitizeEmailInput(e.target.value);
                 }
@@ -73,7 +83,7 @@ function setupInputValidation() {
             input.addEventListener('input', function(e) {
                 
                 try {
-                    const securePassword = secureInput(e.target.value, 'password');
+                    const securePassword = secureInput(e.target.value, 'general');
                     if (securePassword !== e.target.value) {
                         console.warn('Dangerous pattern detected in password');
                         e.target.value = sanitizePasswordInput(e.target.value);
@@ -102,11 +112,13 @@ async function handleSignup() {
     let confirmPassword = confirmPasswordInput.value;
 
     
-    if (!validateEmail(email)) {
+    try {
+        email = secureInput(email, 'email');
+    } catch (error) {
         email = sanitizeEmailInput(email);
     }
     try {
-        const securePassword = secureInput(password, 'password');
+        const securePassword = secureInput(password, 'general');
         if (securePassword !== password) {
             password = sanitizePasswordInput(password);
         }
@@ -114,7 +126,7 @@ async function handleSignup() {
         password = sanitizePasswordInput(password);
     }
     try {
-        const secureConfirmPassword = secureInput(confirmPassword, 'password');
+        const secureConfirmPassword = secureInput(confirmPassword, 'general');
         if (secureConfirmPassword !== confirmPassword) {
             confirmPassword = sanitizePasswordInput(confirmPassword);
         }
@@ -134,7 +146,7 @@ async function handleSignup() {
     }
 
     
-    const passwordValidation = validatePassword(password);
+    const passwordValidation = validatePasswordStrength(password);
     if (!passwordValidation.valid) {
         alert(passwordValidation.message);
         return;
