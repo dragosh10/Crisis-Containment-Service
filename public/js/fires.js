@@ -43,6 +43,7 @@ async function loadFires(map) {
     const instIndex = headers.indexOf('instrument');
 
     let processedCount = 0;
+
     const fireData = lines.slice(1); 
     const batchSize = 50; 
     let currentIndex = 0;

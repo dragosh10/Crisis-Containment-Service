@@ -38,7 +38,6 @@ function setupInputValidation() {
     
     if (passwordInput) {
         passwordInput.addEventListener('input', function(e) {
-            
             try {
                 const securePassword = secureInput(e.target.value, 'password');
                 if (securePassword !== e.target.value) {
