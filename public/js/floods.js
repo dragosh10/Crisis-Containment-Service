@@ -146,7 +146,7 @@ function loadFloods(map) {
                 let iconColor = color;
                 
                 if (severityLevel === '1' || severity === 'Severe Flood Warning') {
-                  iconClass = 'fas fa-exclamation-triangle'; // Triunghi de atenție pentru cele severe
+                  iconClass = 'fas fa-exclamation-triangle'; 
                 }
                 
                 return L.divIcon({

@@ -39,5 +39,5 @@ function getEarthquakeData(callback, parameters = {}) {
     });
 }
 
-// Export for Node.js use
+
 module.exports = { getEarthquakeData };

@@ -149,7 +149,7 @@ body {
   text-decoration: underline;
 }
 
-/* =========== RIGHT SIDE (PRO TIPS) =========== */
+
 .pro-tips-section {
   padding: 30px;
   height: 100%;
@@ -235,9 +235,8 @@ body {
   background-color: rgba(255, 255, 255, 0.4);
 }
 
-/* =========== RESPONSIVE MEDIA QUERIES =========== */
 
-/* Large screens */
+
 @media (min-width: 1200px) {
   .container {
     width: min(90vw, 1200px);
@@ -245,7 +244,7 @@ body {
   }
 }
 
-/* Medium screens - tablets */
+
 @media (max-width: 1024px) {
   .container {
     width: 95vw;
@@ -266,7 +265,7 @@ body {
   }
 }
 
-/* Small screens - mobile landscape and large phones */
+
 @media (max-width: 768px) {
   body {
     padding: 15px;
@@ -367,7 +366,7 @@ body {
   }
 }
 
-/* Extra small screens - mobile portrait */
+
 @media (max-width: 480px) {
   body {
     padding: 10px;
@@ -413,7 +412,7 @@ body {
   }
 }
 
-/* =========== PASSWORD TOGGLE STYLES =========== */
+  
 .password-container {
   position: relative;
   width: min(280px, 85%);

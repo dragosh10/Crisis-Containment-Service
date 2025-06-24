@@ -255,7 +255,7 @@ function loadCalamities(map) {
           if (layer.calamityData.type === selectedDisasterPin.type) {
             layer.setOpacity(1.0);
           } else {
-            layer.setOpacity(0.3); // Dim other types
+            layer.setOpacity(0.3); 
           }
         }
       });

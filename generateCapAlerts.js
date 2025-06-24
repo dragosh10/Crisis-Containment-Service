@@ -1,9 +1,9 @@
 const { create } = require('xmlbuilder2');
 const fs = require('fs');
 
-// Haversine formula pentru distanță între două puncte (km)
+
 function haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371; // raza Pământului în km
+    const R = 6371; 
     const toRad = deg => deg * Math.PI / 180;
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
@@ -14,10 +14,9 @@ function haversine(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
-// calamity: { event, urgency, severity, certainty, instruction, areaDesc, lat, lon }
-// clients: [{ userId, pins: [{ lat, lon, name }] }]
+
 function generateCapAlerts(calamity, clients) {
-    // Asigură existența folderului alerts
+   
     if (!fs.existsSync('./alerts')) fs.mkdirSync('./alerts');
     const affected = [];
     for (const client of clients) {
@@ -25,11 +24,11 @@ function generateCapAlerts(calamity, clients) {
             const dist = haversine(calamity.lat, calamity.lon, pin.lat, pin.lon);
             if (dist <= 30) {
                 affected.push({ userId: client.userId, pin, dist });
-                break; // Un singur pin afectat e suficient
+                break; 
             }
         }
     }
-    // Generează fișiere XML CAP pentru fiecare client afectat
+   
     for (const entry of affected) {
         const xmlObj = {
             alert: {
@@ -52,7 +51,7 @@ function generateCapAlerts(calamity, clients) {
                         circle: `${calamity.lat},${calamity.lon} 30`,
                         polygon: undefined,
                         geocode: undefined,
-                        // Pin afectat
+                       
                         pin: `${entry.pin.lat},${entry.pin.lon}`
                     }
                 }
@@ -65,9 +64,9 @@ function generateCapAlerts(calamity, clients) {
     }
 }
 
-// Exemplu de utilizare (poți șterge la integrare)
+
 if (require.main === module) {
-    // Creez folderul alerts dacă nu există
+   
     if (!fs.existsSync('./alerts')) fs.mkdirSync('./alerts');
     const calamity = {
         event: 'Earthquake',

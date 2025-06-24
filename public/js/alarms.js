@@ -1,10 +1,10 @@
-let clientId = null; // Will be fetched dynamically
+let clientId = null; 
 let clientPins = [];
 let clientPinCluster = null;
 let tempAlarmPin = null;
 let currentPinCount = 0;
 
-// Function to get current user info and set clientId
+
 async function initializeClientId() {
     try {
         const response = await fetch('/api/user');
@@ -34,7 +34,7 @@ async function initializeClientId() {
     }
 }
 
-// Utility function to ensure clientId is available
+
 function ensureClientId(showUserMessage = false) {
     if (clientId === null) {
         console.error('Client ID not initialized. Make sure initializeClientAlarms was called first.');
@@ -50,12 +50,12 @@ function ensureClientId(showUserMessage = false) {
 
 
 async function initializeClientAlarms(map, createCustomIcon) {
-    // Always set up the form handlers first, regardless of authentication status
+    
     setTimeout(() => {
         setupAlarmMethodHandlers(map, createCustomIcon);
     }, 100);
     
-    // Then try to initialize the client ID
+   
     const clientIdInitialized = await initializeClientId();
     if (!clientIdInitialized) {
         console.error('Failed to initialize client ID. User may not be logged in or may not be a client.');
@@ -88,7 +88,7 @@ async function initializeClientAlarms(map, createCustomIcon) {
         map.addLayer(window.clientPinCluster);
     }
 
-    // Now that clientId is set, proceed with loading data
+   
     loadClientPins();
 }
 
@@ -175,23 +175,23 @@ async function saveClientPin(lat, lng, name) {
     }
 
     try {
-        // Apply security sanitization to pin name (with explicit empty check)
+       
         let secureName = '';
         if (name && name.trim()) {
             secureName = secureInput(name.trim(), 'pinName');
             
-            // Validate pin name length
+           
             if (secureName.length > 15) {
                 throw new Error('Pin name must be 15 characters or less');
             }
             
-            // Additional security check for pin names
+           
             if (secureName.length < 1) {
-                secureName = ''; // Reset to empty if sanitization removed everything
+                secureName = ''; 
             }
         }
         
-        // Validate coordinates (prevent injection through numeric fields)
+       
         if (typeof lat !== 'number' || typeof lng !== 'number') {
             throw new Error('Invalid coordinates provided');
         }
@@ -200,7 +200,7 @@ async function saveClientPin(lat, lng, name) {
             throw new Error('Coordinates out of valid range');
         }
         
-        // Find next available pin slot
+       
         let pinSlot = 1;
         const existingPins = clientPins.map(p => p.id);
         while (existingPins.includes(pinSlot) && pinSlot <= 3) {
@@ -220,7 +220,7 @@ async function saveClientPin(lat, lng, name) {
                 pin_slot: pinSlot,
                 lat: lat,
                 lng: lng,
-                name: secureName || `Pin ${pinSlot}` // Use default name if empty
+                name: secureName || `Pin ${pinSlot}` 
             })
         });
 
@@ -231,7 +231,7 @@ async function saveClientPin(lat, lng, name) {
         const result = await response.json();
         console.log('Pin saved with security validation:', result);
 
-        // Add to local array and create marker
+       
         const newPin = {
             id: pinSlot,
             lat: lat,
@@ -316,7 +316,7 @@ function setupAlarmMethodHandlers(map, createCustomIcon) {
                 const maxLength = 15;
                 let value = e.target.value;
                 
-                // Apply security validation
+              
                 if (!validateSQLSafety(value)) {
                     e.target.value = value.replace(/['";\-\-\/\*]/g, '');
                     value = e.target.value;

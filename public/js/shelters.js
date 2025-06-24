@@ -672,19 +672,14 @@ function loadShelters(map, createCustomIcon) {
     window.toggleEmergencyShelters = toggleEmergencyShelters;
 }
 
-// Make disaster filter functions available globally - commented out as these functions are in calamities.js
-// window.handleDisasterPinSelection = handleDisasterPinSelection;
-// window.isSelectingDisasterPin = () => isSelectingDisasterPin;
-// window.filterCalamitiesByType = filterCalamitiesByType;
-// window.applyDisasterFilter = applyDisasterFilter;
-// window.resetDisasterFilter = resetDisasterFilter;
 
-// Filtrare sheltere după permanent (1 = permanent, 0 = emergency)
+
+
 function filterSheltersByPermanent(permanentValue) {
   if (!window.permanentShelterCluster || !window.allPermanentShelterMarkers) return;
   window.permanentShelterCluster.clearLayers();
   if (typeof permanentValue === 'undefined') {
-    // Toate: permanente + toate emergency
+   
     window.allPermanentShelterMarkers.forEach(marker => {
       window.permanentShelterCluster.addLayer(marker);
     });
@@ -712,7 +707,7 @@ function filterSheltersByPermanent(permanentValue) {
           });
       });
   } else if (Number(permanentValue) === 0) {
-    // Doar emergency
+   
     fetch('/shelters')
       .then(res => res.json())
       .then(data => {
@@ -737,7 +732,7 @@ function filterSheltersByPermanent(permanentValue) {
           });
       });
   } else {
-    // Doar permanente
+   
     window.allPermanentShelterMarkers.forEach(marker => {
       if (marker.shelterData && Number(marker.shelterData.permanent) === Number(permanentValue)) {
         window.permanentShelterCluster.addLayer(marker);
@@ -747,7 +742,7 @@ function filterSheltersByPermanent(permanentValue) {
 }
 window.filterSheltersByPermanent = filterSheltersByPermanent;
 
-// Dropdown pentru filtrare rapidă (dacă există în pagină)
+
 document.addEventListener('DOMContentLoaded', function() {
   const shelterTypeFilter = document.getElementById('shelterTypeFilter');
   if (shelterTypeFilter) {

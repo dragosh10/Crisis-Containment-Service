@@ -649,15 +649,15 @@ function applyDisasterFilter() {
   }
 }
 
-// Function to reset disaster filter
+
 function resetDisasterFilter() {
-  // Restore full opacity to all markers
+  
   window.calamityCluster.eachLayer(function(layer) {
     layer.setOpacity(1.0);
   });
 }
 
-// Function to handle disaster pin selection for filter
+
 function handleDisasterPinSelection(calamity) {
   if (isSelectingDisasterPin) {
     selectedDisasterPin = {
@@ -667,7 +667,7 @@ function handleDisasterPinSelection(calamity) {
       lng: calamity.lng
     };
     
-    // Update UI to show selected disaster
+    
     const selectedDisasterType = document.getElementById('selected-disaster-type');
     const selectedDisasterCoords = document.getElementById('selected-disaster-coords');
     const selectedDisasterInfo = document.getElementById('selected-disaster-info');
@@ -682,18 +682,18 @@ function handleDisasterPinSelection(calamity) {
       selectedDisasterInfo.style.display = 'block';
     }
     
-    // Reset the confirmation checkbox when a new disaster is selected
+    
     const confirmCheckbox = document.getElementById('confirmDisasterPin');
     if (confirmCheckbox) {
       confirmCheckbox.checked = false;
     }
     
-    return true; // Indicate that disaster was selected for filter
+    return true; 
   }
-  return false; // Normal behavior
+  return false; 
 }
 
-// Function to filter calamities by type
+
 function filterCalamitiesByType(type) {
   window.calamityCluster.clearLayers();
   if (!type || type === 'All' || type === '') {
@@ -707,7 +707,7 @@ function filterCalamitiesByType(type) {
   });
 }
 
-// Make disaster filter functions available globally
+
 window.handleDisasterPinSelection = handleDisasterPinSelection;
 window.isSelectingDisasterPin = () => isSelectingDisasterPin;
 window.filterCalamitiesByType = filterCalamitiesByType;
