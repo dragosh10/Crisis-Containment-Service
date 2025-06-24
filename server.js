@@ -243,7 +243,7 @@ const server = http.createServer(async (req, res) => {
                 return;
             }
         } else {
-            // User not logged in - serve the main landing page
+           
             console.log('User not logged in - serving index.html');
             fs.readFile('./public/views/index.html', (err, data) => {
                 if (err) {

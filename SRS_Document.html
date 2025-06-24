@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRI - Crisis Containment Service - Software Requirements Specification</title>
     <style>
-        /* IEEE Scholar Style Document */
         body {
             font-family: 'Times New Roman', 'Times', serif;
             font-size: 12pt;
@@ -25,7 +24,6 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
         
-        /* IEEE Standard Headers */
         h1 {
             font-size: 18pt;
             font-weight: bold;
@@ -67,7 +65,6 @@
             color: #000;
         }
         
-        /* Paragraph styling */
         p {
             margin: 6pt 0;
             text-align: justify;
@@ -78,7 +75,6 @@
             text-indent: 0;
         }
         
-        /* Lists */
         ul, ol {
             margin: 6pt 0;
             padding-left: 0.5in;
@@ -88,7 +84,6 @@
             margin: 3pt 0;
         }
         
-        /* Table of Contents */
         .toc {
             background-color: #f8f8f8;
             border: 1pt solid #ccc;
@@ -128,7 +123,6 @@
             text-decoration: underline;
         }
         
-        /* Tables - IEEE Standard */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -154,7 +148,6 @@
             color: white;
         }
         
-        /* Requirements boxes */
         .requirement {
             border: 1pt solid #666;
             padding: 12pt;
@@ -178,7 +171,6 @@
             background-color: #f5fff5;
         }
         
-        /* Use cases */
         .use-case {
             border: 1pt solid #999;
             padding: 12pt;
@@ -191,8 +183,7 @@
             margin-top: 0;
             color: #333;
         }
-        
-        /* Author and version info */
+
         .author-info {
             text-align: center;
             margin: 24pt 0;
@@ -210,13 +201,12 @@
             font-style: italic;
         }
         
-        /* Section spacing */
+
         .section {
             margin-bottom: 36pt;
             page-break-inside: avoid;
         }
         
-        /* Code formatting */
         code {
             font-family: 'Courier New', 'Courier', monospace;
             font-size: 9pt;
@@ -235,7 +225,6 @@
             margin: 12pt 0;
         }
         
-        /* Technology stack */
         .tech-stack {
             display: flex;
             flex-wrap: wrap;
@@ -251,7 +240,6 @@
             font-weight: bold;
         }
         
-        /* Print styles */
         @media print {
             body {
                 background: white;
@@ -272,7 +260,6 @@
             }
         }
         
-        /* IEEE Footer */
         .ieee-footer {
             border-top: 2pt solid #000;
             padding-top: 12pt;
@@ -282,7 +269,6 @@
             font-weight: bold;
         }
         
-        /* Abstract style */
         .abstract {
             margin: 24pt 0;
             padding: 18pt;
@@ -608,7 +594,8 @@
                 <strong>Priority:</strong> High<br>
                 <strong>Input:</strong> External API data (earthquakes, floods, fires)<br>
                 <strong>Output:</strong> Visual markers on map with disaster information<br>
-                <strong>Processing:</strong> Fetch API data, parse JSON, render map markers
+                <strong>Processing:</strong> Fetch API data, render map markers
+
             </div>
             
             <div class="requirement priority-high">
@@ -695,7 +682,7 @@
             
             <div class="requirement priority-high">
                 <strong>NFR-001:</strong> Response Time<br>
-                <strong>Description:</strong> The system shall respond to user requests within 3 seconds<br>
+                <strong>Description:</strong> The system shall respond to user requests within 10 seconds<br>
                 <strong>Priority:</strong> High<br>
                 <strong>Measurement:</strong> Average response time for API calls and page loads
             </div>
@@ -706,13 +693,7 @@
                 <strong>Priority:</strong> High<br>
                 <strong>Measurement:</strong> Time from disaster creation to alert delivery
             </div>
-            
-            <div class="requirement priority-medium">
-                <strong>NFR-003:</strong> Concurrent Users<br>
-                <strong>Description:</strong> The system shall support at least 1000 concurrent users<br>
-                <strong>Priority:</strong> Medium<br>
-                <strong>Measurement:</strong> Load testing with 1000 simultaneous connections
-            </div>
+   
             
             <h4>3.2.2 Security Requirements</h4>
             
@@ -748,7 +729,7 @@
             
             <div class="requirement priority-medium">
                 <strong>NFR-008:</strong> Browser Compatibility<br>
-                <strong>Description:</strong> The system shall work on Chrome, Firefox, Safari, and Edge (latest 2 versions)<br>
+                <strong>Description:</strong> The system shall work on Chrome, Firefox and Edge (latest 2 versions)<br>
                 <strong>Priority:</strong> Medium<br>
                 <strong>Measurement:</strong> Cross-browser testing
             </div>
@@ -792,7 +773,8 @@
             
             <h5>Server Software</h5>
             <ul>
-                <li>Operating System: Linux/Windows/macOS</li>
+
+                <li>Operating System: Linux/Windows</li>
                 <li>Node.js: Version 16.x or higher</li>
                 <li>MySQL: Version 8.0 or higher</li>
                 <li>npm: Latest version</li>
@@ -800,7 +782,8 @@
             
             <h5>Client Software</h5>
             <ul>
-                <li>Web Browser: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+</li>
+                <li>Web Browser: Chrome 90+, Firefox 88+, Edge 90+</li>
+
                 <li>JavaScript: ES6 support required</li>
             </ul>
         </div>
@@ -896,8 +879,8 @@
             <h4>Three-Tier Architecture</h4>
             <ul>
                 <li><strong>Presentation Layer:</strong> HTML/CSS/JavaScript frontend with Leaflet.js maps</li>
-                <li><strong>Application Layer:</strong> Node.js server with Express.js framework</li>
-                <li><strong>Data Layer:</strong> MySQL database with connection pooling</li>
+                <li><strong>Application Layer:</strong> Node.js server </li>
+                <li><strong>Data Layer:</strong> MySQL database </li>
             </ul>
             
             <h4>External Integrations</h4>
@@ -921,7 +904,7 @@
                  </tr>
                  <tr>
                      <td>Disaster Pin</td>
-                     <td>A location marker set by users to receive alerts for nearby disasters</td>
+                     <td>A location marker set by users (authorities) to send alerts for disasters</td>
                  </tr>
                  <tr>
                      <td>Personal Pin</td>
