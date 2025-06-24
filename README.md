@@ -111,7 +111,7 @@ The system follows a **three-tier architecture** with clear separation of concer
 └─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
-### C4 Architecture Diagrams
+### C4 Architecture Diagrams & Documentation
 Detailed C4 model diagrams are available in the [C4Diagrams](./C4Diagrams/).
 Detailed documentation is in [SRS_Document](./SRS_Document.html).
 
