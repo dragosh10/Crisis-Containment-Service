@@ -133,6 +133,43 @@ function setupFilters() {
     });
 }
 
+function setupSectionToggle() {
+   
+    window.sectionHeadersSetup = true;
+    
+   
+    document.querySelectorAll('.section-header').forEach(header => {
+        const clone = header.cloneNode(true);
+        header.parentNode.replaceChild(clone, header);
+    });
+    
+   
+    document.querySelectorAll('.section-header').forEach(header => {
+        header.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const sectionName = this.dataset.section;
+            const sectionId = sectionName + 'Section';
+            const content = document.getElementById(sectionId);
+            
+            if (!content) return;
+            
+            const wasActive = this.classList.contains('active');
+
+          
+            document.querySelectorAll('.section-header').forEach(h => h.classList.remove('active'));
+            document.querySelectorAll('.section-content').forEach(c => c.style.display = 'none');
+
+            
+            if (!wasActive) {
+                this.classList.add('active');
+                content.style.display = 'block';
+            }
+        });
+    });
+}
+
 function toggleSidebar() {
     const body = document.body;
     const mainContent = document.querySelector('.main-content');
@@ -327,6 +364,7 @@ function initializeMapClient() {
     
     createLegend(window.map);
     initializeSidebar();
+    setupSectionToggle(); 
     setupLogout();
     setupFilters();
     setupSidebarControls();

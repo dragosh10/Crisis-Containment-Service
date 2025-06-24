@@ -199,6 +199,11 @@ function refreshCalamities() {
 
 
 function setupSectionHeaders() {
+ 
+  if (window.sectionHeadersSetup) {
+    return;
+  }
+  
   document.querySelectorAll('.section-header').forEach(header => {
     header.addEventListener('click', function() {
         const sectionId = this.dataset.section + 'Section';

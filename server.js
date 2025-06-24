@@ -21,9 +21,9 @@ const dbConfig = process.env.DB_HOST && process.env.DB_HOST.startsWith('/cloudsq
       connectionLimit: 10
     }
   : {
-      host: process.env.DB_HOST || '35.205.50.78',
+      host: process.env.DB_HOST || 'localhost',
       user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASS || '1234',
+      password: process.env.DB_PASS || 'sarah',
       database: process.env.DB_NAME || 'web',
       port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
       waitForConnections: true,
@@ -453,7 +453,7 @@ const server = http.createServer(async (req, res) => {
                 urgency: gravity === 'high' ? 'Immediate' : 'Expected',
                 severity: gravity === 'high' ? 'Severe' : 'Moderate',
                 certainty: 'Observed',
-                instruction: description || 'Urmați instrucțiunile autorităților!',
+                instruction: description || 'Follow the instructions of the authorities!',
                 areaDesc: description || 'Zonă afectată',
                 lat: lat,
                 lon: lng

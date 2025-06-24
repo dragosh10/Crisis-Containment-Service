@@ -167,13 +167,14 @@ Detailed documentation is in [SRS_Document](./SRS_Document.html).
    
    Deploy to Cloud Run:
    ```bash
-   gcloud run deploy cri-service \
-     --image gcr.io/cogent-range-463901-a8/web \
+  gcloud run deploy cri-service \
+     --image gcr.io/cogent-range-463901-a8/web-app \
      --platform managed \
      --region europe-west1 \
      --allow-unauthenticated \
      --port 3000 \
-     --set-env-vars DB_HOST=35.205.50.78,DB_USER=root,DB_PASS=1234,DB_NAME=web,DB_PORT=3306
+     --add-cloudsql-instances cogent-range-463901-a8:europe-west1:web \
+     --set-env-vars DB_HOST=/cloudsql/cogent-range-463901-a8:europe-west1:web,DB_USER=root,DB_PASS=parola_root,DB_NAME=web,DB_PORT=3306
    ```
    
 
